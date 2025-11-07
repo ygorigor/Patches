@@ -1,0 +1,26 @@
+From db0dc9334758e63ced772d7b964f0f770227b428 Mon Sep 17 00:00:00 2001
+From: ygorigor <sorocean.igor@gmail.com>
+Date: Thu, 18 Sep 2025 14:29:07 +0300
+Subject: [PATCH] sweet: enable Sony Dolby Atmos
+
+Signed-off-by: therealmharc <therealmharc@gmail.com>
+---
+ device.mk | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/device.mk b/device.mk
+index 1bb35ff..780a153 100644
+--- a/device.mk
++++ b/device.mk
+@@ -21,6 +21,9 @@ PRODUCT_COPY_FILES += \
+     $(LOCAL_PATH)/configs/audio/mixer_paths_overlay_static.xml:$(TARGET_COPY_OUT_VENDOR)/etc/mixer_paths_overlay_static.xml \
+     $(LOCAL_PATH)/configs/audio/sound_trigger_mixer_paths.xml:$(TARGET_COPY_OUT_VENDOR)/etc/sound_trigger_mixer_paths.xml
+ 
++# Dolby
++TARGET_USES_DOLBY := true
++
+ # Display
+ PRODUCT_COPY_FILES += \
+     $(LOCAL_PATH)/configs/display/qdcm_calib_data_xiaomi_k6_38_0c_0a_fhd_dsc_video_dsi_panel.xml:$(TARGET_COPY_OUT_VENDOR)/etc/qdcm_calib_data_xiaomi_k6_38_0c_0a_fhd_dsc_video_dsi_panel.xml \
+-- 
+
