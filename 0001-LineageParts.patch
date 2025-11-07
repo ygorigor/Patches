@@ -1,234 +1,78 @@
-diff --git a/res/drawable-nodpi/color_mode_preview.jpg b/res/drawable-nodpi/color_mode_preview.jpg
-deleted file mode 100644
-index 804bcf19..00000000
-Binary files a/res/drawable-nodpi/color_mode_preview.jpg and /dev/null differ
-diff --git a/res/drawable-nodpi/color_mode_preview1.jpg b/res/drawable-nodpi/color_mode_preview1.jpg
+diff --git a/res/drawable/ic_alert.xml b/res/drawable/ic_alert.xml
 new file mode 100644
-index 00000000..71bcb7e5
-Binary files /dev/null and b/res/drawable-nodpi/color_mode_preview1.jpg differ
-diff --git a/res/drawable-nodpi/color_mode_preview2.jpg b/res/drawable-nodpi/color_mode_preview2.jpg
-new file mode 100644
-index 00000000..4153d8e7
-Binary files /dev/null and b/res/drawable-nodpi/color_mode_preview2.jpg differ
-diff --git a/res/drawable-nodpi/color_mode_preview3.jpg b/res/drawable-nodpi/color_mode_preview3.jpg
-new file mode 100644
-index 00000000..ab83f08c
-Binary files /dev/null and b/res/drawable-nodpi/color_mode_preview3.jpg differ
-diff --git a/res/drawable/ic_color_arrow_left_lt.xml b/res/drawable/ic_color_arrow_left_lt.xml
-new file mode 100644
-index 00000000..237a1a3a
+index 00000000..b2cd0113
 --- /dev/null
-+++ b/res/drawable/ic_color_arrow_left_lt.xml
-@@ -0,0 +1,29 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<!--
-+    Copyright 2021 The Android Open Source Project
-+
-+    Licensed under the Apache License, Version 2.0 (the "License");
-+    you may not use this file except in compliance with the License.
-+    You may obtain a copy of the License at
-+
-+         http://www.apache.org/licenses/LICENSE-2.0
-+
-+    Unless required by applicable law or agreed to in writing, software
-+    distributed under the License is distributed on an "AS IS" BASIS,
-+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-+    See the License for the specific language governing permissions and
-+    limitations under the License.
-+-->
-+
-+<vector xmlns:android="http://schemas.android.com/apk/res/android"
-+    android:width="24dp"
-+    android:height="24dp"
-+    android:viewportWidth="24"
-+    android:viewportHeight="24">
-+  <path
-+      android:pathData="M0,0h24v24h-24z"/>
-+  <path
-+      android:pathData="M16.41,18.59L15,20L7,12L15,4L16.41,5.41L9.83,12"
-+      android:fillColor="?android:attr/colorAccent"
-+      android:fillType="evenOdd"/>
-+</vector>
-diff --git a/res/drawable/ic_color_arrow_right_lt.xml b/res/drawable/ic_color_arrow_right_lt.xml
-new file mode 100644
-index 00000000..51072438
---- /dev/null
-+++ b/res/drawable/ic_color_arrow_right_lt.xml
-@@ -0,0 +1,29 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<!--
-+    Copyright 2021 The Android Open Source Project
-+
-+    Licensed under the Apache License, Version 2.0 (the "License");
-+    you may not use this file except in compliance with the License.
-+    You may obtain a copy of the License at
-+
-+         http://www.apache.org/licenses/LICENSE-2.0
-+
-+    Unless required by applicable law or agreed to in writing, software
-+    distributed under the License is distributed on an "AS IS" BASIS,
-+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-+    See the License for the specific language governing permissions and
-+    limitations under the License.
-+-->
-+
-+<vector xmlns:android="http://schemas.android.com/apk/res/android"
-+    android:width="24dp"
-+    android:height="24dp"
-+    android:viewportWidth="24"
-+    android:viewportHeight="24">
-+  <path
-+      android:pathData="M0,0h24v24h-24z"/>
-+  <path
-+      android:pathData="M7.59,5.41L9,4L17,12L9,20L7.59,18.59L14.17,12"
-+      android:fillColor="?android:attr/colorAccent"
-+      android:fillType="evenOdd"/>
-+</vector>
-diff --git a/res/drawable/ic_color_page_indicator_focused.xml b/res/drawable/ic_color_page_indicator_focused.xml
-new file mode 100644
-index 00000000..61733580
---- /dev/null
-+++ b/res/drawable/ic_color_page_indicator_focused.xml
++++ b/res/drawable/ic_alert.xml
 @@ -0,0 +1,27 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<!--
-+    Copyright 2021 The Android Open Source Project
++     Copyright (C) 2018-2025 crDroid Android Project
 +
-+    Licensed under the Apache License, Version 2.0 (the "License");
-+    you may not use this file except in compliance with the License.
-+    You may obtain a copy of the License at
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
 +
-+         http://www.apache.org/licenses/LICENSE-2.0
++          http://www.apache.org/licenses/LICENSE-2.0
 +
-+    Unless required by applicable law or agreed to in writing, software
-+    distributed under the License is distributed on an "AS IS" BASIS,
-+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-+    See the License for the specific language governing permissions and
-+    limitations under the License.
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
 +-->
-+
 +<vector xmlns:android="http://schemas.android.com/apk/res/android"
-+    android:width="6dp"
-+    android:height="6dp"
-+    android:viewportWidth="6"
-+    android:viewportHeight="6">
-+  <path
-+      android:pathData="M3,0C4.65686,0 6,1.34315 6,3C6,4.65686 4.65685,6 3,6C1.34315,6 0,4.65685 0,3C0,1.34315 1.34315,0 3,0Z"
-+      android:fillColor="?android:attr/colorAccent"
-+      android:fillType="evenOdd"/>
++    android:width="24dp"
++    android:height="24dp"
++    android:viewportWidth="24"
++    android:viewportHeight="24"
++    android:tint="?android:colorControlNormal">
++
++    <path
++        android:fillColor="#FFFFFFFF"
++        android:pathData="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
 +</vector>
-diff --git a/res/drawable/ic_color_page_indicator_unfocused.xml b/res/drawable/ic_color_page_indicator_unfocused.xml
+diff --git a/res/drawable/ic_message_alert.xml b/res/drawable/ic_message_alert.xml
 new file mode 100644
-index 00000000..57a13d82
+index 00000000..dd63a0b5
 --- /dev/null
-+++ b/res/drawable/ic_color_page_indicator_unfocused.xml
-@@ -0,0 +1,28 @@
++++ b/res/drawable/ic_message_alert.xml
+@@ -0,0 +1,27 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<!--
-+    Copyright 2021 The Android Open Source Project
++     Copyright (C) 2018-2022 crDroid Android Project
 +
-+    Licensed under the Apache License, Version 2.0 (the "License");
-+    you may not use this file except in compliance with the License.
-+    You may obtain a copy of the License at
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
 +
-+         http://www.apache.org/licenses/LICENSE-2.0
++          http://www.apache.org/licenses/LICENSE-2.0
 +
-+    Unless required by applicable law or agreed to in writing, software
-+    distributed under the License is distributed on an "AS IS" BASIS,
-+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-+    See the License for the specific language governing permissions and
-+    limitations under the License.
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
 +-->
-+
 +<vector xmlns:android="http://schemas.android.com/apk/res/android"
-+    android:width="6dp"
-+    android:height="6dp"
-+    android:viewportWidth="6"
-+    android:viewportHeight="6">
-+  <path
-+      android:pathData="M3,0C4.65686,0 6,1.34315 6,3C6,4.65686 4.65685,6 3,6C1.34315,6 0,4.65685 0,3C0,1.34315 1.34315,0 3,0Z"
-+      android:fillColor="?android:attr/colorAccent"
-+      android:fillAlpha="0.24"
-+      android:fillType="evenOdd"/>
++    android:width="24dp"
++    android:height="24dp"
++    android:viewportWidth="24"
++    android:viewportHeight="24"
++    android:tint="?android:colorControlNormal">
++
++    <path
++        android:fillColor="#FFFFFFFF"
++        android:pathData="M13,10H11V6H13M13,14H11V12H13M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4C22,2.89 21.1,2 20,2Z" />
 +</vector>
-diff --git a/res/layout/color_mode_preview.xml b/res/layout/color_mode_preview.xml
-index e7679d77..0114b752 100644
---- a/res/layout/color_mode_preview.xml
-+++ b/res/layout/color_mode_preview.xml
-@@ -2,16 +2,55 @@
-      SPDX-FileCopyrightText: 2018 The Android Open Source Project
-      SPDX-License-Identifier: Apache-2.0
- -->
--<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
--    android:layout_width="match_parent"
--    android:layout_height="wrap_content">
-+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-+        android:orientation="vertical"
-+        android:layout_width="match_parent"
-+        android:layout_height="wrap_content">
-+
-+    <androidx.viewpager.widget.ViewPager
-+        android:id="@+id/viewpager"
-+        android:layout_width="match_parent"
-+        android:layout_height="@dimen/color_mode_preview_height"/>
- 
--    <ImageView
-+    <FrameLayout
-         android:layout_width="match_parent"
--        android:layout_height="@dimen/color_mode_preview_height"
--        android:scaleType="centerCrop"
--        android:cropToPadding="true"
--        android:src="@drawable/color_mode_preview"
--        android:contentDescription="@null" />
-+        android:layout_height="48dp">
-+
-+        <FrameLayout
-+            android:id="@+id/arrow_previous"
-+            android:layout_width="wrap_content"
-+            android:layout_height="48dp"
-+            android:paddingLeft="24dp"
-+            android:layout_gravity="center_vertical|left"
-+            android:contentDescription="@string/previous_page_content_description">
-+
-+            <ImageView
-+                android:layout_width="24dp"
-+                android:layout_height="24dp"
-+                android:layout_gravity="center"
-+                android:src="@drawable/ic_color_arrow_left_lt"/>
-+        </FrameLayout>
-+
-+        <LinearLayout
-+            android:id="@+id/viewGroup"
-+            android:layout_width="fill_parent"
-+            android:layout_height="48dp"
-+            android:gravity="center"/>
-+
-+        <FrameLayout
-+            android:id="@+id/arrow_next"
-+            android:layout_width="wrap_content"
-+            android:layout_height="48dp"
-+            android:paddingRight="24dp"
-+            android:layout_gravity="center_vertical|right"
-+            android:contentDescription="@string/next_page_content_description">
-+
-+            <ImageView
-+                android:layout_width="24dp"
-+                android:layout_height="24dp"
-+                android:layout_gravity="center"
-+                android:src="@drawable/ic_color_arrow_right_lt"/>
-+        </FrameLayout>
-+    </FrameLayout>
- 
--</FrameLayout>
-+</LinearLayout>
-diff --git a/res/layout/color_mode_view1.xml b/res/layout/color_mode_view1.xml
+diff --git a/res/drawable/ic_usb.xml b/res/drawable/ic_usb.xml
 new file mode 100644
-index 00000000..4bdaec1d
+index 00000000..b4419778
 --- /dev/null
-+++ b/res/layout/color_mode_view1.xml
-@@ -0,0 +1,39 @@
++++ b/res/drawable/ic_usb.xml
+@@ -0,0 +1,27 @@
 +<?xml version="1.0" encoding="utf-8"?>
-+<!-- Copyright (C) 2021 The Android Open Source Project
++<!--
++     Copyright (C) 2017-2025 crDroid Android Project
 +
 +     Licensed under the Apache License, Version 2.0 (the "License");
 +     you may not use this file except in compliance with the License.
@@ -242,458 +86,61 @@ index 00000000..4bdaec1d
 +     See the License for the specific language governing permissions and
 +     limitations under the License.
 +-->
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="24dp"
++    android:height="24dp"
++    android:viewportWidth="24"
++    android:viewportHeight="24"
++    android:tint="?android:colorControlNormal">
 +
-+<LinearLayout
-+    xmlns:android="http://schemas.android.com/apk/res/android"
-+    xmlns:tools="http://schemas.android.com/tools"
-+    android:layout_width="match_parent"
-+    android:layout_height="match_parent"
-+    android:orientation="vertical">
-+
-+    <FrameLayout
-+        android:layout_width="match_parent"
-+        android:layout_height="wrap_content"
-+        android:foregroundGravity="center_horizontal">
-+
-+        <ImageView
-+            android:id="@+id/image1"
-+            android:layout_width="match_parent"
-+            android:layout_height="@dimen/color_mode_preview_height"
-+            android:scaleType="centerCrop"
-+            android:cropToPadding="true"
-+            android:src="@drawable/color_mode_preview1"
-+            android:contentDescription="@null" />
-+
-+    </FrameLayout>
-+</LinearLayout>
-diff --git a/res/layout/color_mode_view2.xml b/res/layout/color_mode_view2.xml
-new file mode 100644
-index 00000000..c70fa75c
---- /dev/null
-+++ b/res/layout/color_mode_view2.xml
-@@ -0,0 +1,39 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<!-- Copyright (C) 2021 The Android Open Source Project
-+
-+     Licensed under the Apache License, Version 2.0 (the "License");
-+     you may not use this file except in compliance with the License.
-+     You may obtain a copy of the License at
-+
-+          http://www.apache.org/licenses/LICENSE-2.0
-+
-+     Unless required by applicable law or agreed to in writing, software
-+     distributed under the License is distributed on an "AS IS" BASIS,
-+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-+     See the License for the specific language governing permissions and
-+     limitations under the License.
-+-->
-+
-+<LinearLayout
-+    xmlns:android="http://schemas.android.com/apk/res/android"
-+    xmlns:tools="http://schemas.android.com/tools"
-+    android:layout_width="match_parent"
-+    android:layout_height="match_parent"
-+    android:orientation="vertical">
-+
-+    <FrameLayout
-+        android:layout_width="match_parent"
-+        android:layout_height="wrap_content"
-+        android:foregroundGravity="center_horizontal">
-+
-+        <ImageView
-+            android:id="@+id/image2"
-+            android:layout_width="match_parent"
-+            android:layout_height="@dimen/color_mode_preview_height"
-+            android:scaleType="centerCrop"
-+            android:cropToPadding="true"
-+            android:src="@drawable/color_mode_preview2"
-+            android:contentDescription="@null" />
-+
-+    </FrameLayout>
-+</LinearLayout>
-diff --git a/res/layout/color_mode_view3.xml b/res/layout/color_mode_view3.xml
-new file mode 100644
-index 00000000..430e3b2f
---- /dev/null
-+++ b/res/layout/color_mode_view3.xml
-@@ -0,0 +1,39 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<!-- Copyright (C) 2021 The Android Open Source Project
-+
-+     Licensed under the Apache License, Version 2.0 (the "License");
-+     you may not use this file except in compliance with the License.
-+     You may obtain a copy of the License at
-+
-+          http://www.apache.org/licenses/LICENSE-2.0
-+
-+     Unless required by applicable law or agreed to in writing, software
-+     distributed under the License is distributed on an "AS IS" BASIS,
-+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-+     See the License for the specific language governing permissions and
-+     limitations under the License.
-+-->
-+
-+<LinearLayout
-+    xmlns:android="http://schemas.android.com/apk/res/android"
-+    xmlns:tools="http://schemas.android.com/tools"
-+    android:layout_width="match_parent"
-+    android:layout_height="match_parent"
-+    android:orientation="vertical">
-+
-+    <FrameLayout
-+        android:layout_width="match_parent"
-+        android:layout_height="wrap_content"
-+        android:foregroundGravity="center_horizontal">
-+
-+        <ImageView
-+            android:id="@+id/image3"
-+            android:layout_width="match_parent"
-+            android:layout_height="@dimen/color_mode_preview_height"
-+            android:scaleType="centerCrop"
-+            android:cropToPadding="true"
-+            android:src="@drawable/color_mode_preview3"
-+            android:contentDescription="@null" />
-+
-+    </FrameLayout>
-+</LinearLayout>
-diff --git a/res/values-ro/strings.xml b/res/values-ro/strings.xml
-index ef22f7ee..822f8bb5 100644
---- a/res/values-ro/strings.xml
-+++ b/res/values-ro/strings.xml
-@@ -536,4 +536,6 @@
-     <string name="sms_security_check_limit_summary">Aplicațiile pot trimite %s mesaje într-un minut înainte de a fi necesară confirmarea</string>
-     <string name="sms_security_check_limit_summary_none">Aplicațiilor nu li se permite să poată trimite vreun mesaj decât cu confirmare</string>
-     <string name="sms_security_check_limit_always_confirm">Confirmă întotdeauna</string>
-+    <string name="data_disabled_icon_title">Indicator date dezactivate</string>
-+    <string name="data_disabled_icon_summary">Afișează un indicator lângă pictograma semnalului atunci când datele sunt dezactivate</string>
- </resources>
-diff --git a/res/values/strings.xml b/res/values/strings.xml
-index d7fa8690..ba991918 100644
---- a/res/values/strings.xml
-+++ b/res/values/strings.xml
-@@ -682,4 +682,17 @@
-     <string name="sms_security_check_limit_summary">Apps can send %s messages in 1 minute before requiring confirmation</string>
-     <string name="sms_security_check_limit_summary_none">Apps are not allowed to send any messages without confirmation</string>
-     <string name="sms_security_check_limit_always_confirm">Always confirm</string>
-+
-+    <!-- Content description of the previous button to bring user to the previous preview page. -->
-+    <string name="previous_page_content_description">Previous</string>
-+
-+    <!-- Content description of the next button to bring user to the next preview page. -->
-+    <string name="next_page_content_description">Next</string>
-+
-+    <!-- Content description of preview pager in colors preview -->
-+    <string name="colors_viewpager_content_description">Color preview</string>
-+     
-+    <!-- Data disabled indicator -->
-+    <string name="data_disabled_icon_title">Data disabled indicator</string>
-+    <string name="data_disabled_icon_summary">Display an indicator next to signal icon when data is disabled</string>
- </resources>
-diff --git a/res/xml/charging_control_settings.xml b/res/xml/charging_control_settings.xml
-index c63001d9..0ea7c5e2 100644
---- a/res/xml/charging_control_settings.xml
-+++ b/res/xml/charging_control_settings.xml
-@@ -11,7 +11,7 @@
-         android:key="charging_control_enabled"
-         android:title="@string/charging_control_enable_title" />
++    <path
++        android:fillColor="#FFFFFFFF"
++        android:pathData="M15,7V11H16V13H13V5H15L12,1L9,5H11V13H8V10.93C8.7,10.56 9.2,9.85 9.2,9C9.2,7.78 8.21,6.8 7,6.8C5.78,6.8 4.8,7.78 4.8,9C4.8,9.85 5.3,10.56 6,10.93V13A2,2 0 0,0 8,15H11V18.05C10.29,18.41 9.8,19.15 9.8,20A2.2,2.2 0 0,0 12,22.2A2.2,2.2 0 0,0 14.2,20C14.2,19.15 13.71,18.41 13,18.05V15H16A2,2 0 0,0 18,13V11H19V7H15Z" />
++</vector>
+diff --git a/res/values/styles.xml b/res/values/styles.xml
+index be39ae50..3f45d6fe 100644
+--- a/res/values/styles.xml
++++ b/res/values/styles.xml
+@@ -31,7 +31,7 @@
+     </style>
  
--    <lineageos.preference.LineageSystemSettingDropDownPreference
-+    <lineageos.preference.LineageSystemSettingListPreference
-         android:key="charging_control_mode"
-         android:title="@string/charging_control_mode_title"
-         android:entries="@array/charging_control_mode_entries"
-diff --git a/res/xml/livedisplay.xml b/res/xml/livedisplay.xml
-index 799ad4d1..813e71bd 100644
---- a/res/xml/livedisplay.xml
-+++ b/res/xml/livedisplay.xml
-@@ -10,6 +10,7 @@
+     <style name="OnBoardingStyle" parent="Theme.AppCompat.DayNight">
+-        <item name="colorAccent">#167c80</item>
++        <item name="colorAccent">@*android:color/accent_device_default_dark</item>
+         <item name="windowActionBar">false</item>
+         <item name="windowNoTitle">true</item>
+     </style>
+diff --git a/res/xml/trust_preferences.xml b/res/xml/trust_preferences.xml
+index 021533b8..a4b2a690 100644
+--- a/res/xml/trust_preferences.xml
++++ b/res/xml/trust_preferences.xml
+@@ -30,6 +30,7 @@
  
-     <!-- Color mode preview -->
-     <com.android.settingslib.widget.LayoutPreference
-+        android:key="color_mode_preview"
-         android:layout="@layout/color_mode_preview"
-         android:selectable="false" />
+         <lineageos.preference.LineageGlobalSettingListPreference
+             android:key="trust_restrict_usb"
++            android:icon="@drawable/ic_usb"
+             android:title="@string/trust_restrict_usb_title"
+             android:summary="@string/trust_restrict_usb_summary"
+             android:entries="@array/trust_restrict_usb_entries"
+@@ -41,6 +42,7 @@
  
-diff --git a/res/xml/status_bar_settings.xml b/res/xml/status_bar_settings.xml
-index 50933eae..aab74714 100644
---- a/res/xml/status_bar_settings.xml
-+++ b/res/xml/status_bar_settings.xml
-@@ -26,6 +26,12 @@
-     <PreferenceCategory
-         android:title="@string/status_bar_icons_title">
+         <ListPreference
+             android:key="sms_security_check_limit"
++            android:icon="@drawable/ic_message_alert"
+             android:defaultValue="30"
+             android:entries="@array/sms_security_check_limit_entries"
+             android:entryValues="@array/sms_security_check_limit_values"
+@@ -58,11 +60,13 @@
  
-+        <lineageos.preference.SystemSettingSwitchPreference
-+            android:key="data_disabled_icon"
-+            android:title="@string/data_disabled_icon_title"
-+            android:summary="@string/data_disabled_icon_summary"
-+            android:defaultValue="true"/>
-+
-         <Preference
-             android:key="status_bar_icons"
-             android:title="@string/status_bar_system_icons_title"
-diff --git a/src/org/lineageos/lineageparts/health/ChargingControlSettings.java b/src/org/lineageos/lineageparts/health/ChargingControlSettings.java
-index b9cc92b4..7c892d82 100644
---- a/src/org/lineageos/lineageparts/health/ChargingControlSettings.java
-+++ b/src/org/lineageos/lineageparts/health/ChargingControlSettings.java
-@@ -21,7 +21,7 @@ import androidx.preference.Preference;
- import androidx.preference.PreferenceScreen;
+         <SwitchPreferenceCompat
+             android:key="trust_warning_selinux"
++            android:icon="@drawable/ic_alert"
+             android:summary="@string/trust_warnings_selinux"
+             android:defaultValue="true" />
  
- import lineageos.health.HealthInterface;
--import lineageos.preference.LineageSystemSettingDropDownPreference;
-+import lineageos.preference.LineageSystemSettingListPreference;
- import lineageos.preference.LineageSystemSettingMainSwitchPreference;
- import lineageos.providers.LineageSettings;
- 
-@@ -47,7 +47,7 @@ public class ChargingControlSettings extends SettingsPreferenceFragment implemen
-     private static final String CHARGING_CONTROL_LIMIT_PREF = "charging_control_charging_limit";
- 
-     private LineageSystemSettingMainSwitchPreference mChargingControlEnabledPref;
--    private LineageSystemSettingDropDownPreference mChargingControlModePref;
-+    private LineageSystemSettingListPreference mChargingControlModePref;
-     private StartTimePreference mChargingControlStartTimePref;
-     private TargetTimePreference mChargingControlTargetTimePref;
-     private ChargingLimitPreference mChargingControlLimitPref;
-diff --git a/src/org/lineageos/lineageparts/livedisplay/LiveDisplaySettings.java b/src/org/lineageos/lineageparts/livedisplay/LiveDisplaySettings.java
-index 85b0923d..58bdc044 100644
---- a/src/org/lineageos/lineageparts/livedisplay/LiveDisplaySettings.java
-+++ b/src/org/lineageos/lineageparts/livedisplay/LiveDisplaySettings.java
-@@ -26,14 +26,20 @@ import android.os.Bundle;
- import android.text.TextUtils;
- import android.util.ArraySet;
- import android.util.Log;
-+import android.view.View;
-+import android.view.ViewGroup;
-+import android.widget.ImageView;
- 
- import androidx.preference.ListPreference;
- import androidx.preference.Preference;
- import androidx.preference.PreferenceCategory;
- import androidx.preference.PreferenceScreen;
- import androidx.preference.SwitchPreferenceCompat;
-+import androidx.viewpager.widget.PagerAdapter;
-+import androidx.viewpager.widget.ViewPager;
- 
- import com.android.internal.util.ArrayUtils;
-+import com.android.settingslib.widget.LayoutPreference;
- 
- import lineageos.hardware.DisplayMode;
- import lineageos.hardware.LineageHardwareManager;
-@@ -49,6 +55,8 @@ import org.lineageos.lineageparts.search.SearchIndexableRaw;
- import org.lineageos.lineageparts.search.Searchable;
- import org.lineageos.lineageparts.utils.ResourceUtils;
- 
-+import java.util.ArrayList;
-+import java.util.Arrays;
- import java.util.Collections;
- import java.util.List;
- import java.util.Set;
-@@ -71,6 +79,7 @@ public class LiveDisplaySettings extends SettingsPreferenceFragment implements S
-     private static final String KEY_LIVE_DISPLAY_COLOR_ENHANCE = "display_color_enhance";
-     private static final String KEY_LIVE_DISPLAY_TEMPERATURE = "live_display_color_temperature";
- 
-+    private static final String KEY_COLOR_MODE_PREVIEW = "color_mode_preview";
-     private static final String KEY_DISPLAY_COLOR = "color_calibration";
-     private static final String KEY_PICTURE_ADJUSTMENT = "picture_adjustment";
- 
-@@ -89,6 +98,12 @@ public class LiveDisplaySettings extends SettingsPreferenceFragment implements S
-     private final Uri DISPLAY_TEMPERATURE_MODE_URI =
-             LineageSettings.System.getUriFor(LineageSettings.System.DISPLAY_TEMPERATURE_MODE);
- 
-+    static final String PAGE_VIEWER_SELECTION_INDEX = "page_viewer_selection_index";
-+
-+    private static final int DOT_INDICATOR_SIZE = 12;
-+    private static final int DOT_INDICATOR_LEFT_PADDING = 6;
-+    private static final int DOT_INDICATOR_RIGHT_PADDING = 6;
-+
-     private ListPreference mLiveDisplay;
- 
-     private SwitchPreferenceCompat mOutdoorMode;
-@@ -108,6 +123,15 @@ public class LiveDisplaySettings extends SettingsPreferenceFragment implements S
- 
-     private LineageHardwareManager mHardware;
- 
-+    private View mViewArrowPrevious;
-+    private View mViewArrowNext;
-+    private ViewPager mViewPager;
-+
-+    private ArrayList<View> mPageList;
-+
-+    private ImageView[] mDotIndicators;
-+    private View[] mViewPagerImages;
-+
-     @Override
-     public void onCreate(Bundle savedInstanceState) {
-         super.onCreate(savedInstanceState);
-@@ -121,6 +145,8 @@ public class LiveDisplaySettings extends SettingsPreferenceFragment implements S
- 
-         addPreferencesFromResource(R.xml.livedisplay);
- 
-+        addViewPager();
-+
-         PreferenceScreen liveDisplayPrefs = findPreference(KEY_SCREEN_LIVE_DISPLAY);
- 
-         PreferenceCategory advancedPrefs = findPreference(KEY_CATEGORY_ADVANCED);
-@@ -241,6 +267,12 @@ public class LiveDisplaySettings extends SettingsPreferenceFragment implements S
-                 !mHardware.isSupported(LineageHardwareManager.FEATURE_ANTI_FLICKER)) {
-             liveDisplayPrefs.removePreference(antiFlicker);
-         }
-+
-+        if (savedInstanceState != null) {
-+            final int selectedPosition = savedInstanceState.getInt(PAGE_VIEWER_SELECTION_INDEX);
-+            mViewPager.setCurrentItem(selectedPosition);
-+            updateIndicator(selectedPosition);
-+        }
-     }
- 
-     @Override
-@@ -260,6 +292,150 @@ public class LiveDisplaySettings extends SettingsPreferenceFragment implements S
-         SettingsHelper.get(getActivity()).stopWatching(this);
-     }
- 
-+    @Override
-+    public void onSaveInstanceState(Bundle outState){
-+        super.onSaveInstanceState(outState);
-+        outState.putInt(PAGE_VIEWER_SELECTION_INDEX, mViewPager.getCurrentItem());
-+    }
-+
-+    public ArrayList<Integer> getViewPagerResource() {
-+        return new ArrayList<Integer>(
-+                Arrays.asList(
-+                        R.layout.color_mode_view1,
-+                        R.layout.color_mode_view2,
-+                        R.layout.color_mode_view3));
-+    }
-+
-+    void addViewPager() {
-+        LayoutPreference preview = findPreference(KEY_COLOR_MODE_PREVIEW);
-+        final ArrayList<Integer> tmpviewPagerList = getViewPagerResource();
-+        mViewPager = preview.findViewById(R.id.viewpager);
-+
-+        mViewPagerImages = new View[3];
-+        for (int idx = 0; idx < tmpviewPagerList.size(); idx++) {
-+            mViewPagerImages[idx] =
-+                    getLayoutInflater().inflate(tmpviewPagerList.get(idx), null /* root */);
-+        }
-+
-+        mPageList = new ArrayList<View>();
-+        mPageList.add(mViewPagerImages[0]);
-+        mPageList.add(mViewPagerImages[1]);
-+        mPageList.add(mViewPagerImages[2]);
-+
-+        mViewPager.setAdapter(new ColorPagerAdapter(mPageList));
-+
-+        mViewArrowPrevious = preview.findViewById(R.id.arrow_previous);
-+        mViewArrowPrevious.setOnClickListener(v -> {
-+            final int previousPos = mViewPager.getCurrentItem() - 1;
-+            mViewPager.setCurrentItem(previousPos, true);
-+        });
-+
-+        mViewArrowNext = preview.findViewById(R.id.arrow_next);
-+        mViewArrowNext.setOnClickListener(v -> {
-+            final int nextPos = mViewPager.getCurrentItem() + 1;
-+            mViewPager.setCurrentItem(nextPos, true);
-+        });
-+
-+        mViewPager.addOnPageChangeListener(createPageListener());
-+
-+        final ViewGroup viewGroup = (ViewGroup) preview.findViewById(R.id.viewGroup);
-+        mDotIndicators = new ImageView[mPageList.size()];
-+        for (int i = 0; i < mPageList.size(); i++) {
-+            final ImageView imageView = new ImageView(getContext());
-+            final ViewGroup.MarginLayoutParams lp =
-+                    new ViewGroup.MarginLayoutParams(DOT_INDICATOR_SIZE, DOT_INDICATOR_SIZE);
-+            lp.setMargins(DOT_INDICATOR_LEFT_PADDING, 0, DOT_INDICATOR_RIGHT_PADDING, 0);
-+            imageView.setLayoutParams(lp);
-+            mDotIndicators[i] = imageView;
-+
-+            viewGroup.addView(mDotIndicators[i]);
-+        }
-+
-+        updateIndicator(mViewPager.getCurrentItem());
-+    }
-+
-+    private ViewPager.OnPageChangeListener createPageListener() {
-+        return new ViewPager.OnPageChangeListener() {
-+            @Override
-+            public void onPageScrolled(
-+                    int position, float positionOffset, int positionOffsetPixels) {
-+                if (positionOffset != 0) {
-+                    for (int idx = 0; idx < mPageList.size(); idx++) {
-+                        mViewPagerImages[idx].setVisibility(View.VISIBLE);
-+                    }
-+                } else {
-+                    mViewPagerImages[position].setContentDescription(
-+                            getContext().getString(R.string.colors_viewpager_content_description));
-+                    updateIndicator(position);
-+                }
-+            }
-+
-+            @Override
-+            public void onPageSelected(int position) {}
-+
-+            @Override
-+            public void onPageScrollStateChanged(int state) {}
-+        };
-+    }
-+
-+    private void updateIndicator(int position) {
-+        for (int i = 0; i < mPageList.size(); i++) {
-+            if (position == i) {
-+                mDotIndicators[i].setBackgroundResource(
-+                        R.drawable.ic_color_page_indicator_focused);
-+
-+                mViewPagerImages[i].setVisibility(View.VISIBLE);
-+            } else {
-+                mDotIndicators[i].setBackgroundResource(
-+                        R.drawable.ic_color_page_indicator_unfocused);
-+
-+                mViewPagerImages[i].setVisibility(View.INVISIBLE);
-+            }
-+        }
-+
-+        if (position == 0) {
-+            mViewArrowPrevious.setVisibility(View.INVISIBLE);
-+            mViewArrowNext.setVisibility(View.VISIBLE);
-+        } else if (position == (mPageList.size() - 1)) {
-+            mViewArrowPrevious.setVisibility(View.VISIBLE);
-+            mViewArrowNext.setVisibility(View.INVISIBLE);
-+        } else {
-+            mViewArrowPrevious.setVisibility(View.VISIBLE);
-+            mViewArrowNext.setVisibility(View.VISIBLE);
-+        }
-+    }
-+
-+    static class ColorPagerAdapter extends PagerAdapter {
-+        private final ArrayList<View> mPageViewList;
-+
-+        ColorPagerAdapter(ArrayList<View> pageViewList) {
-+            mPageViewList = pageViewList;
-+        }
-+
-+        @Override
-+        public void destroyItem(ViewGroup container, int position, Object object) {
-+            if (mPageViewList.get(position) != null) {
-+                container.removeView(mPageViewList.get(position));
-+            }
-+        }
-+
-+        @Override
-+        public Object instantiateItem(ViewGroup container, int position) {
-+            container.addView(mPageViewList.get(position));
-+            return mPageViewList.get(position);
-+        }
-+
-+        @Override
-+        public int getCount() {
-+            return mPageViewList.size();
-+        }
-+
-+        @Override
-+        public boolean isViewFromObject(View view, Object object) {
-+            return object == view;
-+        }
-+    }
-+
-     private boolean updateDisplayModes() {
-         final DisplayMode[] modes = mHardware.getDisplayModes();
-         if (modes == null || modes.length == 0) {
+         <SwitchPreferenceCompat
+             android:key="trust_warning_keys"
++            android:icon="@drawable/ic_alert"
+             android:summary="@string/trust_warnings_keys"
+             android:defaultValue="true" />
+     </PreferenceCategory>
