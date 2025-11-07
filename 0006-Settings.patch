@@ -1,0 +1,2318 @@
+From d4b05ca9606786cd807a56dcbdc89072c41cff71 Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Thu, 4 Sep 2025 22:11:56 +0530
+Subject: [PATCH] Settings: Fixup compose preference layout
+
+* This fixes misaligned Developer Options, Data Usage, Roaming toggle, etc.
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ res/layout/preference_compose.xml | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/res/layout/preference_compose.xml b/res/layout/preference_compose.xml
+index 992b8261646..25b127ee4bb 100644
+--- a/res/layout/preference_compose.xml
++++ b/res/layout/preference_compose.xml
+@@ -23,7 +23,7 @@
+     android:minHeight="?android:attr/listPreferredItemHeightSmall"
+     android:gravity="center_vertical"
+     android:paddingStart="?android:attr/listPreferredItemPaddingStart"
+-    android:background="?android:attr/activatedBackgroundIndicator"
++    android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
+     android:clipToPadding="false">
+ 
+     <LinearLayout
+@@ -46,7 +46,6 @@
+ 
+     <androidx.compose.ui.platform.ComposeView
+         android:id="@+id/compose_view"
+-        android:paddingStart="-24dp"
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"/>
+ </LinearLayout>
+-- 
+
+From 7671dc85cf0bc09ef9417f2b6bd022795200c752 Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Mon, 1 Sep 2025 00:55:49 +0530
+Subject: [PATCH] Settings: Fix illegal state exception on
+ StorageSelectionPreferenceController
+
+Log:
+time: 1756667643368
+msg: java.lang.ClassCastException: android.widget.LinearLayout cannot be cast to android.widget.TextView
+stacktrace: java.lang.IllegalStateException: Default drop down view should be a TextView,
+	at com.android.settings.deviceinfo.storage.StorageSelectionPreferenceController$StorageAdapter.getDropDownView(StorageSelectionPreferenceController.java:150)
+	at android.widget.Spinner$DropDownAdapter.getDropDownView(Spinner.java:1032)
+	at android.widget.Spinner$DropDownAdapter.getView(Spinner.java:1028)
+	at android.widget.Spinner.measureContentWidth(Spinner.java:889)
+	at android.widget.Spinner$DropdownPopup.computeContentWidth(Spinner.java:1265)
+	at android.widget.Spinner$DropdownPopup.show(Spinner.java:1291)
+	at android.widget.Spinner.performClick(Spinner.java:797)
+	at android.view.View.performClickInternal(View.java:8060)
+	at android.view.View.-$$Nest$mperformClickInternal(Unknown Source:0)
+	at android.view.View$PerformClick.run(View.java:31554)
+	at android.os.Handler.handleCallback(Handler.java:995)
+	at android.os.Handler.dispatchMessage(Handler.java:103)
+	at android.os.Looper.loopOnce(Looper.java:248)
+	at android.os.Looper.loop(Looper.java:338)
+	at android.app.ActivityThread.main(ActivityThread.java:9068)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:596)
+	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:932)
+Caused by: java.lang.ClassCastException: android.widget.LinearLayout cannot be cast to android.widget.TextView
+	at com.android.settings.deviceinfo.storage.StorageSelectionPreferenceController$StorageAdapter.getDropDownView(StorageSelectionPreferenceController.java:148)
+	... 17 more
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../StorageSelectionPreferenceController.java | 54 +++++++++++++------
+ 1 file changed, 37 insertions(+), 17 deletions(-)
+
+diff --git a/src/com/android/settings/deviceinfo/storage/StorageSelectionPreferenceController.java b/src/com/android/settings/deviceinfo/storage/StorageSelectionPreferenceController.java
+index d972575983a..e30a8a2160c 100644
+--- a/src/com/android/settings/deviceinfo/storage/StorageSelectionPreferenceController.java
++++ b/src/com/android/settings/deviceinfo/storage/StorageSelectionPreferenceController.java
+@@ -70,7 +70,7 @@ public class StorageSelectionPreferenceController extends BasePreferenceControll
+         if (storageEntries == null || storageEntries.isEmpty()) {
+             return;
+         }
+-        Collections.sort(mStorageEntries);
++        Collections.sort(storageEntries);
+         mStorageEntries.addAll(storageEntries);
+         mStorageAdapter.addAll(storageEntries);
+ 
+@@ -126,15 +126,9 @@ public class StorageSelectionPreferenceController extends BasePreferenceControll
+             if (view == null) {
+                 view = getDefaultView(position, view, parent);
+             }
+-
+-            TextView textView = null;
+-            try {
+-                textView = (TextView) view;
+-            } catch (ClassCastException e) {
+-                throw new IllegalStateException("Default view should be a TextView, ", e);
+-            }
++            TextView textView = extractTextView(view);
+             textView.setText(getItem(position).getDescription());
+-            return textView;
++            return view;
+         }
+ 
+         @Override
+@@ -142,16 +136,42 @@ public class StorageSelectionPreferenceController extends BasePreferenceControll
+             if (view == null) {
+                 view = getDefaultDropDownView(position, view, parent);
+             }
++            TextView textView = extractTextView(view);
++            textView.setText(getItem(position).getDescription());
++            return view;
++        }
+ 
+-            TextView textView = null;
+-            try {
+-                textView = (TextView) view;
+-            } catch (ClassCastException e) {
+-                throw new IllegalStateException("Default drop down view should be a TextView, ", e);
++        private TextView extractTextView(View root) {
++            if (root instanceof TextView) {
++                return (TextView) root;
+             }
+-            textView.setText(getItem(position).getDescription());
+-            return textView;
++            // Try common ids first
++            int titleId = root.getResources().getIdentifier(
++                    "title", "id", "com.android.settingslib");
++            TextView tv = titleId != 0 ? root.findViewById(titleId) : null;
++            if (tv == null) {
++                tv = root.findViewById(android.R.id.text1);
++            }
++            if (tv == null) {
++                // Fallback: recursively find the first TextView
++                tv = findFirstTextView(root);
++            }
++            if (tv == null) {
++                throw new IllegalStateException("Spinner item view must contain a TextView");
++            }
++            return tv;
++        }
++
++        private TextView findFirstTextView(View v) {
++            if (v instanceof TextView) return (TextView) v;
++            if (v instanceof ViewGroup) {
++                ViewGroup vg = (ViewGroup) v;
++                for (int i = 0; i < vg.getChildCount(); i++) {
++                    TextView tv = findFirstTextView(vg.getChildAt(i));
++                    if (tv != null) return tv;
++                }
++            }
++            return null;
+         }
+     }
+ }
+-
+-- 
+
+From e194f22bf2bcfb69b2b086fa37661a7e05cb4b1a Mon Sep 17 00:00:00 2001
+From: ezio84 <brabus84@gmail.com>
+Date: Mon, 21 Oct 2019 00:05:35 +0200
+Subject: [PATCH] Enable FeatureFlags on "user" builds too
+
+Change-Id: I72c90ae2f66eb1d6a9c6a423f50ea9df626559d2
+Signed-off-by: Joey Huab <joey@evolution-x.org>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../featureflags/FeatureFlagsPreferenceController.java          | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/com/android/settings/development/featureflags/FeatureFlagsPreferenceController.java b/src/com/android/settings/development/featureflags/FeatureFlagsPreferenceController.java
+index f0b7961bb65..f5559c8365c 100644
+--- a/src/com/android/settings/development/featureflags/FeatureFlagsPreferenceController.java
++++ b/src/com/android/settings/development/featureflags/FeatureFlagsPreferenceController.java
+@@ -40,7 +40,7 @@ public class FeatureFlagsPreferenceController extends BasePreferenceController {
+ 
+     @Override
+     public int getAvailabilityStatus() {
+-        return Build.IS_DEBUGGABLE ? AVAILABLE : UNSUPPORTED_ON_DEVICE;
++        return AVAILABLE;
+     }
+ 
+     @Override
+-- 
+
+From 5f62cca71dcafe8c52e7fbcbc53a6f95a714e12b Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Tue, 10 Mar 2020 14:09:53 +0530
+Subject: [PATCH] Settings: Use List Preference for Dark mode
+
+* Rather ugly Drop Down
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+Signed-off-by: Joey Huab <joey@evolution-x.org>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ res/xml/dark_mode_settings.xml                              | 2 +-
+ .../darkmode/DarkModeScheduleSelectorController.java        | 6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/res/xml/dark_mode_settings.xml b/res/xml/dark_mode_settings.xml
+index 6a3f6c3492c..ebe99a18e09 100644
+--- a/res/xml/dark_mode_settings.xml
++++ b/res/xml/dark_mode_settings.xml
+@@ -45,7 +45,7 @@
+             android:title="@string/accessibility_force_invert_title"
+             settings:controller="com.android.settings.accessibility.ToggleForceInvertPreferenceController"/>
+ 
+-        <DropDownPreference
++        <ListPreference
+             android:key="dark_ui_auto_mode"
+             android:title="@string/dark_ui_auto_mode_title"
+             android:summary="%s"
+diff --git a/src/com/android/settings/display/darkmode/DarkModeScheduleSelectorController.java b/src/com/android/settings/display/darkmode/DarkModeScheduleSelectorController.java
+index faca631742a..87a978f9f31 100644
+--- a/src/com/android/settings/display/darkmode/DarkModeScheduleSelectorController.java
++++ b/src/com/android/settings/display/darkmode/DarkModeScheduleSelectorController.java
+@@ -20,7 +20,7 @@ import android.content.res.Configuration;
+ import android.location.LocationManager;
+ import android.os.PowerManager;
+ 
+-import androidx.preference.DropDownPreference;
++import androidx.preference.ListPreference;
+ import androidx.preference.Preference;
+ import androidx.preference.PreferenceScreen;
+ 
+@@ -29,7 +29,7 @@ import com.android.settings.core.BasePreferenceController;
+ import com.android.settings.display.TwilightLocationDialog;
+ 
+ /**
+- * Controller for the dark ui option dropdown
++ * Controller for the dark ui option list
+  */
+ public class DarkModeScheduleSelectorController extends BasePreferenceController
+         implements Preference.OnPreferenceChangeListener {
+@@ -40,7 +40,7 @@ public class DarkModeScheduleSelectorController extends BasePreferenceController
+     private final LocationManager mLocationManager;
+     private final BedtimeSettings mBedtimeSettings;
+ 
+-    private DropDownPreference mPreference;
++    private ListPreference mPreference;
+     private int mCurrentMode;
+ 
+     public DarkModeScheduleSelectorController(Context context, String key) {
+-- 
+
+From 4d243081f4e4d0ae3040a0dc665ed13cbef577d4 Mon Sep 17 00:00:00 2001
+From: IacobIonut01 <paulionut2003@gmail.com>
+Date: Sun, 23 Oct 2022 11:26:49 +0200
+Subject: [PATCH] Settings: Use ListPreference instead of DropDownPreference
+
+Change-Id: I34c21377840ec8a298f3c49e03445151eecc3ec4
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../automatic_storage_management_settings.xml |  2 +-
+ res/xml/zen_mode_event_rule_settings.xml      |  4 ++--
+ .../AutomaticStorageManagerSettings.java      |  6 ++---
+ .../zen/ZenModeEventRuleSettings.java         | 10 ++++-----
+ ...arkModeScheduleSelectorControllerTest.java |  6 ++---
+ .../WifiMeteredPreferenceController2Test.java | 22 +++++++++----------
+ 6 files changed, 25 insertions(+), 25 deletions(-)
+
+diff --git a/res/xml/automatic_storage_management_settings.xml b/res/xml/automatic_storage_management_settings.xml
+index 0c9e9b5956f..dbae54a9ab0 100644
+--- a/res/xml/automatic_storage_management_settings.xml
++++ b/res/xml/automatic_storage_management_settings.xml
+@@ -18,7 +18,7 @@
+         xmlns:settings="http://schemas.android.com/apk/res-auto"
+         android:title="@string/automatic_storage_manager_settings" >
+ 
+-        <DropDownPreference
++        <ListPreference
+             android:key="days"
+             android:summary="%s"
+             android:title="@string/automatic_storage_manager_days_title"
+diff --git a/res/xml/zen_mode_event_rule_settings.xml b/res/xml/zen_mode_event_rule_settings.xml
+index d6a0e684f14..be86f4a9950 100644
+--- a/res/xml/zen_mode_event_rule_settings.xml
++++ b/res/xml/zen_mode_event_rule_settings.xml
+@@ -34,13 +34,13 @@
+         android:key="zen_action_buttons" />
+ 
+     <!-- During events for -->
+-    <DropDownPreference
++    <ListPreference
+         android:key="calendar"
+         android:title="@string/zen_mode_event_rule_calendar"
+         android:summary="%s" />
+ 
+     <!-- Where reply is -->
+-    <DropDownPreference
++    <ListPreference
+         android:key="reply"
+         android:title="@string/zen_mode_event_rule_reply"
+         android:summary="%s" />
+diff --git a/src/com/android/settings/deletionhelper/AutomaticStorageManagerSettings.java b/src/com/android/settings/deletionhelper/AutomaticStorageManagerSettings.java
+index a36d9edca55..133b291ea31 100644
+--- a/src/com/android/settings/deletionhelper/AutomaticStorageManagerSettings.java
++++ b/src/com/android/settings/deletionhelper/AutomaticStorageManagerSettings.java
+@@ -25,7 +25,7 @@ import android.view.LayoutInflater;
+ import android.view.View;
+ import android.view.ViewGroup;
+ 
+-import androidx.preference.DropDownPreference;
++import androidx.preference.ListPreference;
+ import androidx.preference.Preference;
+ import androidx.preference.Preference.OnPreferenceChangeListener;
+ 
+@@ -51,7 +51,7 @@ public class AutomaticStorageManagerSettings extends DashboardFragment
+     private static final String KEY_DAYS = "days";
+ 
+     private AutomaticStorageManagerSwitchBarController mSwitchController;
+-    private DropDownPreference mDaysToRetain;
++    private ListPreference mDaysToRetain;
+     private SettingsMainSwitchBar mSwitchBar;
+ 
+     @Override
+@@ -66,7 +66,7 @@ public class AutomaticStorageManagerSettings extends DashboardFragment
+     }
+ 
+     private void initializeDaysToRetainPreference() {
+-        mDaysToRetain = (DropDownPreference) findPreference(KEY_DAYS);
++        mDaysToRetain = (ListPreference) findPreference(KEY_DAYS);
+         mDaysToRetain.setOnPreferenceChangeListener(this);
+ 
+         ContentResolver cr = getContentResolver();
+diff --git a/src/com/android/settings/notification/zen/ZenModeEventRuleSettings.java b/src/com/android/settings/notification/zen/ZenModeEventRuleSettings.java
+index 9b0f3fc88a6..fa243e8cf7f 100644
+--- a/src/com/android/settings/notification/zen/ZenModeEventRuleSettings.java
++++ b/src/com/android/settings/notification/zen/ZenModeEventRuleSettings.java
+@@ -28,7 +28,7 @@ import android.provider.Settings;
+ import android.service.notification.ZenModeConfig;
+ import android.service.notification.ZenModeConfig.EventInfo;
+ 
+-import androidx.preference.DropDownPreference;
++import androidx.preference.ListPreference;
+ import androidx.preference.Preference;
+ import androidx.preference.Preference.OnPreferenceChangeListener;
+ import androidx.preference.PreferenceScreen;
+@@ -50,8 +50,8 @@ public class ZenModeEventRuleSettings extends ZenModeRuleSettingsBase {
+ 
+     public static final String ACTION = Settings.ACTION_ZEN_MODE_EVENT_RULE_SETTINGS;
+ 
+-    private DropDownPreference mCalendar;
+-    private DropDownPreference mReply;
++    private ListPreference mCalendar;
++    private ListPreference mReply;
+ 
+     private EventInfo mEvent;
+ 
+@@ -128,7 +128,7 @@ public class ZenModeEventRuleSettings extends ZenModeRuleSettingsBase {
+         mCreate = true;
+         final PreferenceScreen root = getPreferenceScreen();
+ 
+-        mCalendar = (DropDownPreference) root.findPreference(KEY_CALENDAR);
++        mCalendar = (ListPreference) root.findPreference(KEY_CALENDAR);
+         mCalendar.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+             @Override
+             public boolean onPreferenceChange(Preference preference, Object newValue) {
+@@ -143,7 +143,7 @@ public class ZenModeEventRuleSettings extends ZenModeRuleSettingsBase {
+             }
+         });
+ 
+-        mReply = (DropDownPreference) root.findPreference(KEY_REPLY);
++        mReply = (ListPreference) root.findPreference(KEY_REPLY);
+         mReply.setEntries(new CharSequence[] {
+                 getString(R.string.zen_mode_event_rule_reply_any_except_no),
+                 getString(R.string.zen_mode_event_rule_reply_yes_or_maybe),
+diff --git a/tests/robotests/src/com/android/settings/display/darkmode/DarkModeScheduleSelectorControllerTest.java b/tests/robotests/src/com/android/settings/display/darkmode/DarkModeScheduleSelectorControllerTest.java
+index 1003d9d2ad7..44b954470d2 100644
+--- a/tests/robotests/src/com/android/settings/display/darkmode/DarkModeScheduleSelectorControllerTest.java
++++ b/tests/robotests/src/com/android/settings/display/darkmode/DarkModeScheduleSelectorControllerTest.java
+@@ -35,7 +35,7 @@ import android.location.Location;
+ import android.location.LocationManager;
+ import android.os.PowerManager;
+ 
+-import androidx.preference.DropDownPreference;
++import androidx.preference.ListPreference;
+ import androidx.preference.PreferenceScreen;
+ import androidx.test.core.app.ApplicationProvider;
+ 
+@@ -54,7 +54,7 @@ public class DarkModeScheduleSelectorControllerTest {
+     private DarkModeScheduleSelectorController mController;
+     private String mPreferenceKey = "key";
+     @Mock
+-    private DropDownPreference mPreference;
++    private ListPreference mPreference;
+     @Mock
+     private PreferenceScreen mScreen;
+     private Context mContext;
+@@ -95,7 +95,7 @@ public class DarkModeScheduleSelectorControllerTest {
+                 .thenReturn("custom_bedtime");
+         when(mResources.getStringArray(R.array.dark_ui_scheduler_with_bedtime_preference_titles))
+                 .thenReturn(new String[]{"never", "auto", "custom", "custom_bedtime"});
+-        mPreference = spy(new DropDownPreference(mContext));
++        mPreference = spy(new ListPreference(mContext));
+         mPreference.setEntryValues(new CharSequence[]{"never", "auto", "custom"});
+         doNothing().when(mPreference).setValueIndex(anyInt());
+         when(mLocationManager.isLocationEnabled()).thenReturn(true);
+diff --git a/tests/robotests/src/com/android/settings/wifi/details2/WifiMeteredPreferenceController2Test.java b/tests/robotests/src/com/android/settings/wifi/details2/WifiMeteredPreferenceController2Test.java
+index c63fa60437b..58b3ea918bb 100644
+--- a/tests/robotests/src/com/android/settings/wifi/details2/WifiMeteredPreferenceController2Test.java
++++ b/tests/robotests/src/com/android/settings/wifi/details2/WifiMeteredPreferenceController2Test.java
+@@ -22,7 +22,7 @@ import static org.mockito.Mockito.spy;
+ 
+ import android.content.Context;
+ 
+-import androidx.preference.DropDownPreference;
++import androidx.preference.ListPreference;
+ 
+ import com.android.settings.R;
+ import com.android.wifitrackerlib.WifiEntry;
+@@ -47,7 +47,7 @@ public class WifiMeteredPreferenceController2Test {
+ 
+     private WifiMeteredPreferenceController2 mPreferenceController;
+     private Context mContext;
+-    private DropDownPreference mDropDownPreference;
++    private ListPreference mListPreference;
+ 
+     @Before
+     public void setUp() {
+@@ -56,35 +56,35 @@ public class WifiMeteredPreferenceController2Test {
+ 
+         mPreferenceController = spy(
+                 new WifiMeteredPreferenceController2(mContext, mWifiEntry));
+-        mDropDownPreference = new DropDownPreference(mContext);
+-        mDropDownPreference.setEntries(R.array.wifi_metered_entries);
+-        mDropDownPreference.setEntryValues(R.array.wifi_metered_values);
++        mListPreference = new ListPreference(mContext);
++        mListPreference.setEntries(R.array.wifi_metered_entries);
++        mListPreference.setEntryValues(R.array.wifi_metered_values);
+     }
+ 
+     @Test
+     public void testUpdateState_wifiMetered_setCorrectValue() {
+         doReturn(METERED_OVERRIDE_METERED).when(mPreferenceController).getMeteredOverride();
+ 
+-        mPreferenceController.updateState(mDropDownPreference);
++        mPreferenceController.updateState(mListPreference);
+ 
+-        assertThat(mDropDownPreference.getEntry()).isEqualTo("Treat as metered");
++        assertThat(mListPreference.getEntry()).isEqualTo("Treat as metered");
+     }
+ 
+     @Test
+     public void testUpdateState_wifiNotMetered_setCorrectValue() {
+         doReturn(METERED_OVERRIDE_NOT_METERED).when(mPreferenceController).getMeteredOverride();
+ 
+-        mPreferenceController.updateState(mDropDownPreference);
++        mPreferenceController.updateState(mListPreference);
+ 
+-        assertThat(mDropDownPreference.getEntry()).isEqualTo("Treat as unmetered");
++        assertThat(mListPreference.getEntry()).isEqualTo("Treat as unmetered");
+     }
+ 
+     @Test
+     public void testUpdateState_wifiAuto_setCorrectValue() {
+         doReturn(METERED_OVERRIDE_NONE).when(mPreferenceController).getMeteredOverride();
+ 
+-        mPreferenceController.updateState(mDropDownPreference);
++        mPreferenceController.updateState(mListPreference);
+ 
+-        assertThat(mDropDownPreference.getEntry()).isEqualTo("Detect automatically");
++        assertThat(mListPreference.getEntry()).isEqualTo("Detect automatically");
+     }
+ }
+-- 
+
+From 9c343f6882c07d9932a7355d4a909603ce1a3139 Mon Sep 17 00:00:00 2001
+From: Akash <akashniki@gmail.com>
+Date: Mon, 1 Jun 2020 10:47:31 +0200
+Subject: [PATCH] NightDisplay Settings: Use List Preference for NightLight
+ settings
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ res/xml/night_display_settings.xml                            | 2 +-
+ .../display/NightDisplayAutoModePreferenceController.java     | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/res/xml/night_display_settings.xml b/res/xml/night_display_settings.xml
+index d75619d39e1..e3068a7ba54 100644
+--- a/res/xml/night_display_settings.xml
++++ b/res/xml/night_display_settings.xml
+@@ -35,7 +35,7 @@
+         android:title="@string/twilight_mode_location_off_dialog_message"
+         settings:controller="com.android.settings.display.TwilightLocationPreferenceController"/>
+ 
+-    <DropDownPreference
++    <ListPreference
+         android:key="night_display_auto_mode"
+         android:title="@string/night_display_auto_mode_title"
+         android:summary="%s"
+diff --git a/src/com/android/settings/display/NightDisplayAutoModePreferenceController.java b/src/com/android/settings/display/NightDisplayAutoModePreferenceController.java
+index eab65cce794..de071a920fa 100644
+--- a/src/com/android/settings/display/NightDisplayAutoModePreferenceController.java
++++ b/src/com/android/settings/display/NightDisplayAutoModePreferenceController.java
+@@ -20,7 +20,7 @@ import android.content.Context;
+ import android.hardware.display.ColorDisplayManager;
+ import android.location.LocationManager;
+ 
+-import androidx.preference.DropDownPreference;
++import androidx.preference.ListPreference;
+ import androidx.preference.Preference;
+ import androidx.preference.PreferenceScreen;
+ 
+@@ -31,7 +31,7 @@ public class NightDisplayAutoModePreferenceController extends BasePreferenceCont
+         implements Preference.OnPreferenceChangeListener {
+ 
+     private final LocationManager mLocationManager;
+-    private DropDownPreference mPreference;
++    private ListPreference mPreference;
+     private ColorDisplayManager mColorDisplayManager;
+ 
+     public NightDisplayAutoModePreferenceController(Context context, String key) {
+-- 
+
+From 118be08b04ab87f3321e28a298e06e130aff0186 Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Mon, 6 Dec 2021 00:54:11 +0530
+Subject: [PATCH] Settings: Use font configs instead fonts directly
+
+Change-Id: I2c93301a7a9aa640278c62912ee6a54dbe29589c
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ res/layout/conversation_message_icon.xml                  | 2 +-
+ res/layout/sliding_tab_title_view.xml                     | 2 +-
+ res/values/styles.xml                                     | 8 ++++----
+ .../settings/datausage/DataUsageSummaryPreference.java    | 4 ++--
+ .../android/settings/deviceinfo/StorageWizardInit.java    | 2 +-
+ 5 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/res/layout/conversation_message_icon.xml b/res/layout/conversation_message_icon.xml
+index 9f9f0ac76e8..eefee8ae7f5 100644
+--- a/res/layout/conversation_message_icon.xml
++++ b/res/layout/conversation_message_icon.xml
+@@ -18,7 +18,7 @@
+     android:id="@+id/conversation_icon"
+     android:layout_width="wrap_content"
+     android:layout_height="wrap_content"
+-    android:fontFamily="sans-serif"
++    android:fontFamily="@*android:string/config_bodyFontFamilyMedium"
+     android:textStyle="bold"
+     android:textSize="@dimen/conversation_message_contact_icon_text_size"
+     android:gravity="center" />
+diff --git a/res/layout/sliding_tab_title_view.xml b/res/layout/sliding_tab_title_view.xml
+index 5dead026365..35737e5af50 100644
+--- a/res/layout/sliding_tab_title_view.xml
++++ b/res/layout/sliding_tab_title_view.xml
+@@ -22,7 +22,7 @@
+     android:layout_height="wrap_content"
+     android:background="?android:attr/selectableItemBackground"
+     android:ellipsize="end"
+-    android:fontFamily="sans-serif-medium"
++    android:fontFamily="@*android:string/config_headlineFontFamily"
+     android:gravity="center"
+     android:maxLines="1"
+     android:padding="@dimen/pager_tabs_title_padding"
+diff --git a/res/values/styles.xml b/res/values/styles.xml
+index 9f1df7d9095..a60694c9cba 100644
+--- a/res/values/styles.xml
++++ b/res/values/styles.xml
+@@ -288,7 +288,7 @@
+     </style>
+ 
+     <style name="TextAppearance.ZenOnboardingButton">
+-        <item name="android:fontFamily">sans-serif-medium</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+         <item name="android:textSize">14sp</item>
+         <item name="android:textColor">?android:attr/colorAccent</item>
+         <item name="android:background">@*android:drawable/btn_borderless_rect</item>
+@@ -769,7 +769,7 @@
+         <item name="android:layout_marginBottom">36dp</item>
+         <item name="android:textSize">16sp</item>
+         <item name="android:textColor">?android:attr/textColorPrimary</item>
+-        <item name="android:fontFamily">sans-serif</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+         <item name="android:gravity">start</item>
+     </style>
+ 
+@@ -785,7 +785,7 @@
+         <item name="android:layout_height">wrap_content</item>
+         <item name="android:textSize">16sp</item>
+         <item name="android:textColor">?android:attr/textColorPrimary</item>
+-        <item name="android:fontFamily">sans-serif</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+         <item name="android:gravity">start</item>
+     </style>
+ 
+@@ -794,7 +794,7 @@
+         <item name="android:layout_height">wrap_content</item>
+         <item name="android:textSize">14sp</item>
+         <item name="android:textColor">?android:attr/textColorSecondary</item>
+-        <item name="android:fontFamily">sans-serif</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+         <item name="android:gravity">start</item>
+     </style>
+ 
+diff --git a/src/com/android/settings/datausage/DataUsageSummaryPreference.java b/src/com/android/settings/datausage/DataUsageSummaryPreference.java
+index 92c9163ddc0..ff7eb66a1c4 100644
+--- a/src/com/android/settings/datausage/DataUsageSummaryPreference.java
++++ b/src/com/android/settings/datausage/DataUsageSummaryPreference.java
+@@ -57,7 +57,7 @@ public class DataUsageSummaryPreference extends Preference {
+     private static final long WARNING_AGE = TimeUnit.HOURS.toMillis(6L);
+     @VisibleForTesting
+     static final Typeface SANS_SERIF_MEDIUM =
+-            Typeface.create("sans-serif-medium", Typeface.NORMAL);
++            Typeface.create("@*android:string/config_bodyFontFamilyMedium", Typeface.NORMAL);
+ 
+     private boolean mChartEnabled = true;
+     private CharSequence mStartLabel;
+@@ -265,7 +265,7 @@ public class DataUsageSummaryPreference extends Preference {
+ 
+             if (updateAgeMillis <= WARNING_AGE) {
+                 setCarrierInfoTextStyle(
+-                        carrierInfo, android.R.attr.textColorSecondary, Typeface.SANS_SERIF);
++                        carrierInfo, android.R.attr.textColorSecondary, Typeface.DEFAULT);
+             } else {
+                 setCarrierInfoTextStyle(carrierInfo, android.R.attr.colorError, SANS_SERIF_MEDIUM);
+             }
+diff --git a/src/com/android/settings/deviceinfo/StorageWizardInit.java b/src/com/android/settings/deviceinfo/StorageWizardInit.java
+index 17ab4e73d4f..5e4da056cc5 100644
+--- a/src/com/android/settings/deviceinfo/StorageWizardInit.java
++++ b/src/com/android/settings/deviceinfo/StorageWizardInit.java
+@@ -178,7 +178,7 @@ public class StorageWizardInit extends StorageWizardBase {
+     private Spannable styleFont(String text) {
+         Spannable s = (Spannable) Html.fromHtml(text);
+         for (URLSpan span : s.getSpans(0, s.length(), URLSpan.class)) {
+-            TypefaceSpan typefaceSpan = new TypefaceSpan("sans-serif-medium");
++            TypefaceSpan typefaceSpan = new TypefaceSpan("@*android:string/config_bodyFontFamilyMedium");
+             s.setSpan(typefaceSpan, s.getSpanStart(span), s.getSpanEnd(span), 0);
+         }
+         return s;
+-- 
+
+From c9a70e274528218fddc4575faea010f13a4bd6e1 Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Sun, 22 Sep 2024 18:16:00 +0530
+Subject: [PATCH] Settings: Remove remaining hardcoded fonts
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ res/values/styles.xml | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/res/values/styles.xml b/res/values/styles.xml
+index a60694c9cba..89fe04f5388 100644
+--- a/res/values/styles.xml
++++ b/res/values/styles.xml
+@@ -758,7 +758,7 @@
+         <item name="android:gravity">center</item>
+         <item name="android:textSize">20sp</item>
+         <item name="android:textColor">?android:attr/textColorPrimary</item>
+-        <item name="android:fontFamily">google-sans-medium</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+         <item name="android:paddingTop">36dp</item>
+         <item name="android:paddingBottom">16dp</item>
+     </style>
+@@ -824,14 +824,14 @@
+     </style>
+ 
+     <style name="RequestManageCredentialsAllowButton" parent="@style/ActionPrimaryButton">
+-        <item name="android:fontFamily">google-sans-medium</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+         <item name="android:textSize">14sp</item>
+         <item name="android:textAllCaps">false</item>
+     </style>
+ 
+     <style name="RequestManageCredentialsDontAllowButton"
+            parent="@style/Widget.AppCompat.Button.Borderless.Colored">
+-        <item name="android:fontFamily">google-sans-medium</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+         <item name="android:textSize">14sp</item>
+         <item name="android:textAllCaps">false</item>
+     </style>
+@@ -964,7 +964,7 @@
+     </style>
+ 
+     <style name="CardPreferencePrimaryButton" parent="@style/ActionPrimaryButton">
+-        <item name="android:fontFamily">google-sans-medium</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+         <item name="android:textSize">14sp</item>
+         <item name="android:textAllCaps">false</item>
+         <item name="android:singleLine">true</item>
+@@ -973,7 +973,7 @@
+ 
+     <style name="CardPreferenceBorderlessButton"
+         parent="@style/Widget.AppCompat.Button.Borderless.Colored">
+-        <item name="android:fontFamily">google-sans-medium</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+         <item name="android:textSize">14sp</item>
+         <item name="android:textAllCaps">false</item>
+         <item name="android:singleLine">true</item>
+@@ -990,17 +990,17 @@
+ 
+     <style name="ScreenLockPasswordHintTextFontStyleError">
+         <item name="android:textColor">?android:attr/colorError</item>
+-        <item name="android:fontFamily">google-sans-text</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
+     </style>
+ 
+     <style name="ScreenLockPasswordHintTextFontStyle">
+         <item name="android:textColor">?android:attr/textColorPrimary</item>
+-        <item name="android:fontFamily">google-sans-text</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
+     </style>
+ 
+     <style name="PrivateSpaceSetupTextFontStyle" parent="@android:style/TextAppearance.DeviceDefault">
+         <item name="android:textColor">?android:attr/textColorPrimary</item>
+-        <item name="android:fontFamily">google-sans-text</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
+         <item name="android:layout_width">wrap_content</item>
+         <item name="android:layout_height">wrap_content</item>
+     </style>
+@@ -1009,7 +1009,7 @@
+         <item name="android:paddingTop">20dp</item>
+         <item name="android:paddingBottom">8dp</item>
+         <item name="android:textSize">14sp</item>
+-        <item name="android:fontFamily">google-sans-medium</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+     </style>
+ 
+     <style name="PrivateSpaceSetupBulletPointLayoutStyle">
+@@ -1033,7 +1033,7 @@
+     </style>
+ 
+     <style name="CredentialManagerChangeButton" parent="@style/ActionPrimaryButton">
+-        <item name="android:fontFamily">google-sans-medium</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+         <item name="android:textSize">14sp</item>
+         <item name="android:textAllCaps">false</item>
+         <item name="android:singleLine">true</item>
+@@ -1043,7 +1043,7 @@
+     <style name="CredentialManagerOpenButton"
+         parent="@style/Widget.AppCompat.Button">
+         <item name="android:theme">@style/RoundedCornerThemeOverlay</item>
+-        <item name="android:fontFamily">google-sans-medium</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+         <item name="android:textSize">14sp</item>
+         <item name="android:textAllCaps">false</item>
+         <item name="android:singleLine">true</item>
+-- 
+
+From ac78a698173c1a99910a981c5aec4de5f6661ebb Mon Sep 17 00:00:00 2001
+From: jhonboy121 <alfredmathew05@gmail.com>
+Date: Sat, 8 Jan 2022 15:52:47 +0530
+Subject: [PATCH] Settings: Fix rest of the edit menu icon tint
+
+Signed-off-by: jhonboy121 <alfredmathew05@gmail.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../settings/network/telephony/MobileNetworkSettings.java     | 4 ++++
+ .../settings/wifi/details/WifiNetworkDetailsFragment.java     | 4 ++++
+ 2 files changed, 8 insertions(+)
+
+diff --git a/src/com/android/settings/network/telephony/MobileNetworkSettings.java b/src/com/android/settings/network/telephony/MobileNetworkSettings.java
+index 156a1c8838a..4ecf5f5e8c2 100644
+--- a/src/com/android/settings/network/telephony/MobileNetworkSettings.java
++++ b/src/com/android/settings/network/telephony/MobileNetworkSettings.java
+@@ -24,6 +24,7 @@ import android.content.BroadcastReceiver;
+ import android.content.Context;
+ import android.content.Intent;
+ import android.content.IntentFilter;
++import android.content.res.ColorStateList;
+ import android.os.Bundle;
+ import android.os.UserManager;
+ import android.provider.Settings;
+@@ -472,6 +473,9 @@ public class MobileNetworkSettings extends AbstractMobileNetworkSettings impleme
+             final MenuItem item = menu.add(Menu.NONE, R.id.edit_sim_name, Menu.NONE,
+                     R.string.mobile_network_sim_label_color_title);
+             item.setIcon(com.android.internal.R.drawable.ic_mode_edit);
++            item.setIconTintList(ColorStateList.valueOf(
++                com.android.settingslib.Utils.getColorAttrDefaultColor(getContext(),
++                    android.R.attr.colorControlNormal)));
+             item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+         }
+         super.onCreateOptionsMenu(menu, inflater);
+diff --git a/src/com/android/settings/wifi/details/WifiNetworkDetailsFragment.java b/src/com/android/settings/wifi/details/WifiNetworkDetailsFragment.java
+index 8aab0e1fb6c..63c3f3aa7a8 100644
+--- a/src/com/android/settings/wifi/details/WifiNetworkDetailsFragment.java
++++ b/src/com/android/settings/wifi/details/WifiNetworkDetailsFragment.java
+@@ -23,6 +23,7 @@ import android.app.Dialog;
+ import android.app.admin.DevicePolicyManager;
+ import android.app.settings.SettingsEnums;
+ import android.content.Context;
++import android.content.res.ColorStateList;
+ import android.graphics.drawable.Drawable;
+ import android.net.ConnectivityManager;
+ import android.net.wifi.WifiManager;
+@@ -213,6 +214,9 @@ public class WifiNetworkDetailsFragment extends RestrictedDashboardFragment impl
+         if (!mIsUiRestricted && isEditable()) {
+             MenuItem item = menu.add(0, Menu.FIRST, 0, R.string.wifi_modify);
+             item.setIcon(com.android.internal.R.drawable.ic_mode_edit);
++            item.setIconTintList(ColorStateList.valueOf(
++                com.android.settingslib.Utils.getColorAttrDefaultColor(getContext(),
++                    android.R.attr.colorControlNormal)));
+             item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+         }
+         super.onCreateOptionsMenu(menu, inflater);
+-- 
+
+From b39699c5f455d1007fe21bda4d08c275ec460389 Mon Sep 17 00:00:00 2001
+From: ReallySnow <reallysnow233@gmail.com>
+Date: Thu, 19 Jan 2023 09:01:45 +0800
+Subject: [PATCH] Settings: Add missing icon for media output
+
+Change-Id: Id4ac89dba079ab46dcb7d97cca7b2c4c8f9fb612
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ res/drawable/ic_media_output.xml | 32 ++++++++++++++++++++++++++++++++
+ res/xml/sound_settings.xml       |  1 +
+ 2 files changed, 33 insertions(+)
+ create mode 100644 res/drawable/ic_media_output.xml
+
+diff --git a/res/drawable/ic_media_output.xml b/res/drawable/ic_media_output.xml
+new file mode 100644
+index 00000000000..8f1351f8517
+--- /dev/null
++++ b/res/drawable/ic_media_output.xml
+@@ -0,0 +1,32 @@
++<!--
++  Copyright (C) 2020 The Android Open Source Project
++
++  Licensed under the Apache License, Version 2.0 (the "License");
++  you may not use this file except in compliance with the License.
++  You may obtain a copy of the License at
++
++       http://www.apache.org/licenses/LICENSE-2.0
++
++  Unless required by applicable law or agreed to in writing, software
++  distributed under the License is distributed on an "AS IS" BASIS,
++  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++  See the License for the specific language governing permissions and
++  limitations under the License
++  -->
++
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++        android:width="24dp"
++        android:height="24dp"
++        android:viewportWidth="24"
++        android:viewportHeight="24"
++        android:tint="?android:attr/colorControlNormal">
++    <path
++        android:pathData="M18.2,1L9.8,1C8.81,1 8,1.81 8,2.8v14.4c0,0.99 0.81,1.79 1.8,1.79l8.4,0.01c0.99,0 1.8,-0.81 1.8,-1.8L20,2.8c0,-0.99 -0.81,-1.8 -1.8,-1.8zM14,3c1.1,0 2,0.89 2,2s-0.9,2 -2,2 -2,-0.89 -2,-2 0.9,-2 2,-2zM14,16.5c-2.21,0 -4,-1.79 -4,-4s1.79,-4 4,-4 4,1.79 4,4 -1.79,4 -4,4z"
++        android:fillColor="#000000"/>
++    <path
++        android:pathData="M14,12.5m-2.5,0a2.5,2.5 0,1 1,5 0a2.5,2.5 0,1 1,-5 0"
++        android:fillColor="#000000"/>
++    <path
++        android:pathData="M6,5H4v16c0,1.1 0.89,2 2,2h10v-2H6V5z"
++        android:fillColor="#000000"/>
++</vector>
+diff --git a/res/xml/sound_settings.xml b/res/xml/sound_settings.xml
+index 28e281498a4..7b3deccef3d 100644
+--- a/res/xml/sound_settings.xml
++++ b/res/xml/sound_settings.xml
+@@ -42,6 +42,7 @@
+     <!-- Media output switcher -->
+     <Preference
+         android:key="media_output"
++        android:icon="@drawable/ic_media_output"
+         android:title="@string/media_output_title"
+         android:dialogTitle="@string/media_output_title"
+         android:order="-175"
+-- 
+
+From a4839276de20b1b5b05bc190f7082fbbd0efbe26 Mon Sep 17 00:00:00 2001
+From: Michael W <baddaemon87@gmail.com>
+Date: Mon, 5 Sep 2022 14:09:11 +0200
+Subject: [PATCH] Settings: Follow system theme for SD card activities
+
+* Setting up a new SD card is currently using light theme, no matter
+  the system setting
+* Convert to DayNight to have it follow system theme
+
+Change-Id: Iaf41c95a03859f40f9895b713c26ee76ff01fed6
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ AndroidManifest.xml | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index b986d4a7cb0..34d54194e4d 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -3215,24 +3215,24 @@
+ 
+         <!-- Exported for SystemUI to launch into -->
+         <activity android:name=".deviceinfo.StorageWizardInit"
+-                android:theme="@style/GlifTheme.Light"
++                android:theme="@style/GlifTheme.DayNight"
+                 android:exported="true"
+                 android:permission="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+         <activity android:name=".deviceinfo.StorageWizardFormatProgress"
+-                android:theme="@style/GlifTheme.Light"
++                android:theme="@style/GlifTheme.DayNight"
+                 android:exported="false"/>
+         <activity android:name=".deviceinfo.StorageWizardFormatSlow"
+-                android:theme="@style/GlifTheme.Light"
++                android:theme="@style/GlifTheme.DayNight"
+                 android:exported="false"/>
+         <activity android:name=".deviceinfo.StorageWizardMigrateConfirm"
+-                android:theme="@style/GlifTheme.Light"
++                android:theme="@style/GlifTheme.DayNight"
+                 android:exported="false"/>
+         <activity android:name=".deviceinfo.StorageWizardMigrateProgress"
+-                android:theme="@style/GlifTheme.Light"
++                android:theme="@style/GlifTheme.DayNight"
+                 android:exported="true"
+                 android:permission="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+         <activity android:name=".deviceinfo.StorageWizardReady"
+-                android:theme="@style/GlifTheme.Light"
++                android:theme="@style/GlifTheme.DayNight"
+                 android:exported="true"
+                 android:permission="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+ 
+-- 
+
+From 61704f853f2848bd6573b13da552937ffa49099f Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Mon, 6 Jan 2025 06:50:34 +0800
+Subject: [PATCH] Disable SettingsDumpService
+
+* this consumes a lot of resources for some reason
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ AndroidManifest.xml | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index 34d54194e4d..3b810fc6a6f 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -4838,7 +4838,8 @@
+ 
+         <service
+             android:name=".SettingsDumpService"
+-            android:exported="true"
++            android:enabled="false"
++            android:exported="false"
+             android:permission="android.permission.DUMP" />
+ 
+         <!-- Quick Settings tiles for Developer Options -->
+-- 
+
+From a050f05c0c7c3d7239e0d3e37b16f4e3ddfb9a68 Mon Sep 17 00:00:00 2001
+From: jhenrique09 <jhenrique09.mcz@hotmail.com>
+Date: Thu, 19 Nov 2020 17:35:13 -0300
+Subject: [PATCH] Settings: Don't show module version if isn't a date
+
+What's the sense on showing Android version instead of date?
+
+Change-Id: I4cd2ae780c19182db2f66811be63dff131d26d6b
+Signed-off-by: Joey Huab <joey@evolution-x.org>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../MainlineModuleVersionPreferenceController.java             | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/com/android/settings/deviceinfo/firmwareversion/MainlineModuleVersionPreferenceController.java b/src/com/android/settings/deviceinfo/firmwareversion/MainlineModuleVersionPreferenceController.java
+index b65497f6808..b96733f0ec2 100644
+--- a/src/com/android/settings/deviceinfo/firmwareversion/MainlineModuleVersionPreferenceController.java
++++ b/src/com/android/settings/deviceinfo/firmwareversion/MainlineModuleVersionPreferenceController.java
+@@ -71,7 +71,8 @@ public class MainlineModuleVersionPreferenceController extends BasePreferenceCon
+ 
+     @Override
+     public int getAvailabilityStatus() {
+-        return !TextUtils.isEmpty(mModuleVersion) ? AVAILABLE : UNSUPPORTED_ON_DEVICE;
++        return !TextUtils.isEmpty(mModuleVersion) &&
++            parseDateFromVersionName(mModuleVersion).isPresent() ? AVAILABLE : UNSUPPORTED_ON_DEVICE;
+     }
+ 
+     private void initModules() {
+-- 
+
+From 2cea9204aaa5a14d4df7dd3135f1b7f4e72bc9ac Mon Sep 17 00:00:00 2001
+From: Altaf-Mahdi <altaf.mahdi@gmail.com>
+Date: Thu, 7 Jul 2016 09:57:32 +0100
+Subject: [PATCH] InstalledAppDetails: fix refreshing storage summary after
+ force stop
+
+* if app is force stopped, current implementation causes a nasty loop which in turn causes
+  very high cpu usage: refreshUi() > checkForceStop() > mCheckKillProcessesReceiver > refreshUi()
+
+* fix storage not being updated by running refreshUi() in onRunningStateChanged from AppInfoBase
+
+Change-Id: Iec24bb620d1a6287d7ccf583db978ef338ef762e
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ src/com/android/settings/applications/AppInfoBase.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/com/android/settings/applications/AppInfoBase.java b/src/com/android/settings/applications/AppInfoBase.java
+index 02237b886d9..2a573e75245 100644
+--- a/src/com/android/settings/applications/AppInfoBase.java
++++ b/src/com/android/settings/applications/AppInfoBase.java
+@@ -214,7 +214,7 @@ public abstract class AppInfoBase extends SettingsPreferenceFragment
+ 
+     @Override
+     public void onRunningStateChanged(boolean running) {
+-        // No op.
++        refreshUi();
+     }
+ 
+     @Override
+-- 
+
+From bc0e8867a4e3059247cf979bc77af1606320c3f9 Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Sun, 27 Aug 2023 11:18:17 +0800
+Subject: [PATCH] Settings: Disable automatic system server heap dumps by
+ default
+
+Change-Id: I83534dfb3f84f9c4a986cf071dd60b5bf057575e
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../AutomaticSystemServerHeapDumpPreferenceController.java      | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/com/android/settings/development/AutomaticSystemServerHeapDumpPreferenceController.java b/src/com/android/settings/development/AutomaticSystemServerHeapDumpPreferenceController.java
+index 05a5dc90b4c..fbd661b653a 100644
+--- a/src/com/android/settings/development/AutomaticSystemServerHeapDumpPreferenceController.java
++++ b/src/com/android/settings/development/AutomaticSystemServerHeapDumpPreferenceController.java
+@@ -70,7 +70,7 @@ public class AutomaticSystemServerHeapDumpPreferenceController extends
+     @Override
+     public void updateState(Preference preference) {
+         final int mode = Settings.Secure.getInt(mContext.getContentResolver(),
+-                Settings.Global.ENABLE_AUTOMATIC_SYSTEM_SERVER_HEAP_DUMPS, SETTING_VALUE_ON);
++                Settings.Global.ENABLE_AUTOMATIC_SYSTEM_SERVER_HEAP_DUMPS, SETTING_VALUE_OFF);
+         ((TwoStatePreference) mPreference).setChecked(mode != SETTING_VALUE_OFF);
+     }
+ 
+-- 
+
+From 0f1e800fd201d2f53af6166df88beb5447b90f9d Mon Sep 17 00:00:00 2001
+From: ShevT <evgeny.shishkov@gmail.com>
+Date: Tue, 21 Nov 2023 10:45:31 +0300
+Subject: [PATCH] Settings: Add icon for 'WiFi direct'
+
+---
+ res/xml/wifi_configure_settings.xml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/res/xml/wifi_configure_settings.xml b/res/xml/wifi_configure_settings.xml
+index 5866c5898d9..6a4847fd12d 100644
+--- a/res/xml/wifi_configure_settings.xml
++++ b/res/xml/wifi_configure_settings.xml
+@@ -52,6 +52,7 @@
+     <Preference
+         android:key="wifi_direct"
+         android:title="@string/wifi_menu_p2p"
++        android:icon="@drawable/ic_cast_24dp"
+         android:fragment="com.android.settings.wifi.p2p.WifiP2pSettings" />
+ 
+ </PreferenceScreen>
+-- 
+
+From e913ad74c6e21f3271a8f2135171a50b0fbdca37 Mon Sep 17 00:00:00 2001
+From: ShevT <evgeny.shishkov@gmail.com>
+Date: Tue, 21 Nov 2023 10:42:26 +0300
+Subject: [PATCH] Settings: Add icon for WiFi -> Install certificates
+
+---
+ res/drawable/ic_certificate.xml     | 25 +++++++++++++++++++++++++
+ res/xml/wifi_configure_settings.xml |  1 +
+ 2 files changed, 26 insertions(+)
+ create mode 100644 res/drawable/ic_certificate.xml
+
+diff --git a/res/drawable/ic_certificate.xml b/res/drawable/ic_certificate.xml
+new file mode 100644
+index 00000000000..53475192fad
+--- /dev/null
++++ b/res/drawable/ic_certificate.xml
+@@ -0,0 +1,25 @@
++<!--
++Copyright (C) 2014 The Android Open Source Project
++
++   Licensed under the Apache License, Version 2.0 (the "License");
++    you may not use this file except in compliance with the License.
++    You may obtain a copy of the License at
++
++         http://www.apache.org/licenses/LICENSE-2.0
++
++    Unless required by applicable law or agreed to in writing, software
++    distributed under the License is distributed on an "AS IS" BASIS,
++    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++    See the License for the specific language governing permissions and
++    limitations under the License.
++-->
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++        android:height="24dp"
++        android:width="24dp"
++        android:viewportWidth="24"
++        android:viewportHeight="24"
++        android:tint="?android:attr/colorControlNormal">
++    <path
++        android:fillColor="#FF000000"
++        android:pathData="M4,3C2.89,3 2,3.89 2,5V15A2,2 0 0,0 4,17H12V22L15,19L18,22V17H20A2,2 0 0,0 22,15V8L22,6V5A2,2 0 0,0 20,3H16V3H4M12,5L15,7L18,5V8.5L21,10L18,11.5V15L15,13L12,15V11.5L9,10L12,8.5V5M4,5H9V7H4V5M4,9H7V11H4V9M4,13H9V15H4V13Z" />
++</vector>
+diff --git a/res/xml/wifi_configure_settings.xml b/res/xml/wifi_configure_settings.xml
+index 6a4847fd12d..6db44538161 100644
+--- a/res/xml/wifi_configure_settings.xml
++++ b/res/xml/wifi_configure_settings.xml
+@@ -47,6 +47,7 @@
+ 
+     <Preference
+         android:key="install_credentials"
++        android:icon="@drawable/ic_certificate"
+         android:title="@string/wifi_install_credentials"/>
+ 
+     <Preference
+-- 
+
+From e136c1554f6cd7c7300ffb33e6408334d0907dcd Mon Sep 17 00:00:00 2001
+From: ShevT <evgeny.shishkov@gmail.com>
+Date: Tue, 21 Nov 2023 10:54:19 +0300
+Subject: [PATCH] Settings: Add icon for 'WiFi cellular data fallback'
+
+---
+ res/xml/wifi_configure_settings.xml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/res/xml/wifi_configure_settings.xml b/res/xml/wifi_configure_settings.xml
+index 6db44538161..d59d92e583e 100644
+--- a/res/xml/wifi_configure_settings.xml
++++ b/res/xml/wifi_configure_settings.xml
+@@ -43,6 +43,7 @@
+         android:key="wifi_cellular_data_fallback"
+         android:title="@string/wifi_cellular_data_fallback_title"
+         android:summary="@string/wifi_cellular_data_fallback_summary"
++        android:icon="@drawable/ic_sim_card_download"
+         settings:controller="com.android.settings.wifi.CellularFallbackPreferenceController" />
+ 
+     <Preference
+-- 
+
+From c4d7bd062c875af259b88ec5f81eb2e56806bdab Mon Sep 17 00:00:00 2001
+From: Danny Lin <danny@kdrag0n.dev>
+Date: Thu, 17 Feb 2022 20:40:08 -0800
+Subject: [PATCH] Use default letter spacing for category titles
+
+This allows Inter Dynamic Metrics to take effect.
+
+Change-Id: I587d2b94bba73e3c6f85b421e655a3285da6c01b
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ res/values/styles.xml | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/res/values/styles.xml b/res/values/styles.xml
+index 89fe04f5388..617ddd9fd39 100644
+--- a/res/values/styles.xml
++++ b/res/values/styles.xml
+@@ -244,8 +244,6 @@
+            parent="@*android:style/TextAppearance.DeviceDefault.Body2">
+         <item name="android:textAllCaps">true</item>
+         <item name="android:textSize">11sp</item>
+-        <!-- 0.8 Spacing, 0.8/11 = 0.072727273 -->
+-        <item name="android:letterSpacing">0.072727273</item>
+     </style>
+ 
+     <style name="TextAppearance.SuggestionTitle"
+-- 
+
+From 0f1ad1c8707ea7f0d9fbe5b4f9114dd09fce6d50 Mon Sep 17 00:00:00 2001
+From: hoffc <hoffc@codeaurora.org>
+Date: Mon, 12 Jul 2021 14:48:04 +0800
+Subject: [PATCH] Settings: add sim status listener in about phone
+
+Add sim status listener in about phone to dynamiclly update sim status and phone number info when sim card hot-swap.
+
+Change-Id: Iee69f34ca85225ea6286f5ba517681b42366a71c
+CRs-Fixed: 2978481
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../aboutphone/MyDeviceInfoFragment.java      | 41 +++++++++++++++++++
+ 1 file changed, 41 insertions(+)
+
+diff --git a/src/com/android/settings/deviceinfo/aboutphone/MyDeviceInfoFragment.java b/src/com/android/settings/deviceinfo/aboutphone/MyDeviceInfoFragment.java
+index e209d85f543..018b6d294c0 100644
+--- a/src/com/android/settings/deviceinfo/aboutphone/MyDeviceInfoFragment.java
++++ b/src/com/android/settings/deviceinfo/aboutphone/MyDeviceInfoFragment.java
+@@ -23,6 +23,7 @@ import android.content.Intent;
+ import android.content.pm.UserInfo;
+ import android.os.Bundle;
+ import android.os.UserManager;
++import android.util.Log;
+ import android.view.View;
+ 
+ import androidx.annotation.NonNull;
+@@ -60,6 +61,12 @@ import java.util.concurrent.ExecutorService;
+ import java.util.concurrent.Executors;
+ import java.util.function.Consumer;
+ 
++import android.content.BroadcastReceiver;
++import android.content.IntentFilter;
++
++import com.android.internal.telephony.IccCardConstants;
++import com.android.internal.telephony.TelephonyIntents;
++
+ @SearchIndexable
+ public class MyDeviceInfoFragment extends DashboardFragment
+         implements DeviceNamePreferenceController.DeviceNamePreferenceHost {
+@@ -68,6 +75,17 @@ public class MyDeviceInfoFragment extends DashboardFragment
+     private static final String KEY_EID_INFO = "eid_info";
+     private static final String KEY_MY_DEVICE_INFO_HEADER = "my_device_info_header";
+ 
++    private final BroadcastReceiver mSimStateReceiver = new BroadcastReceiver() {
++        public void onReceive(Context context, Intent intent) {
++            final String action = intent.getAction();
++            if (TelephonyIntents.ACTION_SIM_STATE_CHANGED.equals(action)) {
++                String state = intent.getStringExtra(IccCardConstants.INTENT_KEY_ICC_STATE);
++                Log.d(LOG_TAG, "Received ACTION_SIM_STATE_CHANGED: " + state);
++                updatePreferenceStates();
++            }
++        }
++    };
++
+     private BuildNumberPreferenceController mBuildNumberPreferenceController;
+ 
+     @Override
+@@ -94,6 +112,29 @@ public class MyDeviceInfoFragment extends DashboardFragment
+         initHeader();
+     }
+ 
++    @Override
++    public void onPause() {
++        super.onPause();
++        Context context = getContext();
++        if (context != null) {
++            context.unregisterReceiver(mSimStateReceiver);
++        } else {
++            Log.i(LOG_TAG, "context already null, not unregistering SimStateReceiver");
++        }
++    }
++
++    @Override
++    public void onResume() {
++        super.onResume();
++        Context context = getContext();
++        if (context != null) {
++            context.registerReceiver(mSimStateReceiver,
++                    new IntentFilter(TelephonyIntents.ACTION_SIM_STATE_CHANGED));
++        } else {
++            Log.i(LOG_TAG, "context is null, not registering SimStateReceiver");
++        }
++    }
++
+     @Override
+     protected String getLogTag() {
+         return LOG_TAG;
+-- 
+
+From 51355f49bc0b26653317106b9f7e4dc3293e0598 Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Wed, 2 Oct 2024 10:44:12 +0530
+Subject: [PATCH] Settings: Add icon for WEP in wifi network settings
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ res/drawable/ic_router.xml          | 25 +++++++++++++++++++++++++
+ res/xml/wifi_configure_settings.xml |  1 +
+ 2 files changed, 26 insertions(+)
+ create mode 100644 res/drawable/ic_router.xml
+
+diff --git a/res/drawable/ic_router.xml b/res/drawable/ic_router.xml
+new file mode 100644
+index 00000000000..7e569488048
+--- /dev/null
++++ b/res/drawable/ic_router.xml
+@@ -0,0 +1,25 @@
++<!--
++  ~ Copyright (C) 2020 The Android Open Source Project
++  ~
++  ~ Licensed under the Apache License, Version 2.0 (the "License");
++  ~ you may not use this file except in compliance with the License.
++  ~ You may obtain a copy of the License at
++  ~
++  ~      http://www.apache.org/licenses/LICENSE-2.0
++  ~
++  ~ Unless required by applicable law or agreed to in writing, software
++  ~ distributed under the License is distributed on an "AS IS" BASIS,
++  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++  ~ See the License for the specific language governing permissions and
++  ~ limitations under the License.
++  -->
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++        android:width="24dp"
++        android:height="24dp"
++        android:viewportWidth="24"
++        android:viewportHeight="24"
++        android:tint="?android:attr/colorControlNormal">
++    <path
++        android:fillColor="@android:color/white"
++        android:pathData="M20.2,5.9L21,5.1C19.6,3.7 17.8,3 16,3C14.2,3 12.4,3.7 11,5.1L11.8,5.9C13,4.8 14.5,4.2 16,4.2C17.5,4.2 19,4.8 20.2,5.9M19.3,6.7C18.4,5.8 17.2,5.3 16,5.3C14.8,5.3 13.6,5.8 12.7,6.7L13.5,7.5C14.2,6.8 15.1,6.5 16,6.5C16.9,6.5 17.8,6.8 18.5,7.5L19.3,6.7M19,13H17V9H15V13H5A2,2 0 0,0 3,15V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V15A2,2 0 0,0 19,13M8,18H6V16H8V18M11.5,18H9.5V16H11.5V18M15,18H13V16H15V18Z"/>
++</vector>
+diff --git a/res/xml/wifi_configure_settings.xml b/res/xml/wifi_configure_settings.xml
+index d59d92e583e..919d1540854 100644
+--- a/res/xml/wifi_configure_settings.xml
++++ b/res/xml/wifi_configure_settings.xml
+@@ -37,6 +37,7 @@
+     <com.android.settings.spa.preference.ComposePreference
+         android:key="allow_wep_networks"
+         android:title="@string/wifi_allow_wep_networks"
++        android:icon="@drawable/ic_router"
+         settings:controller="com.android.settings.wifi.WepNetworksPreferenceController"/>
+ 
+     <SwitchPreferenceCompat
+-- 
+
+From 0f9e712258a86785aa3be5ff289d933253eb0735 Mon Sep 17 00:00:00 2001
+From: someone5678 <59456192+someone5678@users.noreply.github.com>
+Date: Sun, 5 Jan 2025 14:20:59 +0900
+Subject: [PATCH] Settings: Use List Preference for Dock speaker plays and
+ Emergency tone
+
+Change-Id: Ia899f2ba6d4663c2315ee35c093ca14cb26ae450
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ res/xml/sound_settings.xml                             | 4 ++--
+ src/com/android/settings/notification/SettingPref.java | 8 ++++----
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/res/xml/sound_settings.xml b/res/xml/sound_settings.xml
+index 7b3deccef3d..7092681b9ef 100644
+--- a/res/xml/sound_settings.xml
++++ b/res/xml/sound_settings.xml
+@@ -212,7 +212,7 @@
+         android:order="-27"/>
+ 
+     <!-- Dock speaker plays -->
+-    <DropDownPreference
++    <ListPreference
+         android:key="dock_audio_media"
+         android:title="@string/dock_audio_media_title"
+         android:summary="%s"
+@@ -225,7 +225,7 @@
+         android:order="-15"/>
+ 
+     <!-- Emergency tone -->
+-    <DropDownPreference
++    <ListPreference
+         android:key="emergency_tone"
+         android:title="@string/emergency_tone_title"
+         android:summary="%s"
+diff --git a/src/com/android/settings/notification/SettingPref.java b/src/com/android/settings/notification/SettingPref.java
+index 9a374552732..89bbd30af66 100644
+--- a/src/com/android/settings/notification/SettingPref.java
++++ b/src/com/android/settings/notification/SettingPref.java
+@@ -24,7 +24,7 @@ import android.provider.Settings.Global;
+ import android.provider.Settings.Secure;
+ import android.provider.Settings.System;
+ 
+-import androidx.preference.DropDownPreference;
++import androidx.preference.ListPreference;
+ import androidx.preference.Preference;
+ import androidx.preference.Preference.OnPreferenceChangeListener;
+ import androidx.preference.TwoStatePreference;
+@@ -45,7 +45,7 @@ public class SettingPref {
+     private final Uri mUri;
+ 
+     protected TwoStatePreference mTwoState;
+-    protected DropDownPreference mDropDown;
++    protected ListPreference mDropDown;
+ 
+     public SettingPref(int type, String key, String setting, int def, int... values) {
+         mType = type;
+@@ -73,8 +73,8 @@ public class SettingPref {
+         }
+         if (p instanceof TwoStatePreference) {
+             mTwoState = (TwoStatePreference) p;
+-        } else if (p instanceof DropDownPreference) {
+-            mDropDown = (DropDownPreference) p;
++        } else if (p instanceof ListPreference) {
++            mDropDown = (ListPreference) p;
+             CharSequence[] entries = new CharSequence[mValues.length];
+             CharSequence[] values = new CharSequence[mValues.length];
+             for (int i = 0; i < mValues.length; i++) {
+-- 
+
+From 532e681fb55398addf21d80698b384d2ab28b1cb Mon Sep 17 00:00:00 2001
+From: someone5678 <59456192+someone5678@users.noreply.github.com>
+Date: Sun, 5 Jan 2025 14:22:47 +0900
+Subject: [PATCH] Settings: Use List Preference for Zen mode settings
+
+Change-Id: Id737ab6469012fcc1fbfb5c5bd5112f6c55c0eeb
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ res/xml/modes_set_calendar.xml                              | 4 ++--
+ .../modes/ZenModeSetCalendarPreferenceController.java       | 6 +++---
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/res/xml/modes_set_calendar.xml b/res/xml/modes_set_calendar.xml
+index be094f21f39..f6785a7fac9 100644
+--- a/res/xml/modes_set_calendar.xml
++++ b/res/xml/modes_set_calendar.xml
+@@ -26,13 +26,13 @@
+         android:key="zen_mode_event_category">
+ 
+         <!-- During events for -->
+-        <DropDownPreference
++        <ListPreference
+             android:key="calendar"
+             android:title="@string/zen_mode_set_calendar_which_calendar"
+             android:summary="%s" />
+ 
+         <!-- Where reply is -->
+-        <DropDownPreference
++        <ListPreference
+             android:key="reply"
+             android:title="@string/zen_mode_set_calendar_which_reply"
+             android:summary="%s" />
+diff --git a/src/com/android/settings/notification/modes/ZenModeSetCalendarPreferenceController.java b/src/com/android/settings/notification/modes/ZenModeSetCalendarPreferenceController.java
+index 67882360401..728ab988b65 100644
+--- a/src/com/android/settings/notification/modes/ZenModeSetCalendarPreferenceController.java
++++ b/src/com/android/settings/notification/modes/ZenModeSetCalendarPreferenceController.java
+@@ -25,7 +25,7 @@ import android.provider.CalendarContract;
+ import android.service.notification.ZenModeConfig;
+ 
+ import androidx.annotation.NonNull;
+-import androidx.preference.DropDownPreference;
++import androidx.preference.ListPreference;
+ import androidx.preference.Preference;
+ import androidx.preference.PreferenceCategory;
+ 
+@@ -49,8 +49,8 @@ class ZenModeSetCalendarPreferenceController extends AbstractZenModePreferenceCo
+     @VisibleForTesting
+     protected static final String KEY_REPLY = "reply";
+ 
+-    private DropDownPreference mCalendar;
+-    private DropDownPreference mReply;
++    private ListPreference mCalendar;
++    private ListPreference mReply;
+ 
+     private ZenModeConfig.EventInfo mEvent;
+ 
+-- 
+
+From ca0b23aa8f34e22298b71764de3af0dca3927a38 Mon Sep 17 00:00:00 2001
+From: Gao Honghua <gao.honghua@zte.com.cn>
+Date: Thu, 19 Dec 2024 14:48:59 +0800
+Subject: [PATCH] Fix memory leak on wifi
+
+Google: 3425623
+Change-Id: I5cd3c427280ebb2e8ed1b18d39d1b29c962b7658
+Signed-off-by: Jia Jia <jia.jia@zte.com.cn>
+---
+ src/com/android/settings/wifi/WifiEntryPreference.java | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/src/com/android/settings/wifi/WifiEntryPreference.java b/src/com/android/settings/wifi/WifiEntryPreference.java
+index 4eb9d51f01f..f701e433417 100644
+--- a/src/com/android/settings/wifi/WifiEntryPreference.java
++++ b/src/com/android/settings/wifi/WifiEntryPreference.java
+@@ -262,7 +262,13 @@ public class WifiEntryPreference extends RestrictedPreference implements
+             // Fallback for platforms that do not need friction icon resources.
+             frictionSld = null;
+         }
+-        return frictionSld != null ? (StateListDrawable) frictionSld.getDrawable(0) : null;
++        if (frictionSld != null) {
++            StateListDrawable val = (StateListDrawable) frictionSld.getDrawable(0);
++            frictionSld.recycle();
++            return val;
++        } else {
++            return null;
++        }
+     }
+ 
+     /**
+-- 
+
+From b00591b96121b1099b9e76d62bf2953d4433c896 Mon Sep 17 00:00:00 2001
+From: dragonGR <alextsanisbadlorg@gmail.com>
+Date: Mon, 12 Aug 2019 20:32:38 +0300
+Subject: [PATCH] Settings: Address a memory leak
+
+Change-Id: Icd72b0beef66c08a5d11e770c59eaebdb7977272
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../android/settings/applications/UsageAccessDetails.java   | 6 ++++++
+ .../applications/appinfo/ExternalSourcesDetails.java        | 6 ++++++
+ .../settings/applications/appinfo/WriteSettingsDetails.java | 6 ++++++
+ 3 files changed, 18 insertions(+)
+
+diff --git a/src/com/android/settings/applications/UsageAccessDetails.java b/src/com/android/settings/applications/UsageAccessDetails.java
+index e111942f751..33ab1139bbc 100644
+--- a/src/com/android/settings/applications/UsageAccessDetails.java
++++ b/src/com/android/settings/applications/UsageAccessDetails.java
+@@ -92,6 +92,12 @@ public class UsageAccessDetails extends AppInfoWithHeader implements OnPreferenc
+                 .setPackage(mPackageName);
+     }
+ 
++    @Override
++    public void onDestroy() {
++        super.onDestroy();
++        mUsageBridge.release();
++    }
++
+     @Override
+     public boolean onPreferenceClick(Preference preference) {
+         return false;
+diff --git a/src/com/android/settings/applications/appinfo/ExternalSourcesDetails.java b/src/com/android/settings/applications/appinfo/ExternalSourcesDetails.java
+index ad1f823b48c..87103090dd9 100644
+--- a/src/com/android/settings/applications/appinfo/ExternalSourcesDetails.java
++++ b/src/com/android/settings/applications/appinfo/ExternalSourcesDetails.java
+@@ -65,6 +65,12 @@ public class ExternalSourcesDetails extends AppInfoWithHeader
+         mSwitchPref.setOnPreferenceChangeListener(this);
+     }
+ 
++    @Override
++    public void onDestroy() {
++        super.onDestroy();
++        mAppBridge.release();
++    }
++
+     @Override
+     public boolean onPreferenceChange(Preference preference, Object newValue) {
+         final boolean checked = (Boolean) newValue;
+diff --git a/src/com/android/settings/applications/appinfo/WriteSettingsDetails.java b/src/com/android/settings/applications/appinfo/WriteSettingsDetails.java
+index 94ebc41f06c..3c82e36b243 100644
+--- a/src/com/android/settings/applications/appinfo/WriteSettingsDetails.java
++++ b/src/com/android/settings/applications/appinfo/WriteSettingsDetails.java
+@@ -61,6 +61,12 @@ public class WriteSettingsDetails extends AppInfoWithHeader implements OnPrefere
+ 
+     }
+ 
++    @Override
++    public void onDestroy() {
++        super.onDestroy();
++        mAppBridge.release();
++    }
++
+     @Override
+     public boolean onPreferenceClick(Preference preference) {
+         return false;
+-- 
+
+From f858c8563407483cfc15fdae0019eb198ec516d4 Mon Sep 17 00:00:00 2001
+From: cjh1249131356 <cjh1249131356@gmail.com>
+Date: Tue, 11 Jun 2024 15:57:21 +0800
+Subject: [PATCH] Settings: deviceinfo: Try read designed capacity from
+ PowerProfile if unavailable
+
+Signed-off-by: cjh1249131356 <cjh1249131356@gmail.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../BatteryDesignCapacityPreferenceController.java        | 8 +++++++-
+ .../BatteryMaximumCapacityPreferenceController.java       | 8 +++++++-
+ 2 files changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/src/com/android/settings/deviceinfo/batteryinfo/BatteryDesignCapacityPreferenceController.java b/src/com/android/settings/deviceinfo/batteryinfo/BatteryDesignCapacityPreferenceController.java
+index ab40d30607c..65f4339c572 100644
+--- a/src/com/android/settings/deviceinfo/batteryinfo/BatteryDesignCapacityPreferenceController.java
++++ b/src/com/android/settings/deviceinfo/batteryinfo/BatteryDesignCapacityPreferenceController.java
+@@ -20,6 +20,8 @@ import android.content.Context;
+ import android.content.Intent;
+ import android.os.BatteryManager;
+ 
++import com.android.internal.os.PowerProfile;
++
+ import com.android.settings.R;
+ import com.android.settings.core.BasePreferenceController;
+ import com.android.settingslib.fuelgauge.BatteryUtils;
+@@ -41,8 +43,12 @@ public class BatteryDesignCapacityPreferenceController extends BasePreferenceCon
+     @Override
+     public CharSequence getSummary() {
+         Intent batteryIntent = BatteryUtils.getBatteryIntent(mContext);
+-        final int designCapacityUah =
++        int designCapacityUah =
+                 batteryIntent.getIntExtra(BatteryManager.EXTRA_DESIGN_CAPACITY, -1);
++        if (designCapacityUah <= 0) {
++            final PowerProfile profile = new PowerProfile(mContext);
++            designCapacityUah = (int) profile.getBatteryCapacity() * 1000;
++        }
+ 
+         if (designCapacityUah > 0) {
+             int designCapacity = designCapacityUah / 1_000;
+diff --git a/src/com/android/settings/deviceinfo/batteryinfo/BatteryMaximumCapacityPreferenceController.java b/src/com/android/settings/deviceinfo/batteryinfo/BatteryMaximumCapacityPreferenceController.java
+index 186945efde8..39f09187d14 100644
+--- a/src/com/android/settings/deviceinfo/batteryinfo/BatteryMaximumCapacityPreferenceController.java
++++ b/src/com/android/settings/deviceinfo/batteryinfo/BatteryMaximumCapacityPreferenceController.java
+@@ -20,6 +20,8 @@ import android.content.Context;
+ import android.content.Intent;
+ import android.os.BatteryManager;
+ 
++import com.android.internal.os.PowerProfile;
++
+ import com.android.settings.R;
+ import com.android.settings.core.BasePreferenceController;
+ import com.android.settingslib.fuelgauge.BatteryUtils;
+@@ -43,8 +45,12 @@ public class BatteryMaximumCapacityPreferenceController extends BasePreferenceCo
+         Intent batteryIntent = BatteryUtils.getBatteryIntent(mContext);
+         final int maxCapacityUah =
+                 batteryIntent.getIntExtra(BatteryManager.EXTRA_MAXIMUM_CAPACITY, -1);
+-        final int designCapacityUah =
++        int designCapacityUah =
+                 batteryIntent.getIntExtra(BatteryManager.EXTRA_DESIGN_CAPACITY, -1);
++        if (designCapacityUah <= 0) {
++            final PowerProfile profile = new PowerProfile(mContext);
++            designCapacityUah = (int) profile.getBatteryCapacity() * 1000;
++        }
+ 
+         if (maxCapacityUah > 0 && designCapacityUah > 0) {
+             int maxCapacity = maxCapacityUah / 1_000;
+-- 
+
+From 144326b9af70e444607baaeb2e7db830b7ab72f1 Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Wed, 3 Sep 2025 22:26:55 +0530
+Subject: [PATCH] Settings: Enable expressive theme layout for various
+ activities
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ AndroidManifest.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index 3b810fc6a6f..b112acf2b4b 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -831,7 +831,7 @@
+                 android:configChanges="orientation|keyboardHidden|screenSize"
+                 android:exported="true"
+                 android:clearTaskOnLaunch="true"
+-                android:theme="@style/Theme.SubSettingsBase">
++                android:theme="@style/Theme.SubSettingsBase.Expressive">
+             <intent-filter>
+                 <action android:name="android.bluetooth.devicepicker.action.LAUNCH" />
+                 <category android:name="android.intent.category.DEFAULT" />
+-- 
+
+From 05a99677ed2b06f1b2c5703444dedaf4a81a7700 Mon Sep 17 00:00:00 2001
+From: Pratyush <codelab@pratyush.dev>
+Date: Sat, 3 Sep 2022 15:52:37 +0530
+Subject: [PATCH] Settings: Enable "install available apps"
+
+allowing adding (installed) apps from (owner) user manager ui.
+
+Signed-off-by: Saikrishna1504 <saikrishna26918@gmail.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ src/com/android/settings/users/UserDetailsSettings.java | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/src/com/android/settings/users/UserDetailsSettings.java b/src/com/android/settings/users/UserDetailsSettings.java
+index ec4a4ff2558..305a154a2c0 100644
+--- a/src/com/android/settings/users/UserDetailsSettings.java
++++ b/src/com/android/settings/users/UserDetailsSettings.java
+@@ -78,7 +78,7 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+     private static final int DIALOG_CONFIRM_GRANT_ADMIN = 7;
+ 
+     /** Whether to enable the app_copying fragment. */
+-    private static final boolean SHOW_APP_COPYING_PREF = false;
++    private static final boolean SHOW_APP_COPYING_PREF = true;
+     private static final int MESSAGE_PADDING = 20;
+ 
+     private UserManager mUserManager;
+@@ -422,7 +422,6 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+                 mPhonePref.setChecked(!mUserManager.hasUserRestriction(
+                         UserManager.DISALLOW_OUTGOING_CALLS, new UserHandle(userId)));
+                 mRemoveUserPref.setTitle(R.string.user_remove_user);
+-                removePreference(KEY_APP_COPYING);
+             }
+ 
+             // Remove preference KEY_REMOVE_USER if DISALLOW_REMOVE_USER restriction is set
+-- 
+
+From 0e4dc0806b4c5b576a822be36b9717ebd242fb15 Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Sun, 31 Aug 2025 09:31:38 +0530
+Subject: [PATCH] Settings: Hide development options completely when disabled
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../system/DeveloperOptionsController.kt         | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/src/com/android/settings/system/DeveloperOptionsController.kt b/src/com/android/settings/system/DeveloperOptionsController.kt
+index 6874ec7552a..d4d1ca5a12b 100644
+--- a/src/com/android/settings/system/DeveloperOptionsController.kt
++++ b/src/com/android/settings/system/DeveloperOptionsController.kt
+@@ -42,9 +42,19 @@ import com.android.settingslib.spaprivileged.template.preference.RestrictedPrefe
+ class DeveloperOptionsController(context: Context, preferenceKey: String) :
+     ComposePreferenceController(context, preferenceKey) {
+ 
+-    override fun getAvailabilityStatus() =
+-        if (mContext.userManager.isAdminUser) AVAILABLE
+-        else DISABLED_FOR_USER
++    override fun getAvailabilityStatus(): Int {
++        if (!isDevelopmentSettingsEnabled()) return CONDITIONALLY_UNAVAILABLE
++        return if (mContext.userManager.isAdminUser) AVAILABLE else DISABLED_FOR_USER
++    }
++
++    private fun isDevelopmentSettingsEnabled(): Boolean {
++        val def = if (Build.IS_ENG) 1 else 0
++        return Settings.Global.getInt(
++            mContext.contentResolver,
++            Settings.Global.DEVELOPMENT_SETTINGS_ENABLED,
++            def
++        ) != 0
++    }
+ 
+     private val isDevelopmentSettingsEnabledFlow = context.settingsGlobalBooleanFlow(
+         name = Settings.Global.DEVELOPMENT_SETTINGS_ENABLED,
+-- 
+
+From d5519dfef3eb46dcd520f1bef7e212c114f93e02 Mon Sep 17 00:00:00 2001
+From: Igor <sorocean.igor@gmail.com>
+Date: Thu, 6 Nov 2025 11:25:14 +0200
+Subject: [PATCH] Settings: Add AdGuard DNS as a private DNS Provider
+
+Co-authored-by: Pranav Vashi <neobuddy89@gmail.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ res/layout/private_dns_mode_dialog.xml           |  4 ++++
+ res/values/cm_strings.xml                        |  5 +++++
+ .../network/PrivateDnsModeDialogPreference.java  | 16 ++++++++++++++++
+ .../network/PrivateDnsPreferenceController.java  |  6 ++++++
+ 4 files changed, 31 insertions(+)
+
+diff --git a/res/layout/private_dns_mode_dialog.xml b/res/layout/private_dns_mode_dialog.xml
+index 004401de753..315bb63ffd2 100644
+--- a/res/layout/private_dns_mode_dialog.xml
++++ b/res/layout/private_dns_mode_dialog.xml
+@@ -41,6 +41,10 @@
+                 android:id="@+id/private_dns_mode_cloudflare"
+                 layout="@layout/preference_widget_dialog_radiobutton"/>
+ 
++            <include
++                android:id="@+id/private_dns_mode_adguard"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++
+             <include
+                 android:id="@+id/private_dns_mode_opportunistic"
+                 layout="@layout/preference_widget_dialog_radiobutton"/>
+diff --git a/res/values/cm_strings.xml b/res/values/cm_strings.xml
+index 86e43a83329..eb653c12dea 100644
+--- a/res/values/cm_strings.xml
++++ b/res/values/cm_strings.xml
+@@ -20,6 +20,11 @@
+     <!-- Alternative: 1dot1dot1dot1.cloudflare-dns.com -->
+     <string name="private_dns_hostname_cloudflare" translatable="false">one.one.one.one</string>
+ 
++    <!-- AdGuard DNS Option -->
++    <string name="private_dns_mode_adguard" translatable="false">AdGuard DNS</string>
++    <!-- AdGuard DNS hostname -->
++    <string name="private_dns_hostname_adguard" translatable="false">dns.adguard.com</string>
++    
+     <!-- Advanced keyboard settings -->
+     <string name="keyboard_extras_title">Extras</string>
+     <string name="advanced_keyboard_settings_title">Advanced settings</string>
+diff --git a/src/com/android/settings/network/PrivateDnsModeDialogPreference.java b/src/com/android/settings/network/PrivateDnsModeDialogPreference.java
+index be7cec58323..1caeb7de8ba 100644
+--- a/src/com/android/settings/network/PrivateDnsModeDialogPreference.java
++++ b/src/com/android/settings/network/PrivateDnsModeDialogPreference.java
+@@ -73,11 +73,13 @@ public class PrivateDnsModeDialogPreference extends CustomDialogPreferenceCompat
+ 
+     // Only used in Settings, update on additions to ConnectivitySettingsUtils
+     private static final int PRIVATE_DNS_MODE_CLOUDFLARE = 4;
++    private static final int PRIVATE_DNS_MODE_ADGUARD = 5;
+ 
+     static {
+         PRIVATE_DNS_MAP = new HashMap<>();
+         PRIVATE_DNS_MAP.put(PRIVATE_DNS_MODE_OFF, R.id.private_dns_mode_off);
+         PRIVATE_DNS_MAP.put(PRIVATE_DNS_MODE_CLOUDFLARE, R.id.private_dns_mode_cloudflare);
++        PRIVATE_DNS_MAP.put(PRIVATE_DNS_MODE_ADGUARD, R.id.private_dns_mode_adguard);
+         PRIVATE_DNS_MAP.put(PRIVATE_DNS_MODE_OPPORTUNISTIC, R.id.private_dns_mode_opportunistic);
+         PRIVATE_DNS_MAP.put(PRIVATE_DNS_MODE_PROVIDER_HOSTNAME, R.id.private_dns_mode_provider);
+     }
+@@ -145,8 +147,12 @@ public class PrivateDnsModeDialogPreference extends CustomDialogPreferenceCompat
+                     ConnectivitySettingsManager.getPrivateDnsHostname(context);
+             final String cloudflareHostname =
+                     context.getString(R.string.private_dns_hostname_cloudflare);
++            final String adguardHostname =
++                    context.getString(R.string.private_dns_hostname_adguard);
+             if (privateDnsHostname.equals(cloudflareHostname)) {
+                 mMode = PRIVATE_DNS_MODE_CLOUDFLARE;
++            } else if (privateDnsHostname.equals(adguardHostname)) {
++                mMode = PRIVATE_DNS_MODE_ADGUARD;
+             }
+         }
+         mRadioGroup = view.findViewById(R.id.private_dns_radio_group);
+@@ -159,6 +165,9 @@ public class PrivateDnsModeDialogPreference extends CustomDialogPreferenceCompat
+         final RadioButton cloudflareRadioButton =
+                 view.findViewById(R.id.private_dns_mode_cloudflare);
+         cloudflareRadioButton.setText(R.string.private_dns_mode_cloudflare);
++        final RadioButton adguardRadioButton =
++                view.findViewById(R.id.private_dns_mode_adguard);
++        adguardRadioButton.setText(R.string.private_dns_mode_adguard);
+         final RadioButton opportunisticRadioButton =
+                 view.findViewById(R.id.private_dns_mode_opportunistic);
+         opportunisticRadioButton.setText(
+@@ -196,6 +205,8 @@ public class PrivateDnsModeDialogPreference extends CustomDialogPreferenceCompat
+             mMode = PRIVATE_DNS_MODE_OFF;
+         } else if (checkedId == R.id.private_dns_mode_cloudflare) {
+             mMode = PRIVATE_DNS_MODE_CLOUDFLARE;
++        } else if (checkedId == R.id.private_dns_mode_adguard) {
++            mMode = PRIVATE_DNS_MODE_ADGUARD;
+         } else if (checkedId == R.id.private_dns_mode_opportunistic) {
+             mMode = PRIVATE_DNS_MODE_OPPORTUNISTIC;
+         } else if (checkedId == R.id.private_dns_mode_provider) {
+@@ -291,6 +302,11 @@ public class PrivateDnsModeDialogPreference extends CustomDialogPreferenceCompat
+                     context.getString(R.string.private_dns_hostname_cloudflare);
+             ConnectivitySettingsManager.setPrivateDnsHostname(context, cloudflareHostname);
+             modeToSet = PRIVATE_DNS_MODE_PROVIDER_HOSTNAME;
++        } else if (mMode == PRIVATE_DNS_MODE_ADGUARD) {
++            final String adguardHostname =
++                    context.getString(R.string.private_dns_hostname_adguard);
++            ConnectivitySettingsManager.setPrivateDnsHostname(context, adguardHostname);
++            modeToSet = PRIVATE_DNS_MODE_PROVIDER_HOSTNAME;
+         }
+ 
+         ConnectivitySettingsManager.setPrivateDnsMode(context, modeToSet);
+diff --git a/src/com/android/settings/network/PrivateDnsPreferenceController.java b/src/com/android/settings/network/PrivateDnsPreferenceController.java
+index 9a80d0d0b6b..9c0b9bdf00a 100644
+--- a/src/com/android/settings/network/PrivateDnsPreferenceController.java
++++ b/src/com/android/settings/network/PrivateDnsPreferenceController.java
+@@ -67,6 +67,7 @@ public class PrivateDnsPreferenceController extends BasePreferenceController
+ 
+     // Only used in Settings, update on additions to ConnectivitySettingsUtils
+     private static final int PRIVATE_DNS_MODE_CLOUDFLARE = 4;
++    private static final int PRIVATE_DNS_MODE_ADGUARD = 5;
+ 
+     private final Handler mHandler;
+     private final ContentObserver mSettingsObserver;
+@@ -133,6 +134,7 @@ public class PrivateDnsPreferenceController extends BasePreferenceController
+             case PRIVATE_DNS_MODE_OFF:
+                 return res.getString(com.android.settingslib.R.string.private_dns_mode_off);
+             case PRIVATE_DNS_MODE_CLOUDFLARE:
++            case PRIVATE_DNS_MODE_ADGUARD:
+             case PRIVATE_DNS_MODE_OPPORTUNISTIC:
+                 return dnsesResolved ? res.getString(R.string.private_dns_mode_on)
+                         : res.getString(
+@@ -146,8 +148,12 @@ public class PrivateDnsPreferenceController extends BasePreferenceController
+                         ConnectivitySettingsManager.getPrivateDnsHostname(mContext);
+                 final String cloudflareHostname =
+                         res.getString(R.string.private_dns_hostname_cloudflare);
++                final String adguardHostname =
++                        res.getString(R.string.private_dns_hostname_adguard);
+                 if (privateDnsHostname.equals(cloudflareHostname)) {
+                     return res.getString(R.string.private_dns_mode_cloudflare);
++                } else if (privateDnsHostname.equals(adguardHostname)) {
++                    return res.getString(R.string.private_dns_mode_adguard);
+                 }
+                 return privateDnsHostname;
+         }
+-- 
+
+From b94e749167d96f1c2a5ba2fe9db709ed751ed146 Mon Sep 17 00:00:00 2001
+From: Igor <sorocean.igor@gmail.com>
+Date: Thu, 6 Nov 2025 11:26:00 +0200
+Subject: [PATCH] Settings: Add more DNS providers
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Co-authored-by: Hưng Phan <phandinhhungvp2001@gmail.com>
+Co-authored-by: Pranav Vashi <neobuddy89@gmail.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ res/layout/private_dns_mode_dialog.xml        | 12 +++++
+ res/values/cm_strings.xml                     | 15 ++++++
+ .../PrivateDnsModeDialogPreference.java       | 48 +++++++++++++++++++
+ .../PrivateDnsPreferenceController.java       | 18 +++++++
+ 4 files changed, 93 insertions(+)
+
+diff --git a/res/layout/private_dns_mode_dialog.xml b/res/layout/private_dns_mode_dialog.xml
+index 315bb63ffd2..1774ec376ea 100644
+--- a/res/layout/private_dns_mode_dialog.xml
++++ b/res/layout/private_dns_mode_dialog.xml
+@@ -45,6 +45,18 @@
+                 android:id="@+id/private_dns_mode_adguard"
+                 layout="@layout/preference_widget_dialog_radiobutton"/>
+ 
++            <include
++                android:id="@+id/private_dns_mode_open_dns"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++
++            <include
++                android:id="@+id/private_dns_mode_cleanbrowsing"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++
++            <include
++                android:id="@+id/private_dns_mode_quad9"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++
+             <include
+                 android:id="@+id/private_dns_mode_opportunistic"
+                 layout="@layout/preference_widget_dialog_radiobutton"/>
+diff --git a/res/values/cm_strings.xml b/res/values/cm_strings.xml
+index eb653c12dea..90a08d94ae6 100644
+--- a/res/values/cm_strings.xml
++++ b/res/values/cm_strings.xml
+@@ -25,6 +25,21 @@
+     <!-- AdGuard DNS hostname -->
+     <string name="private_dns_hostname_adguard" translatable="false">dns.adguard.com</string>
+     
++    <!-- Open DNS Option -->
++    <string name="private_dns_mode_open_dns" translatable="false">Open DNS</string>
++    <!-- Open DNS hostname -->
++    <string name="private_dns_hostname_open_dns" translatable="false">dns.opendns.com</string>
++
++    <!-- Cleanbrowsing DNS Option -->
++    <string name="private_dns_mode_cleanbrowsing" translatable="false">Cleanbrowsing DNS</string>
++    <!-- Cleanbrowsing DNS hostname -->
++    <string name="private_dns_hostname_cleanbrowsing" translatable="false">security-filter-dns.cleanbrowsing.org</string>
++
++    <!-- Quad9 DNS Option -->
++    <string name="private_dns_mode_quad9" translatable="false">Quad9 DNS</string>
++    <!-- Quad9 DNS hostname -->
++    <string name="private_dns_hostname_quad9" translatable="false">dns.quad9.net</string>
++    
+     <!-- Advanced keyboard settings -->
+     <string name="keyboard_extras_title">Extras</string>
+     <string name="advanced_keyboard_settings_title">Advanced settings</string>
+diff --git a/src/com/android/settings/network/PrivateDnsModeDialogPreference.java b/src/com/android/settings/network/PrivateDnsModeDialogPreference.java
+index 1caeb7de8ba..1dc814e0ccb 100644
+--- a/src/com/android/settings/network/PrivateDnsModeDialogPreference.java
++++ b/src/com/android/settings/network/PrivateDnsModeDialogPreference.java
+@@ -74,12 +74,18 @@ public class PrivateDnsModeDialogPreference extends CustomDialogPreferenceCompat
+     // Only used in Settings, update on additions to ConnectivitySettingsUtils
+     private static final int PRIVATE_DNS_MODE_CLOUDFLARE = 4;
+     private static final int PRIVATE_DNS_MODE_ADGUARD = 5;
++    private static final int PRIVATE_DNS_MODE_OPEN_DNS = 6;
++    private static final int PRIVATE_DNS_MODE_CLEANBROWSING = 7;
++    private static final int PRIVATE_DNS_MODE_QUAD9 = 8;
+ 
+     static {
+         PRIVATE_DNS_MAP = new HashMap<>();
+         PRIVATE_DNS_MAP.put(PRIVATE_DNS_MODE_OFF, R.id.private_dns_mode_off);
+         PRIVATE_DNS_MAP.put(PRIVATE_DNS_MODE_CLOUDFLARE, R.id.private_dns_mode_cloudflare);
+         PRIVATE_DNS_MAP.put(PRIVATE_DNS_MODE_ADGUARD, R.id.private_dns_mode_adguard);
++        PRIVATE_DNS_MAP.put(PRIVATE_DNS_MODE_OPEN_DNS, R.id.private_dns_mode_open_dns);
++        PRIVATE_DNS_MAP.put(PRIVATE_DNS_MODE_CLEANBROWSING, R.id.private_dns_mode_cleanbrowsing);
++        PRIVATE_DNS_MAP.put(PRIVATE_DNS_MODE_QUAD9, R.id.private_dns_mode_quad9);
+         PRIVATE_DNS_MAP.put(PRIVATE_DNS_MODE_OPPORTUNISTIC, R.id.private_dns_mode_opportunistic);
+         PRIVATE_DNS_MAP.put(PRIVATE_DNS_MODE_PROVIDER_HOSTNAME, R.id.private_dns_mode_provider);
+     }
+@@ -149,10 +155,22 @@ public class PrivateDnsModeDialogPreference extends CustomDialogPreferenceCompat
+                     context.getString(R.string.private_dns_hostname_cloudflare);
+             final String adguardHostname =
+                     context.getString(R.string.private_dns_hostname_adguard);
++            final String opendnsHostname =
++                    context.getString(R.string.private_dns_hostname_open_dns);
++            final String cleanbrowsingHostname =
++                    context.getString(R.string.private_dns_hostname_cleanbrowsing);
++            final String quad9Hostname =
++                    context.getString(R.string.private_dns_hostname_quad9);
+             if (privateDnsHostname.equals(cloudflareHostname)) {
+                 mMode = PRIVATE_DNS_MODE_CLOUDFLARE;
+             } else if (privateDnsHostname.equals(adguardHostname)) {
+                 mMode = PRIVATE_DNS_MODE_ADGUARD;
++            } else if (privateDnsHostname.equals(opendnsHostname)) {
++                mMode = PRIVATE_DNS_MODE_OPEN_DNS;
++            } else if (privateDnsHostname.equals(cleanbrowsingHostname)) {
++                mMode = PRIVATE_DNS_MODE_CLEANBROWSING;
++            } else if (privateDnsHostname.equals(quad9Hostname)) {
++                mMode = PRIVATE_DNS_MODE_QUAD9;
+             }
+         }
+         mRadioGroup = view.findViewById(R.id.private_dns_radio_group);
+@@ -168,6 +186,15 @@ public class PrivateDnsModeDialogPreference extends CustomDialogPreferenceCompat
+         final RadioButton adguardRadioButton =
+                 view.findViewById(R.id.private_dns_mode_adguard);
+         adguardRadioButton.setText(R.string.private_dns_mode_adguard);
++        final RadioButton opendnsRadioButton =
++                view.findViewById(R.id.private_dns_mode_open_dns);
++        opendnsRadioButton.setText(R.string.private_dns_mode_open_dns);
++        final RadioButton cleanbrowsingRadioButton =
++                view.findViewById(R.id.private_dns_mode_cleanbrowsing);
++        cleanbrowsingRadioButton.setText(R.string.private_dns_mode_cleanbrowsing);
++        final RadioButton quad9RadioButton =
++                view.findViewById(R.id.private_dns_mode_quad9);
++        quad9RadioButton.setText(R.string.private_dns_mode_quad9);
+         final RadioButton opportunisticRadioButton =
+                 view.findViewById(R.id.private_dns_mode_opportunistic);
+         opportunisticRadioButton.setText(
+@@ -207,6 +234,12 @@ public class PrivateDnsModeDialogPreference extends CustomDialogPreferenceCompat
+             mMode = PRIVATE_DNS_MODE_CLOUDFLARE;
+         } else if (checkedId == R.id.private_dns_mode_adguard) {
+             mMode = PRIVATE_DNS_MODE_ADGUARD;
++        } else if (checkedId == R.id.private_dns_mode_open_dns) {
++            mMode = PRIVATE_DNS_MODE_OPEN_DNS;
++        } else if (checkedId == R.id.private_dns_mode_cleanbrowsing) {
++            mMode = PRIVATE_DNS_MODE_CLEANBROWSING;
++        } else if (checkedId == R.id.private_dns_mode_quad9) {
++            mMode = PRIVATE_DNS_MODE_QUAD9;
+         } else if (checkedId == R.id.private_dns_mode_opportunistic) {
+             mMode = PRIVATE_DNS_MODE_OPPORTUNISTIC;
+         } else if (checkedId == R.id.private_dns_mode_provider) {
+@@ -307,6 +340,21 @@ public class PrivateDnsModeDialogPreference extends CustomDialogPreferenceCompat
+                     context.getString(R.string.private_dns_hostname_adguard);
+             ConnectivitySettingsManager.setPrivateDnsHostname(context, adguardHostname);
+             modeToSet = PRIVATE_DNS_MODE_PROVIDER_HOSTNAME;
++        } else if (mMode == PRIVATE_DNS_MODE_OPEN_DNS) {
++            final String opendnsHostname =
++                    context.getString(R.string.private_dns_hostname_open_dns);
++            ConnectivitySettingsManager.setPrivateDnsHostname(context, opendnsHostname);
++            modeToSet = PRIVATE_DNS_MODE_PROVIDER_HOSTNAME;
++        } else if (mMode == PRIVATE_DNS_MODE_CLEANBROWSING) {
++            final String cleanbrowsingHostname =
++                    context.getString(R.string.private_dns_hostname_cleanbrowsing);
++            ConnectivitySettingsManager.setPrivateDnsHostname(context, cleanbrowsingHostname);
++            modeToSet = PRIVATE_DNS_MODE_PROVIDER_HOSTNAME;
++        } else if (mMode == PRIVATE_DNS_MODE_QUAD9) {
++            final String quad9Hostname =
++                    context.getString(R.string.private_dns_hostname_quad9);
++            ConnectivitySettingsManager.setPrivateDnsHostname(context, quad9Hostname);
++            modeToSet = PRIVATE_DNS_MODE_PROVIDER_HOSTNAME;
+         }
+ 
+         ConnectivitySettingsManager.setPrivateDnsMode(context, modeToSet);
+diff --git a/src/com/android/settings/network/PrivateDnsPreferenceController.java b/src/com/android/settings/network/PrivateDnsPreferenceController.java
+index 9c0b9bdf00a..179079dcc38 100644
+--- a/src/com/android/settings/network/PrivateDnsPreferenceController.java
++++ b/src/com/android/settings/network/PrivateDnsPreferenceController.java
+@@ -68,6 +68,9 @@ public class PrivateDnsPreferenceController extends BasePreferenceController
+     // Only used in Settings, update on additions to ConnectivitySettingsUtils
+     private static final int PRIVATE_DNS_MODE_CLOUDFLARE = 4;
+     private static final int PRIVATE_DNS_MODE_ADGUARD = 5;
++    private static final int PRIVATE_DNS_MODE_OPEN_DNS = 6;
++    private static final int PRIVATE_DNS_MODE_CLEANBROWSING = 7;
++    private static final int PRIVATE_DNS_MODE_QUAD9 = 8;
+ 
+     private final Handler mHandler;
+     private final ContentObserver mSettingsObserver;
+@@ -135,6 +138,9 @@ public class PrivateDnsPreferenceController extends BasePreferenceController
+                 return res.getString(com.android.settingslib.R.string.private_dns_mode_off);
+             case PRIVATE_DNS_MODE_CLOUDFLARE:
+             case PRIVATE_DNS_MODE_ADGUARD:
++            case PRIVATE_DNS_MODE_OPEN_DNS:
++            case PRIVATE_DNS_MODE_CLEANBROWSING:
++            case PRIVATE_DNS_MODE_QUAD9:
+             case PRIVATE_DNS_MODE_OPPORTUNISTIC:
+                 return dnsesResolved ? res.getString(R.string.private_dns_mode_on)
+                         : res.getString(
+@@ -150,10 +156,22 @@ public class PrivateDnsPreferenceController extends BasePreferenceController
+                         res.getString(R.string.private_dns_hostname_cloudflare);
+                 final String adguardHostname =
+                         res.getString(R.string.private_dns_hostname_adguard);
++                final String opendnsHostname =
++                        res.getString(R.string.private_dns_hostname_open_dns);
++                final String cleanbrowsingHostname =
++                        res.getString(R.string.private_dns_hostname_cleanbrowsing);
++                final String quad9Hostname =
++                        res.getString(R.string.private_dns_hostname_quad9);
+                 if (privateDnsHostname.equals(cloudflareHostname)) {
+                     return res.getString(R.string.private_dns_mode_cloudflare);
+                 } else if (privateDnsHostname.equals(adguardHostname)) {
+                     return res.getString(R.string.private_dns_mode_adguard);
++                } else if (privateDnsHostname.equals(opendnsHostname)) {
++                    return res.getString(R.string.private_dns_mode_open_dns);
++                } else if (privateDnsHostname.equals(cleanbrowsingHostname)) {
++                    return res.getString(R.string.private_dns_mode_cleanbrowsing);
++                } else if (privateDnsHostname.equals(quad9Hostname)) {
++                    return res.getString(R.string.private_dns_mode_quad9);
+                 }
+                 return privateDnsHostname;
+         }
+-- 
+
+From 70575eaa71ba997f81e8f7c04f8313fa7f1c2425 Mon Sep 17 00:00:00 2001
+From: Danny Lin <danny@kdrag0n.dev>
+Date: Thu, 8 Oct 2020 23:47:05 -0700
+Subject: [PATCH] Settings: Fix invalid private DNS help text if URI is missing
+
+AOSP does not have help URIs configured, so there is no relevant content
+to show in the private DNS dialog's help text section, and the preference
+controller never sets the content of the help text view. This results in
+a random irrelevant message related to Bluetooth audio being shown in
+the dialog: "Gray-out means not supported by phone or headset"
+
+This is caused by the private DNS dialog sharing the
+preference_widget_dialog_summary snippet with Bluetooth A2DP codec
+settings. To fix this issue, we can hide the help text view entirely if
+there is no help URI defined.
+
+Change-Id: Ie74a1be347351a6db68412321d0c68f3138fae6b
+Signed-off-by: Joey Huab <joey@evolution-x.org>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../settings/network/PrivateDnsModeDialogPreference.java        | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/com/android/settings/network/PrivateDnsModeDialogPreference.java b/src/com/android/settings/network/PrivateDnsModeDialogPreference.java
+index 1dc814e0ccb..153fea2ebc8 100644
+--- a/src/com/android/settings/network/PrivateDnsModeDialogPreference.java
++++ b/src/com/android/settings/network/PrivateDnsModeDialogPreference.java
+@@ -220,7 +220,7 @@ public class PrivateDnsModeDialogPreference extends CustomDialogPreferenceCompat
+             helpTextView.setText(AnnotationSpan.linkify(
+                     context.getText(R.string.private_dns_help_message), linkInfo));
+         } else {
+-            helpTextView.setText("");
++            helpTextView.setVisibility(View.GONE);
+         }
+ 
+         updateDialogInfo();
+-- 
+
+From 54c274b455a69ba49230bdd2772ccf490b8a2fe3 Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Tue, 2 Sep 2025 14:32:59 +0530
+Subject: [PATCH] Settings: Make ticks visible for Vibration intensity prefs
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../accessibility/VibrationIntensityPreferenceController.java    | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/com/android/settings/accessibility/VibrationIntensityPreferenceController.java b/src/com/android/settings/accessibility/VibrationIntensityPreferenceController.java
+index f39cd96d63f..b4d35765e64 100644
+--- a/src/com/android/settings/accessibility/VibrationIntensityPreferenceController.java
++++ b/src/com/android/settings/accessibility/VibrationIntensityPreferenceController.java
+@@ -76,6 +76,7 @@ public abstract class VibrationIntensityPreferenceController extends SliderPrefe
+         preference.setMin(getMin());
+         preference.setMax(getMax());
+         preference.setSliderIncrement(1); // Discrete slider
++        preference.setTickVisible(true);
+         // Haptics previews played by the Settings app don't bypass user settings to be played.
+         // The sliders continuously updates the intensity value so the previews can apply them.
+         preference.setUpdatesContinuously(true);
+-- 
+
+From 44aac5a49ca0208f3e3fe50233e996484dfc133b Mon Sep 17 00:00:00 2001
+From: Roman Royer <romanroyer@yahoo.com>
+Date: Wed, 4 May 2016 19:04:36 -0700
+Subject: [PATCH] Allow sorting Applications by size
+
+Allow sorting applications by size in Settings->Apps
+just like in Settings->Storage/USB->Apps
+
+Change-Id: I9e022162110e1feff20f257992086e66735e0f5e
+---
+ .../applications/manageapplications/ManageApplications.java | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/src/com/android/settings/applications/manageapplications/ManageApplications.java b/src/com/android/settings/applications/manageapplications/ManageApplications.java
+index d3d532f2dd4..f0ed3121bcb 100644
+--- a/src/com/android/settings/applications/manageapplications/ManageApplications.java
++++ b/src/com/android/settings/applications/manageapplications/ManageApplications.java
+@@ -865,9 +865,11 @@ public class ManageApplications extends InstrumentedFragment
+         }
+         mOptionsMenu.findItem(R.id.advanced).setVisible(false);
+ 
+-        mOptionsMenu.findItem(R.id.sort_order_alpha).setVisible(mListType == LIST_TYPE_STORAGE
++        mOptionsMenu.findItem(R.id.sort_order_alpha).setVisible(
++                (mListType == LIST_TYPE_STORAGE || mListType == LIST_TYPE_MAIN)
+                 && mSortOrder != R.id.sort_order_alpha);
+-        mOptionsMenu.findItem(R.id.sort_order_size).setVisible(mListType == LIST_TYPE_STORAGE
++        mOptionsMenu.findItem(R.id.sort_order_size).setVisible(
++                (mListType == LIST_TYPE_STORAGE || mListType == LIST_TYPE_MAIN)
+                 && mSortOrder != R.id.sort_order_size);
+ 
+         mOptionsMenu.findItem(R.id.show_system).setVisible(!mShowSystem
+-- 
+
+From d42524c352034f3986c576a22519751ee8f8e60e Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Sun, 26 Nov 2023 19:05:34 +0530
+Subject: [PATCH] Settings: Add icon for emergency broadcasts
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ res/drawable/ic_broadcast.xml  | 26 ++++++++++++++++++++++++++
+ res/xml/emergency_settings.xml |  7 +++----
+ 2 files changed, 29 insertions(+), 4 deletions(-)
+ create mode 100644 res/drawable/ic_broadcast.xml
+
+diff --git a/res/drawable/ic_broadcast.xml b/res/drawable/ic_broadcast.xml
+new file mode 100644
+index 00000000000..38671e4b14d
+--- /dev/null
++++ b/res/drawable/ic_broadcast.xml
+@@ -0,0 +1,26 @@
++<!--
++  ~ Copyright (C) 2023 crDroid Android Project
++  ~
++  ~ Licensed under the Apache License, Version 2.0 (the "License");
++  ~ you may not use this file except in compliance with the License.
++  ~ You may obtain a copy of the License at
++  ~
++  ~      http://www.apache.org/licenses/LICENSE-2.0
++  ~
++  ~ Unless required by applicable law or agreed to in writing, software
++  ~ distributed under the License is distributed on an "AS IS" BASIS,
++  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++  ~ See the License for the specific language governing permissions and
++  ~ limitations under the License.
++  -->
++
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++        android:width="24dp"
++        android:height="24dp"
++        android:tint="?android:attr/colorControlNormal"
++        android:viewportHeight="24"
++        android:viewportWidth="24">
++    <path
++        android:fillColor="#000000"
++        android:pathData="M12 10C10.9 10 10 10.9 10 12S10.9 14 12 14 14 13.1 14 12 13.1 10 12 10M18 12C18 8.7 15.3 6 12 6S6 8.7 6 12C6 14.2 7.2 16.1 9 17.2L10 15.5C8.8 14.8 8 13.5 8 12.1C8 9.9 9.8 8.1 12 8.1S16 9.9 16 12.1C16 13.6 15.2 14.9 14 15.5L15 17.2C16.8 16.2 18 14.2 18 12M12 2C6.5 2 2 6.5 2 12C2 15.7 4 18.9 7 20.6L8 18.9C5.6 17.5 4 14.9 4 12C4 7.6 7.6 4 12 4S20 7.6 20 12C20 15 18.4 17.5 16 18.9L17 20.6C20 18.9 22 15.7 22 12C22 6.5 17.5 2 12 2Z" />
++</vector>
+diff --git a/res/xml/emergency_settings.xml b/res/xml/emergency_settings.xml
+index 91b7525d9a5..561b0550c6f 100644
+--- a/res/xml/emergency_settings.xml
++++ b/res/xml/emergency_settings.xml
+@@ -26,6 +26,7 @@
+         android:order="0"
+         android:selectable="false"
+         settings:controller="com.android.settings.emergency.MoreSettingsPreferenceController" />
++
+     <Preference
+         android:key="gesture_emergency_summary"
+         android:title="@string/emergency_gesture_screen_title"
+@@ -33,13 +34,11 @@
+         android:order="100"
+         android:fragment="com.android.settings.emergency.EmergencyGestureSettings"
+         settings:controller="com.android.settings.emergency.EmergencyGestureEntrypointPreferenceController" />
+-    <PreferenceCategory
+-        android:order="170"
+-        android:layout="@layout/preference_category_no_label"
+-        settings:allowDividerAbove="true"/>
++
+     <com.android.settingslib.RestrictedPreference
+         android:key="app_and_notif_cell_broadcast_settings"
+         android:title="@string/cell_broadcast_settings"
++        android:icon="@drawable/ic_broadcast"
+         android:order="200"
+         settings:useAdminDisabledSummary="true">
+         <intent
+-- 
+
+From af658d58de487e7aed1a0d5bdb1a92b63bba0eda Mon Sep 17 00:00:00 2001
+From: cjybyjk <cjybyjk@zjnu.edu.cn>
+Date: Thu, 10 Mar 2022 23:05:20 +0800
+Subject: [PATCH] Settings: add TextView for summary into
+ SeekBarDialogPreference
+
+Signed-off-by: cjybyjk <cjybyjk@zjnu.edu.cn>
+Change-Id: Icff728749c3e597a4127d77646bdf3a742c35d83
+Signed-off-by: Dmitrii <bankersenator@gmail.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../preference_dialog_seekbar_material.xml      | 11 +++++++++++
+ .../settings/SeekBarDialogPreference.java       | 17 +++++++++++++++++
+ 2 files changed, 28 insertions(+)
+
+diff --git a/res/layout/preference_dialog_seekbar_material.xml b/res/layout/preference_dialog_seekbar_material.xml
+index 09b963a8f99..e7c9132fb75 100644
+--- a/res/layout/preference_dialog_seekbar_material.xml
++++ b/res/layout/preference_dialog_seekbar_material.xml
+@@ -26,6 +26,17 @@
+         android:layout_height="wrap_content"
+         android:paddingTop="?android:attr/dialogPreferredPadding" />
+ 
++     <TextView
++          android:id="@+id/text"
++          android:layout_width="match_parent"
++          android:layout_height="wrap_content"
++          android:focusable="false"
++          android:paddingTop="?android:attr/dialogPreferredPadding"
++          android:paddingStart="?android:attr/dialogPreferredPadding"
++          android:paddingEnd="?android:attr/dialogPreferredPadding"
++          style="@style/TextAppearance.DialogMessage"
++          android:visibility="gone"/>
++
+     <SeekBar
+         android:id="@+id/seekbar"
+         android:layout_width="match_parent"
+diff --git a/src/com/android/settings/SeekBarDialogPreference.java b/src/com/android/settings/SeekBarDialogPreference.java
+index d0c8134176b..2428035f269 100644
+--- a/src/com/android/settings/SeekBarDialogPreference.java
++++ b/src/com/android/settings/SeekBarDialogPreference.java
+@@ -18,12 +18,15 @@ package com.android.settings;
+ 
+ import android.content.Context;
+ import android.graphics.drawable.Drawable;
++import android.text.TextUtils;
+ import android.util.AttributeSet;
+ import android.view.View;
+ import android.widget.ImageView;
+ import android.widget.SeekBar;
++import android.widget.TextView;
+ 
+ import com.android.settingslib.CustomDialogPreferenceCompat;
++import com.android.settings.R;
+ 
+ /**
+  * Based on frameworks/base/core/java/android/preference/SeekBarDialogPreference.java
+@@ -31,6 +34,7 @@ import com.android.settingslib.CustomDialogPreferenceCompat;
+  */
+ public class SeekBarDialogPreference extends CustomDialogPreferenceCompat {
+     private final Drawable mMyIcon;
++    private TextView mTextView;
+ 
+     public SeekBarDialogPreference(Context context, AttributeSet attrs) {
+         super(context, attrs);
+@@ -64,6 +68,19 @@ public class SeekBarDialogPreference extends CustomDialogPreferenceCompat {
+         } else {
+             iconView.setVisibility(View.GONE);
+         }
++
++        mTextView = view.findViewById(R.id.text);
++    }
++
++    public void setText(String text) {
++        if (mTextView != null) {
++            if (TextUtils.isEmpty(text)) {
++                mTextView.setVisibility(View.GONE);
++            } else {
++                mTextView.setVisibility(View.VISIBLE);
++            }
++            mTextView.setText(text);
++        }
+     }
+ 
+     protected static SeekBar getSeekBar(View dialogView) {
+-- 
+
