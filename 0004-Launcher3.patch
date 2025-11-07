@@ -2253,3 +2253,25 @@ index 0000000000..b0b6eb77a3
 \ No newline at end of file
 -- 
 
+From 0315cb0f67743e483b838b001404b38b922b613e Mon Sep 17 00:00:00 2001
+From: ygorigor <sorocean.igor@gmail.com>
+Date: Fri, 7 Nov 2025 11:53:07 +0200
+Subject: [PATCH] Update ro translation
+
+---
+ res/values-ro/lineage_strings.xml | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/res/values-ro/lineage_strings.xml b/res/values-ro/lineage_strings.xml
+index 55de3f48ad..6e4c28964c 100644
+--- a/res/values-ro/lineage_strings.xml
++++ b/res/values-ro/lineage_strings.xml
+@@ -37,4 +37,6 @@
+     <string name="trust_apps_info_protected">Aplicațiile protejate necesită autentificare pentru a fi deschise din launcher</string>
+     <string name="pref_suggestions_title">Sugestii</string>
+     <string name="pref_suggestions_summary">Pentru toate aplicațiile &amp; sugestiile pentru ecranul de pornire</string>
++    <string name="pref_sleep_gesture_title">Dublă atingere pentru orpire</string>
++    <string name="pref_sleep_gesture_summary">Atinge de două ori spațiul gol pentru a opri ecranul</string>
+ </resources>
+-- 
+
