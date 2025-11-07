@@ -1,0 +1,125 @@
+From 9782673b2273279fde8c39ecde04fb784e6c2d35 Mon Sep 17 00:00:00 2001
+From: Danny Lin <danny@kdrag0n.dev>
+Date: Tue, 5 Oct 2021 19:17:46 -0700
+Subject: [PATCH] Style search bar to match new Settings UI
+
+- Rounded pill shape
+- No shadow
+- Height
+
+Co-authored-by: Luca Stefani <luca.stefani.ge1@gmail.com>
+Co-authored-by: Michael Bestas <mkbestas@lineageos.org>
+Change-Id: I24d4725f3d759ea633768640995de16f9bdf2c55
+
+# Conflicts:
+#	res/values/colors.xml
+---
+ res/layout/search_panel.xml                              | 9 ++++-----
+ res/values-night/colors.xml                              | 2 +-
+ res/values/colors.xml                                    | 7 +++++--
+ res/values/dimens.xml                                    | 9 +++++----
+ .../settings/intelligence/search/SearchFragment.java     | 4 ----
+ 5 files changed, 15 insertions(+), 16 deletions(-)
+
+diff --git a/res/layout/search_panel.xml b/res/layout/search_panel.xml
+index 990d11a..facb452 100644
+--- a/res/layout/search_panel.xml
++++ b/res/layout/search_panel.xml
+@@ -24,20 +24,19 @@
+     <FrameLayout
+         android:id="@+id/search_bar_container"
+         android:layout_width="match_parent"
+-        android:layout_height="wrap_content"
+-        android:elevation="4dp">
++        android:layout_height="wrap_content">
+         <androidx.cardview.widget.CardView
+             android:id="@+id/search_bar"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:layout_margin="@dimen/search_bar_margin"
+-            app:cardCornerRadius="2dp"
+-            app:cardElevation="2dp">
++            app:cardCornerRadius="@dimen/search_bar_corner_radius"
++            app:cardElevation="0dp">
+             <Toolbar
+                 android:id="@+id/search_toolbar"
+                 android:layout_width="match_parent"
+                 android:layout_height="@dimen/search_bar_height"
+-                android:background="?android:attr/selectableItemBackground"
++                android:background="@drawable/search_bar_selected_background"
+                 android:contentInsetStart="0dp"
+                 android:contentInsetStartWithNavigation="0dp"
+                 android:theme="?android:attr/actionBarTheme">
+diff --git a/res/values-night/colors.xml b/res/values-night/colors.xml
+index 3be2c99..a5fa04f 100644
+--- a/res/values-night/colors.xml
++++ b/res/values-night/colors.xml
+@@ -18,6 +18,6 @@
+ <resources
+     xmlns:androidprv="http://schemas.android.com/apk/prv/res/android">
+ 
+-    <color name="search_bar_background">?androidprv:attr/colorSurfaceVariant</color>
++    <color name="search_bar_background">@androidprv:color/materialColorSurfaceContainerHigh</color>
+ 
+ </resources>
+diff --git a/res/values/colors.xml b/res/values/colors.xml
+index daf4c39..5f506f0 100644
+--- a/res/values/colors.xml
++++ b/res/values/colors.xml
+@@ -15,6 +15,9 @@
+   limitations under the License.
+   -->
+ 
+-<resources>
+-    <color name="search_bar_background">?android:attr/colorBackground</color>
++<resources
++    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android">
++
++    <color name="search_bar_background">@androidprv:color/materialColorSurfaceBright</color>
++
+ </resources>
+diff --git a/res/values/dimens.xml b/res/values/dimens.xml
+index 8a40eb6..ef07d9d 100644
+--- a/res/values/dimens.xml
++++ b/res/values/dimens.xml
+@@ -26,11 +26,12 @@
+     <!-- The following two margins need to match, with the caveat that
+      the second should be negative. The second one ensures that the icons and text
+      align despite the additional padding caused by the search bar's card background. -->
+-    <dimen name="search_bar_margin">8dp</dimen>
+-    <dimen name="search_bar_negative_margin">-8dp</dimen>
++    <dimen name="search_bar_margin">16dp</dimen>
++    <dimen name="search_bar_negative_margin">-16dp</dimen>
+ 
+-    <dimen name="search_bar_height">48dp</dimen>
+-    <dimen name="search_bar_text_size">16dp</dimen>
++    <dimen name="search_bar_height">52dp</dimen>
++    <dimen name="search_bar_text_size">20sp</dimen>
++    <dimen name="search_bar_corner_radius">28dp</dimen>
+ 
+     <!-- Dashboard image tile size -->
+     <dimen name="dashboard_tile_image_size">24dp</dimen>
+diff --git a/src/com/android/settings/intelligence/search/SearchFragment.java b/src/com/android/settings/intelligence/search/SearchFragment.java
+index 86b5b37..1ee69c6 100644
+--- a/src/com/android/settings/intelligence/search/SearchFragment.java
++++ b/src/com/android/settings/intelligence/search/SearchFragment.java
+@@ -23,7 +23,6 @@ import android.app.Activity;
+ import android.content.Context;
+ import android.os.Bundle;
+ import androidx.annotation.VisibleForTesting;
+-import androidx.cardview.widget.CardView;
+ import androidx.loader.content.Loader;
+ import androidx.loader.app.LoaderManager;
+ import androidx.recyclerview.widget.LinearLayoutManager;
+@@ -150,9 +149,6 @@ public class SearchFragment extends Fragment implements SearchView.OnQueryTextLi
+ 
+         mNoResultsView = view.findViewById(R.id.no_results_layout);
+ 
+-        final CardView cardView = view.findViewById(R.id.search_bar);
+-        cardView.setBackgroundResource(R.drawable.search_bar_selected_background);
+-
+         final Toolbar toolbar = view.findViewById(R.id.search_toolbar);
+         activity.setActionBar(toolbar);
+         activity.getActionBar().setDisplayHomeAsUpEnabled(true);
+-- 
+
