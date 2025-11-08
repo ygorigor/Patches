@@ -1,0 +1,27 @@
+From b8fb8bf578fd17b3277ee7aecf4b6bd64fae75d2 Mon Sep 17 00:00:00 2001
+From: nift4 <nift4@protonmail.com>
+Date: Fri, 24 Jun 2022 21:10:01 +0200
+Subject: [PATCH] SystemUI: Always allow plugins
+
+Change-Id: I98aff3bebcb0ef6f607dfbcbca617b8cb92bead7
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../com/android/systemui/shared/plugins/PluginManagerImpl.java  | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/packages/SystemUI/shared/src/com/android/systemui/shared/plugins/PluginManagerImpl.java b/packages/SystemUI/shared/src/com/android/systemui/shared/plugins/PluginManagerImpl.java
+index 9a264c6ca414..437d8975e253 100644
+--- a/packages/SystemUI/shared/src/com/android/systemui/shared/plugins/PluginManagerImpl.java
++++ b/packages/SystemUI/shared/src/com/android/systemui/shared/plugins/PluginManagerImpl.java
+@@ -70,7 +70,7 @@ public class PluginManagerImpl extends BroadcastReceiver implements PluginManage
+             List<String> privilegedPlugins) {
+         mContext = context;
+         mActionManagerFactory = actionManagerFactory;
+-        mIsDebuggable = debuggable;
++        mIsDebuggable = true; // Set to true to allow clock plugins on user builds
+         mPrivilegedPlugins.addAll(privilegedPlugins);
+         mPluginPrefs = pluginPrefs;
+         mPluginEnabler = pluginEnabler;
+-- 
+2.51.2.windows.1
+

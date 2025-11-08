@@ -1,0 +1,234 @@
+From 6f28c2f466e474be422dddcf1b6c7424ade7588e Mon Sep 17 00:00:00 2001
+From: Elluzion <dyrex2004@gmail.com>
+Date: Wed, 7 Sep 2022 20:04:30 +0300
+Subject: [PATCH] SystemUI: Blur the power menu
+
+Squashed:
+
+    From: Pranav Vashi <neobuddy89@gmail.com>
+    Date: Tue, 31 Jan 2023 07:21:15 +0530
+    Subject: SystemUI: Also blur power sub-menus
+
+    Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+
+    From: Dhina17 <dhinalogu@gmail.com>
+    Date: Tue, 5 Sep 2023 17:04:49 +0530
+    Subject: SystemUI: Enable power menu blur via window flags
+
+    Enabling blur behind via style attr causes an unexpected behaviour
+    that power menu always has the blur behind even when the device disables the systemui blur.
+    [persist.sysui.disableBlur=1]
+
+    GlobalActionsDialog is a part of SystemUI so it should follow BlurUtils#supportBlursOnWindows
+    not only Settings.Global.DISABLE_WINDOW_BLURS.
+
+    With style attr, it only followed Settings.Global.DISABLE_WINDOW_BLURS, that's why worked fine
+    with blur toggle in targets which don't disable systemui blur.
+
+    Change-Id: If6aa97ce3df7f12e181274d85a05531fcb575ec5
+    [@neobuddy89: Adapted for our code.]
+    Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+
+[@neobuddy89: Adapted for A16.]
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../GlobalActionsDialogLite.java              | 39 +++++++++++++++----
+ .../GlobalActionsPowerDialog.java             | 21 +++++++++-
+ 2 files changed, 50 insertions(+), 10 deletions(-)
+
+diff --git a/packages/SystemUI/src/com/android/systemui/globalactions/GlobalActionsDialogLite.java b/packages/SystemUI/src/com/android/systemui/globalactions/GlobalActionsDialogLite.java
+index b8368c31d562..9658ef6b132d 100644
+--- a/packages/SystemUI/src/com/android/systemui/globalactions/GlobalActionsDialogLite.java
++++ b/packages/SystemUI/src/com/android/systemui/globalactions/GlobalActionsDialogLite.java
+@@ -149,6 +149,7 @@ import com.android.systemui.scrim.ScrimDrawable;
+ import com.android.systemui.settings.UserTracker;
+ import com.android.systemui.shade.ShadeController;
+ import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
++import com.android.systemui.statusbar.BlurUtils;
+ import com.android.systemui.statusbar.NotificationShadeWindowController;
+ import com.android.systemui.statusbar.VibratorHelper;
+ import com.android.systemui.statusbar.phone.LightBarController;
+@@ -295,6 +296,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
+     private final Lazy<DisplayWindowPropertiesRepository> mDisplayWindowPropertiesRepositoryLazy;
+     private final PowerManager mPowerManager;
+     private final Handler mHandler;
++    private final BlurUtils mBlurUtils;
+ 
+     private final UserTracker.Callback mOnUserSwitched = new UserTracker.Callback() {
+         @Override
+@@ -424,7 +426,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
+             GlobalActionsInteractor interactor,
+             ControlsComponent controlsComponent,
+             Lazy<DisplayWindowPropertiesRepository> displayWindowPropertiesRepository,
+-            PowerManager powerManager) {
++            PowerManager powerManager,
++            BlurUtils blurUtils) {
+         mContext = context;
+         mWindowManagerFuncs = windowManagerFuncs;
+         mAudioManager = audioManager;
+@@ -464,6 +467,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
+         mInteractor = interactor;
+         mDisplayWindowPropertiesRepositoryLazy = displayWindowPropertiesRepository;
+         mPowerManager = powerManager;
++        mBlurUtils = blurUtils;
+ 
+         mHandler = new Handler(mMainHandler.getLooper()) {
+             public void handleMessage(Message msg) {
+@@ -882,7 +886,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
+                 mShadeController,
+                 mKeyguardUpdateMonitor,
+                 mLockPatternUtils,
+-                mSelectedUserInteractor);
++                mSelectedUserInteractor,
++                mBlurUtils);
+ 
+         dialog.setOnDismissListener(this);
+         dialog.setOnShowListener(this);
+@@ -2754,7 +2759,6 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
+         protected Drawable mBackgroundDrawable;
+         protected final SysuiColorExtractor mColorExtractor;
+         private boolean mKeyguardShowing;
+-        protected float mScrimAlpha;
+         protected final LightBarController mLightBarController;
+         private final KeyguardStateController mKeyguardStateController;
+         protected final NotificationShadeWindowController mNotificationShadeWindowController;
+@@ -2771,6 +2775,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
+         private SelectedUserInteractor mSelectedUserInteractor;
+         private LockPatternUtils mLockPatternUtils;
+         private float mWindowDimAmount;
++        private BlurUtils mBlurUtils;
+ 
+         protected ViewGroup mContainer;
+ 
+@@ -2854,7 +2859,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
+                 ShadeController shadeController,
+                 KeyguardUpdateMonitor keyguardUpdateMonitor,
+                 LockPatternUtils lockPatternUtils,
+-                SelectedUserInteractor selectedUserInteractor) {
++                SelectedUserInteractor selectedUserInteractor,
++                BlurUtils blurUtils) {
+             // We set dismissOnDeviceLock to false because we have a custom broadcast receiver to
+             // dismiss this dialog when the device is locked.
+             super(context, themeRes, false /* dismissOnDeviceLock */);
+@@ -2878,6 +2884,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
+             mLockPatternUtils = lockPatternUtils;
+             mGestureDetector = new GestureDetector(mContext, mGestureListener);
+             mSelectedUserInteractor = selectedUserInteractor;
++            mBlurUtils = blurUtils;
+         }
+ 
+         @Override
+@@ -2950,13 +2957,14 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
+         }
+ 
+         public void showPowerOptionsMenu() {
+-            mPowerOptionsDialog = GlobalActionsPowerDialog.create(mContext, mPowerOptionsAdapter);
++            mPowerOptionsDialog = GlobalActionsPowerDialog.create(mContext,
++                    mPowerOptionsAdapter, mBlurUtils);
+             mPowerOptionsDialog.show();
+         }
+ 
+         public void showRestartOptionsMenu() {
+             mRestartOptionsDialog = GlobalActionsPowerDialog.create(mContext,
+-                    mRestartOptionsAdapter);
++                    mRestartOptionsAdapter, mBlurUtils);
+             mRestartOptionsDialog.show();
+         }
+ 
+@@ -2966,7 +2974,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
+         }
+ 
+         public void showUsersMenu() {
+-            mUsersDialog = GlobalActionsPowerDialog.create(mContext, mUsersAdapter);
++            mUsersDialog = GlobalActionsPowerDialog.create(mContext,
++                    mUsersAdapter, mBlurUtils);
+             mUsersDialog.show();
+         }
+ 
+@@ -3018,7 +3027,21 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
+ 
+             if (mBackgroundDrawable == null) {
+                 mBackgroundDrawable = new ScrimDrawable();
+-                mScrimAlpha = 1.0f;
++            }
++
++            Window window = getWindow();
++            window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
++            if (mBlurUtils.supportsBlursOnWindows()) {
++                // Enable blur behind
++                // Enable dim behind since we are setting some amount dim for the blur.
++                window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
++                // Set blur behind radius
++                int blurBehindRadius = mContext.getResources()
++                        .getDimensionPixelSize(com.android.systemui.res.R.dimen.max_window_blur_radius);
++                window.getAttributes().setBlurBehindRadius(blurBehindRadius);
++                window.setDimAmount(0.54f);
++            } else {
++                window.setDimAmount(0.88f);
+             }
+ 
+             // If user entered from the lock screen and smart lock was enabled, disable it
+diff --git a/packages/SystemUI/src/com/android/systemui/globalactions/GlobalActionsPowerDialog.java b/packages/SystemUI/src/com/android/systemui/globalactions/GlobalActionsPowerDialog.java
+index 6d0b6c68feb1..f66a2120b65a 100644
+--- a/packages/SystemUI/src/com/android/systemui/globalactions/GlobalActionsPowerDialog.java
++++ b/packages/SystemUI/src/com/android/systemui/globalactions/GlobalActionsPowerDialog.java
+@@ -19,6 +19,7 @@ import android.annotation.NonNull;
+ import android.app.Dialog;
+ import android.content.Context;
+ import android.content.res.Resources;
++import android.view.CrossWindowBlurListeners;
+ import android.view.LayoutInflater;
+ import android.view.View;
+ import android.view.ViewGroup;
+@@ -26,6 +27,8 @@ import android.view.Window;
+ import android.view.WindowManager;
+ import android.widget.ListAdapter;
+ 
++import com.android.systemui.statusbar.BlurUtils;
++
+ import androidx.constraintlayout.helper.widget.Flow;
+ 
+ /**
+@@ -36,7 +39,7 @@ public class GlobalActionsPowerDialog {
+     /**
+      * Create a dialog for displaying Shut Down and Restart actions.
+      */
+-    public static Dialog create(@NonNull Context context, ListAdapter adapter) {
++    public static Dialog create(@NonNull Context context, ListAdapter adapter, BlurUtils blurUtils) {
+         ViewGroup listView = (ViewGroup) LayoutInflater.from(context).inflate(
+                 com.android.systemui.res.R.layout.global_actions_power_dialog_flow, null);
+ 
+@@ -62,7 +65,8 @@ public class GlobalActionsPowerDialog {
+         }
+         flow.setMaxElementsWrap(nElementsWrap);
+ 
+-        Dialog dialog = new Dialog(context);
++        Dialog dialog = new Dialog(context,
++                com.android.systemui.res.R.style.Theme_SystemUI_Dialog_GlobalActionsLite);
+         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+         dialog.setContentView(listView);
+ 
+@@ -73,6 +77,19 @@ public class GlobalActionsPowerDialog {
+                 com.android.systemui.res.R.drawable.global_actions_lite_background,
+                 context.getTheme()));
+         window.addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
++        window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
++        if (blurUtils.supportsBlursOnWindows()) {
++            // Enable blur behind
++            // Enable dim behind since we are setting some amount dim for the blur.
++            window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
++            // Set blur behind radius
++            int blurBehindRadius = context.getResources()
++                    .getDimensionPixelSize(com.android.systemui.res.R.dimen.max_window_blur_radius);
++            window.getAttributes().setBlurBehindRadius(blurBehindRadius);
++            window.setDimAmount(0.54f);
++        } else {
++            window.setDimAmount(0.88f);
++        }
+ 
+         return dialog;
+     }
+-- 
+2.51.2.windows.1
+

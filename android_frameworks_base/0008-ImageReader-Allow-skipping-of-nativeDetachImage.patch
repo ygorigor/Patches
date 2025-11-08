@@ -1,0 +1,39 @@
+From 090b023908f452ea1feb6684b695866f1c20a277 Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Sun, 28 Jul 2024 21:01:24 +0800
+Subject: [PATCH] ImageReader: Allow skipping of nativeDetachImage
+
+* for leica/miui camera ports
+
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ core/java/android/media/ImageReader.java | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/core/java/android/media/ImageReader.java b/core/java/android/media/ImageReader.java
+index 530d48d3e60b..76a6b1504a4e 100644
+--- a/core/java/android/media/ImageReader.java
++++ b/core/java/android/media/ImageReader.java
+@@ -37,6 +37,7 @@ import android.os.Build;
+ import android.os.Handler;
+ import android.os.Looper;
+ import android.os.ParcelFileDescriptor;
++import android.os.SystemProperties;
+ import android.os.Trace;
+ import android.view.Surface;
+ 
+@@ -901,7 +902,9 @@ public class ImageReader implements AutoCloseable {
+             throw new IllegalStateException("Image was already detached from this ImageReader");
+         }
+ 
+-        nativeDetachImage(image, mDetachThrowsIseOnly);
++        if (!SystemProperties.getBoolean("persist.sys.cam.skip_detach_image", false)) {
++            nativeDetachImage(image, mDetachThrowsIseOnly);
++        }
+         si.clearSurfacePlanes();
+         si.mPlanes = null;
+         si.setDetached(true);
+-- 
+2.51.2.windows.1
+

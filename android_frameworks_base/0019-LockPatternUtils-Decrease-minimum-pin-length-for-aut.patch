@@ -1,0 +1,29 @@
+From 10c729e5a02aa48de4173f479ddc584c58ec5128 Mon Sep 17 00:00:00 2001
+From: Mesquita <mesquita@aospa.co>
+Date: Wed, 18 Oct 2023 20:56:20 -0300
+Subject: [PATCH] LockPatternUtils: Decrease minimum pin length for auto
+ confirmation
+
+Change-Id: I3bb5558a40769dbdc21765292271c463378233d7
+Signed-off-by: Mesquita <mesquita@aospa.co>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ core/java/com/android/internal/widget/LockPatternUtils.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/core/java/com/android/internal/widget/LockPatternUtils.java b/core/java/com/android/internal/widget/LockPatternUtils.java
+index 77008e553898..385b4b63d0b3 100644
+--- a/core/java/com/android/internal/widget/LockPatternUtils.java
++++ b/core/java/com/android/internal/widget/LockPatternUtils.java
+@@ -130,7 +130,7 @@ public class LockPatternUtils {
+     public static final int PIN_LENGTH_UNAVAILABLE = -1;
+ 
+     // This is the minimum pin length at which auto confirmation is supported
+-    public static final int MIN_AUTO_PIN_REQUIREMENT_LENGTH = 6;
++    public static final int MIN_AUTO_PIN_REQUIREMENT_LENGTH = 4;
+ 
+     /**
+      * Header used for the encryption and decryption of the device credential for
+-- 
+2.51.2.windows.1
+

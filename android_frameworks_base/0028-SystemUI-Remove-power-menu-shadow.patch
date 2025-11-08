@@ -1,0 +1,30 @@
+From 34d063f2c41e29e9dc6e36717d41c3e2320eb831 Mon Sep 17 00:00:00 2001
+From: Danny Lin <danny@kdrag0n.dev>
+Date: Sat, 6 May 2023 16:13:00 +0800
+Subject: [PATCH] SystemUI: Remove power menu shadow
+
+This fits better with Material You, especially when the default shadow
+gets clipped at the edges.
+
+Change-Id: If1f421692bcc737882f76fc7929b9f9dd0dd71f0
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ packages/SystemUI/res/values/dimens.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/packages/SystemUI/res/values/dimens.xml b/packages/SystemUI/res/values/dimens.xml
+index fb3a91f58ec0..abd5a96af3fe 100644
+--- a/packages/SystemUI/res/values/dimens.xml
++++ b/packages/SystemUI/res/values/dimens.xml
+@@ -1079,7 +1079,7 @@
+     <dimen name="default_gear_space">18dp</dimen>
+ 
+     <!-- Global actions power menu -->
+-    <dimen name="global_actions_translate">9dp</dimen>
++    <dimen name="global_actions_translate">0dp</dimen>
+ 
+     <!-- Distance from the top of screen in pixels, to position the power menu near the button. -->
+     <dimen name="global_actions_top_padding">330px</dimen>
+-- 
+2.51.2.windows.1
+

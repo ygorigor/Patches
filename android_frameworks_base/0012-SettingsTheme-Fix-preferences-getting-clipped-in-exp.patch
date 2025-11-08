@@ -1,0 +1,40 @@
+From 3f4f1bb144eaac51d2b15e8bbc5882c70c79416e Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Thu, 4 Sep 2025 19:20:31 +0530
+Subject: [PATCH] SettingsTheme: Fix preferences getting clipped in expressive
+ theme
+
+* Many round-corner/9-patch backgrounds carry their own internal paddings.
+* This fixes Material Expressive theme layout in Dolby settings, Device-specific parts, etc.
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../settingslib/widget/SettingsPreferenceGroupAdapter.kt    | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/packages/SettingsLib/SettingsTheme/src/com/android/settingslib/widget/SettingsPreferenceGroupAdapter.kt b/packages/SettingsLib/SettingsTheme/src/com/android/settingslib/widget/SettingsPreferenceGroupAdapter.kt
+index d1c88de3f399..1dd21de1398f 100644
+--- a/packages/SettingsLib/SettingsTheme/src/com/android/settingslib/widget/SettingsPreferenceGroupAdapter.kt
++++ b/packages/SettingsLib/SettingsTheme/src/com/android/settingslib/widget/SettingsPreferenceGroupAdapter.kt
+@@ -184,14 +184,16 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
+             }
+ 
+         val v = holder.itemView
++
++        // Update background
++        v.setBackgroundResource(backgroundRes)
++
+         // Update padding
+         if (SettingsThemeHelper.isExpressiveTheme(context)) {
+             val (paddingStart, paddingEnd) = getStartEndPadding(position, backgroundRes)
+             v.setPaddingRelative(paddingStart, v.paddingTop, paddingEnd, v.paddingBottom)
+             v.clipToOutline = backgroundRes != 0
+         }
+-        // Update background
+-        v.setBackgroundResource(backgroundRes)
+     }
+ 
+     private fun getStartEndPadding(position: Int, backgroundRes: Int): Pair<Int, Int> {
+-- 
+2.51.2.windows.1
+

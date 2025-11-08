@@ -1,0 +1,64 @@
+From 7c13bbb56e7787c907dd29e30d3c49ad47b523c6 Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Mon, 4 Aug 2025 14:10:42 +0800
+Subject: [PATCH] SettingsLib: Use legacy material colors for settings' surface
+ container
+
+* the monet engine background color changes doesnt seem to be noticeable with the latest material surface colors
+
+Change-Id: I0c449d9c8464aa8fb5bef9fe77130c476b2b755e
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+Signed-off-by: rmp22 <195054967+rmp22@users.noreply.github.com>
+---
+ .../SettingsLib/SettingsTheme/res/values-night/colors.xml     | 3 ++-
+ packages/SettingsLib/SettingsTheme/res/values-v36/themes.xml  | 4 ++--
+ packages/SettingsLib/SettingsTheme/res/values/colors.xml      | 3 ++-
+ 3 files changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/packages/SettingsLib/SettingsTheme/res/values-night/colors.xml b/packages/SettingsLib/SettingsTheme/res/values-night/colors.xml
+index d677bbaa4ee8..968bffa79548 100644
+--- a/packages/SettingsLib/SettingsTheme/res/values-night/colors.xml
++++ b/packages/SettingsLib/SettingsTheme/res/values-night/colors.xml
+@@ -55,4 +55,5 @@
+     <color name="settingslib_colorContentLevel_high">@color/m3_ref_palette_red10</color>
+     <color name="settingslib_colorBackgroundLevel_low">@color/m3_ref_palette_green70</color>
+     <color name="settingslib_colorContentLevel_low">@color/m3_ref_palette_green10</color>
+-</resources>
+\ No newline at end of file
++    <color name="legacy_settingslib_materialColorSurfaceContainer">@android:color/system_neutral1_900</color>
++</resources>
+diff --git a/packages/SettingsLib/SettingsTheme/res/values-v36/themes.xml b/packages/SettingsLib/SettingsTheme/res/values-v36/themes.xml
+index 54bd069f2fc3..cc3a8804cdda 100644
+--- a/packages/SettingsLib/SettingsTheme/res/values-v36/themes.xml
++++ b/packages/SettingsLib/SettingsTheme/res/values-v36/themes.xml
+@@ -18,7 +18,7 @@
+ <resources>
+     <style name="Theme.SettingsBase_v36" parent="Theme.SettingsBase_v33" >
+         <item name="android:colorAccent">@color/settingslib_materialColorPrimary</item>
+-        <item name="android:colorBackground">@color/settingslib_materialColorSurfaceContainer</item>
++        <item name="android:colorBackground">@color/legacy_settingslib_materialColorSurfaceContainer</item>
+         <item name="android:textColorPrimary">@color/settingslib_materialColorOnSurface</item>
+         <item name="android:textColorSecondary">@color/settingslib_text_color_secondary</item>
+         <item name="android:textColorTertiary">@color/settingslib_materialColorOutline</item>
+@@ -29,4 +29,4 @@
+     </style>
+ 
+     <style name="Theme.SettingsBase" parent="Theme.SettingsBase_v36" />
+-</resources>
+\ No newline at end of file
++</resources>
+diff --git a/packages/SettingsLib/SettingsTheme/res/values/colors.xml b/packages/SettingsLib/SettingsTheme/res/values/colors.xml
+index e8ab99e6bc14..25defd01e609 100644
+--- a/packages/SettingsLib/SettingsTheme/res/values/colors.xml
++++ b/packages/SettingsLib/SettingsTheme/res/values/colors.xml
+@@ -83,4 +83,5 @@
+     <color name="settingslib_colorContentLevel_medium">@color/m3_ref_palette_yellow10</color>
+     <color name="settingslib_colorBackgroundLevel_low">@color/m3_ref_palette_green50</color>
+     <color name="settingslib_colorContentLevel_low">@color/m3_ref_palette_green100</color>
+-</resources>
+\ No newline at end of file
++    <color name="legacy_settingslib_materialColorSurfaceContainer">@android:color/system_neutral1_50</color>
++</resources>
+-- 
+2.51.2.windows.1
+

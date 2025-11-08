@@ -1,0 +1,27 @@
+From bb3cf3b09f38da262bad2bf960dc5f8c9f3d3ab6 Mon Sep 17 00:00:00 2001
+From: Lucchetto <lucchetto.tie@live.com>
+Date: Thu, 30 Aug 2018 13:18:08 +0200
+Subject: [PATCH] SystemUI: Link dialog radius to config_dialogCornerRadius
+
+Change-Id: If7ed4f038d79d702ee542de0e59170b6f6a67aa3
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ core/res/res/values/dimens.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/core/res/res/values/dimens.xml b/core/res/res/values/dimens.xml
+index c0d2779f3a31..59b738a28dcc 100644
+--- a/core/res/res/values/dimens.xml
++++ b/core/res/res/values/dimens.xml
+@@ -1121,7 +1121,7 @@
+     <dimen name="slice_padding">16dp</dimen>
+ 
+     <!-- Default dialog corner radius -->
+-    <dimen name="dialog_corner_radius">2dp</dimen>
++    <dimen name="dialog_corner_radius">@dimen/config_dialogCornerRadius</dimen>
+ 
+     <!-- Size of thumbnail used in the cross profile apps animation -->
+     <dimen name="cross_profile_apps_thumbnail_size">72dp</dimen>
+-- 
+2.51.2.windows.1
+

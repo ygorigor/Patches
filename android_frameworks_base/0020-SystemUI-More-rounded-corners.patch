@@ -1,0 +1,35 @@
+From 750937303d8065ed0445b144841451a2b7f72a09 Mon Sep 17 00:00:00 2001
+From: Lucchetto <lucchetto.tie@live.com>
+Date: Wed, 29 Aug 2018 21:07:37 +0200
+Subject: [PATCH] SystemUI: More rounded corners
+
+Change-Id: I0f6cd12b833035ab5dafd4ea1e27b1ed72efdd73
+---
+ packages/SystemUI/res/drawable/rounded_ripple.xml | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/packages/SystemUI/res/drawable/rounded_ripple.xml b/packages/SystemUI/res/drawable/rounded_ripple.xml
+index d9ed8233d886..8557ed31f43b 100644
+--- a/packages/SystemUI/res/drawable/rounded_ripple.xml
++++ b/packages/SystemUI/res/drawable/rounded_ripple.xml
+@@ -18,13 +18,13 @@
+     <item android:id="@android:id/mask">
+         <shape xmlns:android="http://schemas.android.com/apk/res/android">
+             <solid android:color="#FFFFFFFF"/>
+-            <corners android:radius="8dp"/>
++            <corners android:radius="?android:attr/dialogCornerRadius"/>
+         </shape>
+     </item>
+     <item android:id="@android:id/background">
+         <shape android:shape="rectangle">
+             <solid android:color="?android:attr/colorBackgroundFloating"/>
+-            <corners android:radius="8dp"/>
++            <corners android:radius="?android:attr/dialogCornerRadius"/>
+         </shape>
+     </item>
+-</ripple>
+\ No newline at end of file
++</ripple>
+-- 
+2.51.2.windows.1
+

@@ -1,0 +1,32 @@
+From 168325829c09ea27cf41ae46a819638a8decf41a Mon Sep 17 00:00:00 2001
+From: Bruno Martins <bgcngm@gmail.com>
+Date: Sat, 7 Sep 2024 16:31:13 +0100
+Subject: [PATCH 2/2] libc: Also make libstdc++ available on product
+
+Allow devices to build a product_specific copy of it.
+
+Change-Id: I1389fd6a5a726b52915bf380a921aa2c948c7b01
+---
+ libc/Android.bp | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/libc/Android.bp b/libc/Android.bp
+index 869ab070f..cfcca5f7e 100644
+--- a/libc/Android.bp
++++ b/libc/Android.bp
+@@ -1939,6 +1939,12 @@ cc_library {
+     defaults: ["libstdc++_defaults"],
+ }
+ 
++cc_library_shared {
++    name: "libstdc++_product",
++    defaults: ["libstdc++_defaults"],
++    product_specific: true,
++}
++
+ cc_library_shared {
+     name: "libstdc++_vendor",
+     defaults: ["libstdc++_defaults"],
+-- 
+2.51.2.windows.1
+

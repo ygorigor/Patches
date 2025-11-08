@@ -1,0 +1,39 @@
+From 5aa7ecccf271c5c49e3a302286fd5555692b126b Mon Sep 17 00:00:00 2001
+From: Ido Ben-Hur <idoybh2@gmail.com>
+Date: Wed, 25 Sep 2024 20:03:28 +0300
+Subject: [PATCH] SystemUI: screenshot: Hide action chips text labels
+
+kinda hacky but should work with minimal code changes for now.
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../systemui/screenshot/ui/binder/ActionButtonViewBinder.kt | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/packages/SystemUI/src/com/android/systemui/screenshot/ui/binder/ActionButtonViewBinder.kt b/packages/SystemUI/src/com/android/systemui/screenshot/ui/binder/ActionButtonViewBinder.kt
+index 36aa39fa9fe4..7feb7d18867f 100644
+--- a/packages/SystemUI/src/com/android/systemui/screenshot/ui/binder/ActionButtonViewBinder.kt
++++ b/packages/SystemUI/src/com/android/systemui/screenshot/ui/binder/ActionButtonViewBinder.kt
+@@ -41,7 +41,9 @@ class ActionButtonViewBinder @Inject constructor() {
+         if (!viewModel.appearance.tint) {
+             iconView.setImageTintList(null)
+         }
+-        textView.text = viewModel.appearance.label
++        // hide text for now.
++        textView.text = ""
++        textView.visibility = View.GONE
+ 
+         viewModel.appearance.customBackground?.also {
+             if (it.canApplyTheme()) {
+@@ -50,7 +52,7 @@ class ActionButtonViewBinder @Inject constructor() {
+             view.background = it
+         }
+ 
+-        setMargins(iconView, textView, viewModel.appearance.label?.isNotEmpty() ?: false)
++        setMargins(iconView, textView, false)
+         if (viewModel.onClicked != null) {
+             view.setOnClickListener { viewModel.onClicked.invoke() }
+         } else {
+-- 
+2.51.2.windows.1
+

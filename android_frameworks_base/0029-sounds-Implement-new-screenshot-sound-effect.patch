@@ -1,0 +1,213 @@
+From 8c9dbbadf75b906f270fb9ad690d0f495f64381a Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Mon, 26 Dec 2022 20:07:09 +0800
+Subject: [PATCH] sounds: Implement new screenshot sound effect
+
+* shipped ogg file taken from nothingOS qssi 13 fw [1]
+
+[1]https://dumps.tadiphone.dev/dumps/nothing/spacewar/-/blob/qssi-user-13-TKQ1.220915.002-1671077980-release-keys/product/media/audio/ui/screenshot.ogg
+
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ core/res/res/values/config.xml                   |   2 ++
+ core/res/res/values/symbols.xml                  |   1 +
+ data/sounds/AllAudio.mk                          |   1 +
+ data/sounds/AudioPackage14.mk                    |   2 ++
+ data/sounds/effects/ogg/screenshot.ogg           | Bin 0 -> 6996 bytes
+ .../screenshot/ScreenshotSoundProvider.kt        |   2 +-
+ 6 files changed, 7 insertions(+), 1 deletion(-)
+ create mode 100644 data/sounds/effects/ogg/screenshot.ogg
+
+diff --git a/core/res/res/values/config.xml b/core/res/res/values/config.xml
+index b20111fa52bd..aff9430dd788 100644
+--- a/core/res/res/values/config.xml
++++ b/core/res/res/values/config.xml
+@@ -5214,6 +5214,8 @@
+     <!-- URI for camera shutter sound -->
+     <string translatable="false" name="config_cameraShutterSound">/product/media/audio/ui/camera_click.ogg</string>
+ 
++    <string translatable="false" name="config_screenshotSound">/product/media/audio/ui/screenshot.ogg</string>
++
+     <!-- @deprecated This configuration is no longer used. -->
+     <string translatable="false" name="config_defaultRingtoneVibrationSound"></string>
+ 
+diff --git a/core/res/res/values/symbols.xml b/core/res/res/values/symbols.xml
+index 70e3356a46fe..66eb3df3d55d 100644
+--- a/core/res/res/values/symbols.xml
++++ b/core/res/res/values/symbols.xml
+@@ -4167,6 +4167,7 @@
+   <java-symbol type="dimen" name="config_inCallNotificationVolume" />
+   <java-symbol type="string" name="config_inCallNotificationSound" />
+   <java-symbol type="string" name="config_cameraShutterSound" />
++  <java-symbol type="string" name="config_screenshotSound" />
+   <java-symbol type="integer" name="config_autoGroupAtCount" />
+   <java-symbol type="bool" name="config_dozeAlwaysOnDisplayAvailable" />
+   <java-symbol type="bool" name="config_dozePickupGestureEnabled" />
+diff --git a/data/sounds/AllAudio.mk b/data/sounds/AllAudio.mk
+index a3495209fba0..865c9466fbfd 100644
+--- a/data/sounds/AllAudio.mk
++++ b/data/sounds/AllAudio.mk
+@@ -219,6 +219,7 @@ PRODUCT_COPY_FILES += \
+     $(LOCAL_PATH)/effects/ogg/KeypressInvalid_120_48k.ogg:$(TARGET_COPY_OUT_PRODUCT)/media/audio/ui/KeypressInvalid.ogg \
+     $(LOCAL_PATH)/effects/ogg/Lock.ogg:$(TARGET_COPY_OUT_PRODUCT)/media/audio/ui/Lock.ogg \
+     $(LOCAL_PATH)/effects/ogg/LowBattery.ogg:$(TARGET_COPY_OUT_PRODUCT)/media/audio/ui/LowBattery.ogg \
++    $(LOCAL_PATH)/effects/ogg/screenshot.ogg:$(TARGET_COPY_OUT_PRODUCT)/media/audio/ui/screenshot.ogg \
+     $(LOCAL_PATH)/effects/ogg/Undock.ogg:$(TARGET_COPY_OUT_PRODUCT)/media/audio/ui/Undock.ogg \
+     $(LOCAL_PATH)/effects/ogg/Unlock.ogg:$(TARGET_COPY_OUT_PRODUCT)/media/audio/ui/Unlock.ogg \
+     $(LOCAL_PATH)/effects/ogg/Trusted_48k.ogg:$(TARGET_COPY_OUT_PRODUCT)/media/audio/ui/Trusted.ogg \
+diff --git a/data/sounds/AudioPackage14.mk b/data/sounds/AudioPackage14.mk
+index 3d161aabbf95..52474821394d 100644
+--- a/data/sounds/AudioPackage14.mk
++++ b/data/sounds/AudioPackage14.mk
+@@ -30,3 +30,5 @@ PRODUCT_COPY_FILES += $(foreach fn,$(EFFECT_FILES),\
+ 	$(LOCAL_PATH)/effects/ogg/$(fn).ogg:$(TARGET_COPY_OUT_PRODUCT)/media/audio/ui/$(fn).ogg)
+ PRODUCT_COPY_FILES += $(foreach fn,$(MATERIAL_EFFECT_FILES),\
+ 	$(LOCAL_PATH)/effects/material/ogg/$(fn).ogg:$(TARGET_COPY_OUT_PRODUCT)/media/audio/ui/$(fn).ogg)
++	
++PRODUCT_COPY_FILES += $(LOCAL_PATH)/effects/ogg/screenshot.ogg:$(TARGET_COPY_OUT_PRODUCT)/media/audio/ui/screenshot.ogg
+diff --git a/data/sounds/effects/ogg/screenshot.ogg b/data/sounds/effects/ogg/screenshot.ogg
+new file mode 100644
+index 0000000000000000000000000000000000000000..0c46a8aaa2a3284e9f4b20d228a125b3e6ca7a02
+GIT binary patch
+literal 6996
+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
+zS}T(Car9f)o<$7L_V0oQJF7!Ehkn32m)c%0AQ3^~PggBjVeUJrO0*J+ZtEpNcxk|i
+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
+POw_@@5l^c$bfEtMTbx_W
+
+literal 0
+HcmV?d00001
+
+diff --git a/packages/SystemUI/src/com/android/systemui/screenshot/ScreenshotSoundProvider.kt b/packages/SystemUI/src/com/android/systemui/screenshot/ScreenshotSoundProvider.kt
+index 73151d5298c9..31e313cef3cf 100644
+--- a/packages/SystemUI/src/com/android/systemui/screenshot/ScreenshotSoundProvider.kt
++++ b/packages/SystemUI/src/com/android/systemui/screenshot/ScreenshotSoundProvider.kt
+@@ -45,7 +45,7 @@ constructor(
+     override fun getScreenshotSound(): MediaPlayer {
+         return MediaPlayer.create(
+             context,
+-            Uri.fromFile(File(context.resources.getString(R.string.config_cameraShutterSound))),
++            Uri.fromFile(File(context.resources.getString(R.string.config_screenshotSound))),
+             /* holder = */ null,
+             AudioAttributes.Builder()
+                 .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
+-- 
+2.51.2.windows.1
+

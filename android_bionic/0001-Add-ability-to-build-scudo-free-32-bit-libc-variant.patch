@@ -1,0 +1,113 @@
+From 93a627850efb75f7284405528e9f7ea3a397dcfa Mon Sep 17 00:00:00 2001
+From: Quallenauge <Hamsi2k@freenet.de>
+Date: Tue, 20 Oct 2020 21:19:01 +0200
+Subject: [PATCH 1/2] Add ability to build scudo-free 32-bit libc variant.
+
+Scudo seems to have issues with camera blobs,
+which also the case with google devices.
+https://android-review.googlesource.com/q/topic:%22disable-camera24-memory-mitigations%22+(status:open%20OR%20status:merged)
+These changes are applied upstream and needed much more
+commits in various components which makes it difficult to backport.
+
+Therefore add option to disable scudo only for 32 bit components,
+like camera modules.
+
+Change-Id: Ie4e62477b0801413827007c511e547b12ea2f46d
+---
+ libc/Android.bp | 71 ++++++++++++++++++++++++++++++++++++-------------
+ 1 file changed, 53 insertions(+), 18 deletions(-)
+
+diff --git a/libc/Android.bp b/libc/Android.bp
+index 5bca48482..869ab070f 100644
+--- a/libc/Android.bp
++++ b/libc/Android.bp
+@@ -87,15 +87,32 @@ cc_defaults {
+     recovery_available: true,
+     native_bridge_supported: true,
+ 
+-    product_variables: {
+-        malloc_zero_contents: {
+-            cflags: ["-DSCUDO_ZERO_CONTENTS"],
+-        },
+-        malloc_pattern_fill_contents: {
+-            cflags: ["-DSCUDO_PATTERN_FILL_CONTENTS"],
++    multilib: {
++        lib64: {
++            product_variables: {
++                malloc_zero_contents: {
++                    cflags: ["-DSCUDO_ZERO_CONTENTS"],
++                },
++                malloc_pattern_fill_contents: {
++                    cflags: ["-DSCUDO_PATTERN_FILL_CONTENTS"],
++                },
++                malloc_low_memory: {
++                    cflags: ["-UUSE_SCUDO"],
++                },
++            },
+         },
+-        malloc_low_memory: {
+-            cflags: ["-UUSE_SCUDO"],
++        lib32: {
++            product_variables: {
++                malloc_zero_contents: {
++                    cflags: ["-DSCUDO_ZERO_CONTENTS"],
++                },
++                malloc_pattern_fill_contents: {
++                    cflags: ["-DSCUDO_PATTERN_FILL_CONTENTS"],
++                },
++                malloc_low_memory_libc32: {
++                    cflags: ["-UUSE_SCUDO"],
++                },
++            },
+         },
+     },
+ 
+@@ -178,17 +195,35 @@ cc_defaults {
+         "-DUSE_SCUDO",
+     ],
+     header_libs: ["gwp_asan_headers"],
+-    product_variables: {
+-        malloc_low_memory: {
+-            cflags: ["-UUSE_SCUDO"],
+-            whole_static_libs: [
+-                "libjemalloc5",
+-                "libc_jemalloc_wrapper",
+-            ],
+-            exclude_static_libs: [
+-                "libscudo",
+-            ],
++    multilib: {
++        lib64: {
++            product_variables: {
++                malloc_low_memory: {
++                    cflags: ["-UUSE_SCUDO"],
++                    whole_static_libs: [
++                        "libjemalloc5",
++                        "libc_jemalloc_wrapper",
++                    ],
++                    exclude_static_libs: [
++                        "libscudo",
++                    ],
++                },
++            },
+         },
++        lib32: {
++            product_variables: {
++                malloc_low_memory_libc32: {
++                    cflags: ["-UUSE_SCUDO"],
++                    whole_static_libs: [
++                        "libjemalloc5",
++                        "libc_jemalloc_wrapper",
++                    ],
++                    exclude_static_libs: [
++                        "libscudo",
++                    ],
++                },
++            },
++        }
+     },
+ }
+ 
+-- 
+2.51.2.windows.1
+

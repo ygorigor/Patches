@@ -1,0 +1,27 @@
+From d1ef9edbdfae4949be1f7ada6d9dc0cf4b7238b3 Mon Sep 17 00:00:00 2001
+From: Lucchetto <lucchetto.tie@live.com>
+Date: Thu, 14 Feb 2019 21:06:30 +0100
+Subject: [PATCH] SystemUI: Make popup menus more rounded
+
+Change-Id: I1796d4790a92dd9e5294d38e29d8c7d0ff467e2e
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ core/res/res/drawable/popup_background_material.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/core/res/res/drawable/popup_background_material.xml b/core/res/res/drawable/popup_background_material.xml
+index 9ad7bfc68122..5910b9f163a5 100644
+--- a/core/res/res/drawable/popup_background_material.xml
++++ b/core/res/res/drawable/popup_background_material.xml
+@@ -18,7 +18,7 @@
+        android:shape="rectangle">
+ 
+     <corners
+-            android:radius="2dp" />
++            android:radius="?attr/dialogCornerRadius" />
+     <solid
+             android:color="?attr/colorPopupBackground" />
+ 
+-- 
+2.51.2.windows.1
+

@@ -1,0 +1,60 @@
+From cae5f72368b2a96238dfc385fbc3296390539070 Mon Sep 17 00:00:00 2001
+From: NurKeinNeid <nurkeinneid@derpfest.org>
+Date: Thu, 17 Jul 2025 17:20:41 +0000
+Subject: [PATCH] SystemUI: Fix clock plugin animations during keyguard
+ transitions
+
+- Add proper handling for DOZING state transitions in ClockEventController
+- Ensure smooth animations when transitioning between AOD, DOZING, and LOCKSCREEN states
+- Fix edge case where clock plugins weren't animating correctly during doze transitions
+
+This addresses the same issue as AxionAOSP/android_frameworks_base@079b811a0a6d7a141c294ecc8ff7b7b3b2b9adac
+but with a more targeted approach that doesn't break other functionality.
+
+Signed-off-by: NurKeinNeid <nurkeinneid@derpfest.org>
+---
+ .../com/android/keyguard/ClockEventController.kt   | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/packages/SystemUI/src/com/android/keyguard/ClockEventController.kt b/packages/SystemUI/src/com/android/keyguard/ClockEventController.kt
+index 63189083e22e..96df6e12c42c 100644
+--- a/packages/SystemUI/src/com/android/keyguard/ClockEventController.kt
++++ b/packages/SystemUI/src/com/android/keyguard/ClockEventController.kt
+@@ -466,9 +466,11 @@ constructor(
+         zenModeController.addCallback(zenModeCallback)
+         if (SceneContainerFlag.isEnabled) {
+             handleDoze(
+-                when (AOD) {
+-                    keyguardTransitionInteractor.getCurrentState() -> 1f
+-                    keyguardTransitionInteractor.getStartedState() -> 1f
++                when {
++                    keyguardTransitionInteractor.getCurrentState() == AOD -> 1f
++                    keyguardTransitionInteractor.getStartedState() == AOD -> 1f
++                    keyguardTransitionInteractor.getCurrentState() == DOZING -> 1f
++                    keyguardTransitionInteractor.getStartedState() == DOZING -> 1f
+                     else -> 0f
+                 }
+             )
+@@ -603,6 +605,10 @@ constructor(
+                         it.copy(value = 1f - it.value)
+                     },
+                     keyguardTransitionInteractor.transition(Edge.create(LOCKSCREEN, AOD)),
++                    keyguardTransitionInteractor.transition(Edge.create(DOZING, LOCKSCREEN)).map {
++                        it.copy(value = 1f - it.value)
++                    },
++                    keyguardTransitionInteractor.transition(Edge.create(LOCKSCREEN, DOZING)),
+                 )
+                 .filter { it.transitionState != TransitionState.FINISHED }
+                 .collect { handleDoze(it.value) }
+@@ -631,7 +637,7 @@ constructor(
+             keyguardTransitionInteractor
+                 .transition(Edge.create(to = LOCKSCREEN))
+                 .filter { it.transitionState == TransitionState.STARTED }
+-                .filter { it.from != AOD }
++                .filter { it.from != AOD && it.from != DOZING }
+                 .collect { handleDoze(0f) }
+         }
+     }
+-- 
+2.51.2.windows.1
+

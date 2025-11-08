@@ -1,0 +1,27 @@
+From c5d351652bfac66353804d43f7f3d54843a59b69 Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Mon, 1 Sep 2025 22:15:50 +0530
+Subject: [PATCH] SliderPreference: Fix thumb color
+
+* Looks like this was missed by AOSP.
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../src/com/android/settingslib/widget/SliderPreference.java     | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/packages/SettingsLib/SliderPreference/src/com/android/settingslib/widget/SliderPreference.java b/packages/SettingsLib/SliderPreference/src/com/android/settingslib/widget/SliderPreference.java
+index 6d02c5d48715..2837194726e5 100644
+--- a/packages/SettingsLib/SliderPreference/src/com/android/settingslib/widget/SliderPreference.java
++++ b/packages/SettingsLib/SliderPreference/src/com/android/settingslib/widget/SliderPreference.java
+@@ -298,6 +298,7 @@ public class SliderPreference extends Preference {
+         // Set up slider color
+         mSlider.setTrackActiveTintList(mTrackActiveColor);
+         mSlider.setTrackInactiveTintList(mTrackInactiveColor);
++        mSlider.setThumbStrokeColor(mThumbColor);
+         mSlider.setThumbTintList(mThumbColor);
+         mSlider.setHaloTintList(mHaloColor);
+         mSlider.setTickActiveTintList(mTrackInactiveColor);
+-- 
+2.51.2.windows.1
+
