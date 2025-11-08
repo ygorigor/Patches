@@ -1,0 +1,24 @@
+From 80a779231f559c4cece972fb2074164106b0f774 Mon Sep 17 00:00:00 2001
+From: Lup Gabriel <gwolf2u.website@gmail.com>
+Date: Mon, 7 Jul 2025 21:34:43 +0300
+Subject: [PATCH] soong: allow curl in path
+
+---
+ ui/build/paths/config.go | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/ui/build/paths/config.go b/ui/build/paths/config.go
+index 7914f982f..ce646a9ef 100644
+--- a/ui/build/paths/config.go
++++ b/ui/build/paths/config.go
+@@ -87,6 +87,7 @@ func GetConfig(name string) PathConfig {
+ // run during the build. For more documentation, see path_interposer.go .
+ var Configuration = map[string]PathConfig{
+ 	"bash":        Allowed,
++	"curl":        Allowed,
+ 	"date":        Allowed,
+ 	"diff":        Allowed,
+ 	"dlv":         Allowed,
+-- 
+2.47.1.windows.1
+

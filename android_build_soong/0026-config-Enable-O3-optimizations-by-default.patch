@@ -1,0 +1,41 @@
+From 38fed88f56d99efa7e72e3f7069c9163d096a178 Mon Sep 17 00:00:00 2001
+From: Akash Srivastava <akashniki@gmail.com>
+Date: Tue, 31 Dec 2024 00:04:35 +0100
+Subject: [PATCH] config: Enable O3 optimizations by default
+
+Change-Id: I6befdddda42b1d0c28e41a9033aca451fb3e8855
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ bpf/bpf.go          | 2 +-
+ cc/config/global.go | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/bpf/bpf.go b/bpf/bpf.go
+index deb465dd6..44dc13539 100644
+--- a/bpf/bpf.go
++++ b/bpf/bpf.go
+@@ -160,7 +160,7 @@ func (bpf *bpf) GenerateAndroidBuildActions(ctx android.ModuleContext) {
+ 		// Make paths in deps files relative
+ 		"-no-canonical-prefixes",
+ 
+-		"-O2",
++		"-O3",
+ 		"-Wall",
+ 		"-Werror",
+ 		"-Wextra",
+diff --git a/cc/config/global.go b/cc/config/global.go
+index e81ac0d47..6acf92b10 100644
+--- a/cc/config/global.go
++++ b/cc/config/global.go
+@@ -30,7 +30,7 @@ var (
+ 	// will save bytes in build.ninja so they aren't repeated for every file
+ 	commonGlobalCflags = []string{
+ 		// Enable some optimization by default.
+-		"-O2",
++		"-O3",
+ 
+ 		// Warnings enabled by default. Reference:
+ 		// https://clang.llvm.org/docs/DiagnosticsReference.html
+-- 
+2.47.1.windows.1
+

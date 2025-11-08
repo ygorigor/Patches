@@ -1,0 +1,44 @@
+From 9e539a7d4af8cbd5c0b89f8bba05e2ed3b743176 Mon Sep 17 00:00:00 2001
+From: Ronalds <7190697+kondors1995@users.noreply.github.com>
+Date: Sat, 23 Dec 2023 19:47:35 +0000
+Subject: [PATCH] config: do not force cortex-a76 as cortex-a75
+
+Based of @yaap/build_soong/3e61d11
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ cc/config/arm64_device.go | 4 +---
+ cc/config/arm_device.go   | 2 +-
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/cc/config/arm64_device.go b/cc/config/arm64_device.go
+index 5b8bf19d9..0016e1f28 100644
+--- a/cc/config/arm64_device.go
++++ b/cc/config/arm64_device.go
+@@ -90,9 +90,7 @@ var (
+ 			"-mcpu=cortex-a55",
+ 		},
+ 		"cortex-a76": []string{
+-			// Use the cortex-a75 because some AOSP repos still use
+-			// -no-integrated-as and binutils doesn't know the a76.
+-			"-mcpu=cortex-a75",
++			"-mcpu=cortex-a76+crypto+crc",
+ 		},
+ 		"kryo": []string{
+ 			"-mcpu=kryo",
+diff --git a/cc/config/arm_device.go b/cc/config/arm_device.go
+index 868dae8fc..fc3e8bdb4 100644
+--- a/cc/config/arm_device.go
++++ b/cc/config/arm_device.go
+@@ -138,7 +138,7 @@ var (
+ 			"-D__ARM_FEATURE_LPAE=1",
+ 		},
+ 		"cortex-a76": []string{
+-			"-mcpu=cortex-a75",
++			"-mcpu=cortex-a76+crypto+crc",
+ 			"-mfpu=neon-fp-armv8",
+ 			// Fake an ARM compiler flag as these processors support LPAE which clang
+ 			// don't advertise.
+-- 
+2.47.1.windows.1
+

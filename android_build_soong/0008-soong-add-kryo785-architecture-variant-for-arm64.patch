@@ -1,0 +1,27 @@
+From a828ea9e29e24c50a762225877f8f0f7f5ff83ae Mon Sep 17 00:00:00 2001
+From: Sungwook Jung <sungwook.jung@codeaurora.org>
+Date: Wed, 9 Jun 2021 23:05:53 -0700
+Subject: [PATCH] soong: add kryo785 architecture variant for arm64.
+
+CRs-Fixed: 2966364
+Change-Id: Ie120a718918b45e1f3c5fecc4c0caab0f17e1607
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ android/arch_list.go | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/android/arch_list.go b/android/arch_list.go
+index a73d4ba03..081c286f3 100644
+--- a/android/arch_list.go
++++ b/android/arch_list.go
+@@ -106,6 +106,7 @@ var cpuVariants = map[ArchType][]string{
+ 		"cortex-a76",
+ 		"kryo",
+ 		"kryo385",
++		"kryo785",
+ 		"exynos-m1",
+ 		"exynos-m2",
+ 		"oryon",
+-- 
+2.47.1.windows.1
+

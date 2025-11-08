@@ -1,0 +1,28 @@
+From 86a99bd575225a205b9cdd90a846482f1a3d5e46 Mon Sep 17 00:00:00 2001
+From: Akash <akashniki@gmail.com>
+Date: Sun, 17 May 2020 10:06:20 +0200
+Subject: [PATCH] soong: Disable sandbox
+
+AOSP compiler seems to ignore it anyhow. Disabling it silences the following warning:
+
+**Build sandboxing disabled due to nsjail error.**
+---
+ ui/build/sandbox_linux.go | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ui/build/sandbox_linux.go b/ui/build/sandbox_linux.go
+index 1edbe2121..74e4b2e97 100644
+--- a/ui/build/sandbox_linux.go
++++ b/ui/build/sandbox_linux.go
+@@ -34,7 +34,7 @@ type Sandbox struct {
+ var (
+ 	noSandbox    = Sandbox{}
+ 	basicSandbox = Sandbox{
+-		Enabled: true,
++		Enabled: false,
+ 	}
+ 
+ 	dumpvarsSandbox = basicSandbox
+-- 
+2.47.1.windows.1
+

@@ -1,0 +1,23 @@
+From a86d3f64b93d11044af082800d481035f50f49fa Mon Sep 17 00:00:00 2001
+From: israfilbd <144210295+israfilbd@users.noreply.github.com>
+Date: Thu, 27 Mar 2025 19:00:56 +0600
+Subject: [PATCH] Disable fsgen check
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ fsgen/Android.bp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/fsgen/Android.bp b/fsgen/Android.bp
+index 1b828c5d9..4df063c96 100644
+--- a/fsgen/Android.bp
++++ b/fsgen/Android.bp
+@@ -31,4 +31,5 @@ bootstrap_go_package {
+ 
+ soong_filesystem_creator {
+     name: "soong_filesystem_creator",
++    enabled: false,
+ }
+-- 
+2.47.1.windows.1
+

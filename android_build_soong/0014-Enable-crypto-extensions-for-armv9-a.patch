@@ -1,0 +1,33 @@
+From e15031e409fc7715b6ed7570a54a70358a4a8196 Mon Sep 17 00:00:00 2001
+From: Adithya R <gh0strider.2k18.reborn@gmail.com>
+Date: Thu, 21 Dec 2023 23:11:25 +0530
+Subject: [PATCH] Enable crypto extensions for armv9-a
+
+It's not enabled by default for ARMv9-A targets on LLVM.
+But most, if not all, of the ARMv9-A CPUs do support it.
+
+Ref: https://github.com/llvm/llvm-project/commit/f576cbe44eabb8a5ac0af817424a0d1e7c8fbf85
+Shoutout to Jake for noticing.
+
+Change-Id: I5d900df45de9d843546ab2c0a9537eb79662be4a
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ cc/config/arm64_device.go | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cc/config/arm64_device.go b/cc/config/arm64_device.go
+index 029fd95b4..9341eb69d 100644
+--- a/cc/config/arm64_device.go
++++ b/cc/config/arm64_device.go
+@@ -44,7 +44,7 @@ var (
+ 		// On ARMv9 and later, Pointer Authentication Codes (PAC) are mandatory,
+ 		// so -fstack-protector is unnecessary.
+ 		"armv9-a": []string{
+-			"-march=armv9-a+nosve",
++			"-march=armv9-a+crypto+nosve",
+ 			"-mbranch-protection=standard",
+ 			"-fno-stack-protector",
+ 		},
+-- 
+2.47.1.windows.1
+

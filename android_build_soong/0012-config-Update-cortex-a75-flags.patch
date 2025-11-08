@@ -1,0 +1,42 @@
+From f151f07aaf28f1e2e30e976be1c1a865769bdefa Mon Sep 17 00:00:00 2001
+From: Ronalds <7190697+kondors1995@users.noreply.github.com>
+Date: Sat, 23 Dec 2023 19:52:36 +0000
+Subject: [PATCH] config: Update cortex a75 flags
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ cc/config/arm64_device.go | 4 +---
+ cc/config/arm_device.go   | 2 +-
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/cc/config/arm64_device.go b/cc/config/arm64_device.go
+index 0016e1f28..31781c7fc 100644
+--- a/cc/config/arm64_device.go
++++ b/cc/config/arm64_device.go
+@@ -85,9 +85,7 @@ var (
+ 			"-mcpu=cortex-a55",
+ 		},
+ 		"cortex-a75": []string{
+-			// Use the cortex-a55 since it is similar to the little
+-			// core (cortex-a55) and is sensitive to ordering.
+-			"-mcpu=cortex-a55",
++			"-mcpu=cortex-a75+crypto+crc",
+ 		},
+ 		"cortex-a76": []string{
+ 			"-mcpu=cortex-a76+crypto+crc",
+diff --git a/cc/config/arm_device.go b/cc/config/arm_device.go
+index fc3e8bdb4..c64f333ba 100644
+--- a/cc/config/arm_device.go
++++ b/cc/config/arm_device.go
+@@ -129,7 +129,7 @@ var (
+ 			"-D__ARM_FEATURE_LPAE=1",
+ 		},
+ 		"cortex-a75": []string{
+-			"-mcpu=cortex-a55",
++			"-mcpu=cortex-a75+crypto+crc",
+ 			"-mfpu=neon-fp-armv8",
+ 			// Fake an ARM compiler flag as these processors support LPAE which clang
+ 			// don't advertise.
+-- 
+2.47.1.windows.1
+

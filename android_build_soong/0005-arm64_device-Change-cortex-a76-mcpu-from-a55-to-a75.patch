@@ -1,0 +1,50 @@
+From 41a544a0ecffd6bb5492490c892c2fac3aa201b0 Mon Sep 17 00:00:00 2001
+From: Jason Edson <jaysonedson@gmail.com>
+Date: Sun, 13 Dec 2020 19:14:04 -0800
+Subject: [PATCH] arm64_device: Change cortex-a76 mcpu from a55 to a75
+
+Change-Id: I94ac35df6efd2bc96e38e5a64086f4c0878addf6
+Signed-off-by: Jason Edson <jaysonedson@gmail.com>
+[@neobuddy89: Updated for A13]
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ cc/config/arm64_device.go | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/cc/config/arm64_device.go b/cc/config/arm64_device.go
+index 56956af03..7121455fb 100644
+--- a/cc/config/arm64_device.go
++++ b/cc/config/arm64_device.go
+@@ -90,9 +90,9 @@ var (
+ 			"-mcpu=cortex-a55",
+ 		},
+ 		"cortex-a76": []string{
+-			// Use the cortex-a55 since it is similar to the little
+-			// core (cortex-a55) and is sensitive to ordering.
+-			"-mcpu=cortex-a55",
++			// Use the cortex-a75 because some AOSP repos still use
++			// -no-integrated-as and binutils doesn't know the a76.
++			"-mcpu=cortex-a75",
+ 		},
+ 		"kryo": []string{
+ 			"-mcpu=kryo",
+@@ -138,6 +138,7 @@ func init() {
+         pctx.StaticVariable("Arm64CortexA510Cflags", strings.Join(arm64CpuVariantCflags["cortex-a510"], " "))
+ 	pctx.StaticVariable("Arm64CortexA53Cflags", strings.Join(arm64CpuVariantCflags["cortex-a53"], " "))
+ 	pctx.StaticVariable("Arm64CortexA55Cflags", strings.Join(arm64CpuVariantCflags["cortex-a55"], " "))
++	pctx.StaticVariable("Arm64CortexA76Cflags", strings.Join(arm64CpuVariantCflags["cortex-a76"], " "))
+ 	pctx.StaticVariable("Arm64KryoCflags", strings.Join(arm64CpuVariantCflags["kryo"], " "))
+ 	pctx.StaticVariable("Arm64ExynosM1Cflags", strings.Join(arm64CpuVariantCflags["exynos-m1"], " "))
+ 	pctx.StaticVariable("Arm64ExynosM2Cflags", strings.Join(arm64CpuVariantCflags["exynos-m2"], " "))
+@@ -153,7 +154,7 @@ var (
+ 		"cortex-a72": "${config.Arm64CortexA53Cflags}",
+ 		"cortex-a73": "${config.Arm64CortexA53Cflags}",
+ 		"cortex-a75": "${config.Arm64CortexA55Cflags}",
+-		"cortex-a76": "${config.Arm64CortexA55Cflags}",
++		"cortex-a76": "${config.Arm64CortexA76Cflags}",
+ 		"kryo":       "${config.Arm64KryoCflags}",
+ 		"kryo385":    "${config.Arm64CortexA53Cflags}",
+ 		"exynos-m1":  "${config.Arm64ExynosM1Cflags}",
+-- 
+2.47.1.windows.1
+

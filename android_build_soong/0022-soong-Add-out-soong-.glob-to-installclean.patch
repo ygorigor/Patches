@@ -1,0 +1,26 @@
+From be60db2297a9a1f95eba44f07ae0364aa3adbe6d Mon Sep 17 00:00:00 2001
+From: Ido Ben-Hur <idoybh2@gmail.com>
+Date: Sat, 21 Dec 2024 20:19:58 +0200
+Subject: [PATCH] soong: Add out/soong/*.glob* to installclean
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ ui/build/cleanbuild.go | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/ui/build/cleanbuild.go b/ui/build/cleanbuild.go
+index 4c2069032..ae7352b02 100644
+--- a/ui/build/cleanbuild.go
++++ b/ui/build/cleanbuild.go
+@@ -106,6 +106,8 @@ func installClean(ctx Context, config Config) {
+ 		return filepath.Join(productOutPath, path)
+ 	}
+ 
++	removeGlobs(ctx, filepath.Join(config.OutDir(), "soong", "*.glob*"))
++
+ 	// Host bin, frameworks, and lib* are intentionally omitted, since
+ 	// otherwise we'd have to rebuild any generated files created with
+ 	// those tools.
+-- 
+2.47.1.windows.1
+

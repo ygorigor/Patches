@@ -1,0 +1,45 @@
+From fe3ce1a8886dbb9bcbb052ffac5397e14f2be7fd Mon Sep 17 00:00:00 2001
+From: Jake Weinstein <jake@aospa.co>
+Date: Wed, 31 Jul 2019 10:53:24 -0500
+Subject: [PATCH] Define AArch32 soong variable
+
+Change-Id: I1a52a8e8e436eec827022413270d8b7c76808a69
+(cherry picked from commit a677cdce6f6678e1c3cf654da1921f4ce1c951ff)
+Signed-off-by: Vishalcj17 <vishalcj@aospa.co>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ android/arch_list.go | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/android/arch_list.go b/android/arch_list.go
+index 5e1d10631..a73d4ba03 100644
+--- a/android/arch_list.go
++++ b/android/arch_list.go
+@@ -115,6 +115,9 @@ var cpuVariants = map[ArchType][]string{
+ }
+ 
+ var archFeatures = map[ArchType][]string{
++	Arm: {
++		"aarch32",
++	},
+ 	Arm64: {
+ 		"dotprod",
+ 	},
+@@ -144,6 +147,14 @@ var archFeatures = map[ArchType][]string{
+ }
+ 
+ var androidArchFeatureMap = map[ArchType]map[string][]string{
++	Arm: {
++		"armv8-a": {
++			"aarch32",
++		},
++		"armv8-2a": {
++			"aarch32",
++		},
++	},
+ 	Arm64: {
+ 		"armv8-2a-dotprod": {
+ 			"dotprod",
+-- 
+2.47.1.windows.1
+
