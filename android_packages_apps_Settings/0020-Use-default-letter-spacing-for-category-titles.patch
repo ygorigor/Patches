@@ -1,0 +1,29 @@
+From c4d7bd062c875af259b88ec5f81eb2e56806bdab Mon Sep 17 00:00:00 2001
+From: Danny Lin <danny@kdrag0n.dev>
+Date: Thu, 17 Feb 2022 20:40:08 -0800
+Subject: [PATCH] Use default letter spacing for category titles
+
+This allows Inter Dynamic Metrics to take effect.
+
+Change-Id: I587d2b94bba73e3c6f85b421e655a3285da6c01b
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ res/values/styles.xml | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/res/values/styles.xml b/res/values/styles.xml
+index 89fe04f5388..617ddd9fd39 100644
+--- a/res/values/styles.xml
++++ b/res/values/styles.xml
+@@ -244,8 +244,6 @@
+            parent="@*android:style/TextAppearance.DeviceDefault.Body2">
+         <item name="android:textAllCaps">true</item>
+         <item name="android:textSize">11sp</item>
+-        <!-- 0.8 Spacing, 0.8/11 = 0.072727273 -->
+-        <item name="android:letterSpacing">0.072727273</item>
+     </style>
+ 
+     <style name="TextAppearance.SuggestionTitle"
+-- 
+2.47.1.windows.1
+

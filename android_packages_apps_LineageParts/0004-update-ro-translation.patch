@@ -1,0 +1,23 @@
+From a4c7c3571fb4fd89f866752d89354c5ee55f5b21 Mon Sep 17 00:00:00 2001
+From: Igor <sorocean.igor@gmail.com>
+Date: Fri, 7 Nov 2025 07:46:28 +0200
+Subject: [PATCH] update ro translation
+
+---
+ res/values-ro/strings.xml | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/res/values-ro/strings.xml b/res/values-ro/strings.xml
+index ef22f7e..822f8bb 100644
+--- a/res/values-ro/strings.xml
++++ b/res/values-ro/strings.xml
+@@ -536,4 +536,6 @@
+     <string name="sms_security_check_limit_summary">Aplicațiile pot trimite %s mesaje într-un minut înainte de a fi necesară confirmarea</string>
+     <string name="sms_security_check_limit_summary_none">Aplicațiilor nu li se permite să poată trimite vreun mesaj decât cu confirmare</string>
+     <string name="sms_security_check_limit_always_confirm">Confirmă întotdeauna</string>
++    <string name="data_disabled_icon_title">Indicator date dezactivate</string>
++    <string name="data_disabled_icon_summary">Afișează un indicator lângă pictograma semnalului atunci când datele sunt dezactivate</string>
+ </resources>
+-- 
+2.47.1.windows.1
+

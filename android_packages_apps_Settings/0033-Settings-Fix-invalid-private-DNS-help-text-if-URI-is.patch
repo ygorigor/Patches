@@ -1,0 +1,39 @@
+From 70575eaa71ba997f81e8f7c04f8313fa7f1c2425 Mon Sep 17 00:00:00 2001
+From: Danny Lin <danny@kdrag0n.dev>
+Date: Thu, 8 Oct 2020 23:47:05 -0700
+Subject: [PATCH] Settings: Fix invalid private DNS help text if URI is missing
+
+AOSP does not have help URIs configured, so there is no relevant content
+to show in the private DNS dialog's help text section, and the preference
+controller never sets the content of the help text view. This results in
+a random irrelevant message related to Bluetooth audio being shown in
+the dialog: "Gray-out means not supported by phone or headset"
+
+This is caused by the private DNS dialog sharing the
+preference_widget_dialog_summary snippet with Bluetooth A2DP codec
+settings. To fix this issue, we can hide the help text view entirely if
+there is no help URI defined.
+
+Change-Id: Ie74a1be347351a6db68412321d0c68f3138fae6b
+Signed-off-by: Joey Huab <joey@evolution-x.org>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../settings/network/PrivateDnsModeDialogPreference.java        | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/com/android/settings/network/PrivateDnsModeDialogPreference.java b/src/com/android/settings/network/PrivateDnsModeDialogPreference.java
+index 1dc814e0ccb..153fea2ebc8 100644
+--- a/src/com/android/settings/network/PrivateDnsModeDialogPreference.java
++++ b/src/com/android/settings/network/PrivateDnsModeDialogPreference.java
+@@ -220,7 +220,7 @@ public class PrivateDnsModeDialogPreference extends CustomDialogPreferenceCompat
+             helpTextView.setText(AnnotationSpan.linkify(
+                     context.getText(R.string.private_dns_help_message), linkInfo));
+         } else {
+-            helpTextView.setText("");
++            helpTextView.setVisibility(View.GONE);
+         }
+ 
+         updateDialogInfo();
+-- 
+2.47.1.windows.1
+

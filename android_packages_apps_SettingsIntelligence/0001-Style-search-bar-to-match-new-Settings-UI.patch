@@ -1,4 +1,4 @@
-From 9782673b2273279fde8c39ecde04fb784e6c2d35 Mon Sep 17 00:00:00 2001
+From c5374bca18ebb6ea9651360cc34e6a1c47932352 Mon Sep 17 00:00:00 2001
 From: Danny Lin <danny@kdrag0n.dev>
 Date: Tue, 5 Oct 2021 19:17:46 -0700
 Subject: [PATCH] Style search bar to match new Settings UI
@@ -10,9 +10,6 @@ Subject: [PATCH] Style search bar to match new Settings UI
 Co-authored-by: Luca Stefani <luca.stefani.ge1@gmail.com>
 Co-authored-by: Michael Bestas <mkbestas@lineageos.org>
 Change-Id: I24d4725f3d759ea633768640995de16f9bdf2c55
-
-# Conflicts:
-#	res/values/colors.xml
 ---
  res/layout/search_panel.xml                              | 9 ++++-----
  res/values-night/colors.xml                              | 2 +-
@@ -63,18 +60,20 @@ index 3be2c99..a5fa04f 100644
  
  </resources>
 diff --git a/res/values/colors.xml b/res/values/colors.xml
-index daf4c39..5f506f0 100644
+index 5c3b05c..3679d9d 100644
 --- a/res/values/colors.xml
 +++ b/res/values/colors.xml
-@@ -15,6 +15,9 @@
+@@ -15,8 +15,11 @@
    limitations under the License.
    -->
  
 -<resources>
--    <color name="search_bar_background">?android:attr/colorBackground</color>
 +<resources
 +    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android">
 +
+     <color name="launcher_background_color">#ff008577</color>
+ 
+-    <color name="search_bar_background">?android:attr/colorBackground</color>
 +    <color name="search_bar_background">@androidprv:color/materialColorSurfaceBright</color>
 +
  </resources>
@@ -122,4 +121,5 @@ index 86b5b37..1ee69c6 100644
          activity.setActionBar(toolbar);
          activity.getActionBar().setDisplayHomeAsUpEnabled(true);
 -- 
+2.47.1.windows.1
 

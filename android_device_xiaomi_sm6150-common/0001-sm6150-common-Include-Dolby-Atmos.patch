@@ -26,7 +26,7 @@ Signed-off-by: therealmharc <therealmharc@gmail.com>
  create mode 100644 configs/media/media_codecs_dolby.xml
 
 diff --git a/BoardConfigCommon.mk b/BoardConfigCommon.mk
-index bbd94744b..1eb1d3216 100644
+index bbd9474..1eb1d32 100644
 --- a/BoardConfigCommon.mk
 +++ b/BoardConfigCommon.mk
 @@ -51,12 +51,12 @@ TARGET_FS_CONFIG_GEN := $(COMMON_PATH)/configs/config.fs
@@ -46,7 +46,7 @@ index bbd94744b..1eb1d3216 100644
  ODM_MANIFEST_FILES += $(COMMON_PATH)/configs/hidl/manifest-qva.xml
 diff --git a/configs/audio/audio_effects_dolby.xml b/configs/audio/audio_effects_dolby.xml
 new file mode 100644
-index 000000000..fa297fe02
+index 0000000..fa297fe
 --- /dev/null
 +++ b/configs/audio/audio_effects_dolby.xml
 @@ -0,0 +1,137 @@
@@ -189,7 +189,7 @@ index 000000000..fa297fe02
 +</audio_effects_conf>
 diff --git a/configs/audio/audio_policy_configuration_dolby.xml b/configs/audio/audio_policy_configuration_dolby.xml
 new file mode 100644
-index 000000000..fd8da7cdb
+index 0000000..fd8da7c
 --- /dev/null
 +++ b/configs/audio/audio_policy_configuration_dolby.xml
 @@ -0,0 +1,447 @@
@@ -642,7 +642,7 @@ index 000000000..fd8da7cdb
 +</audioPolicyConfiguration>
 diff --git a/configs/media/media_codecs_dolby.xml b/configs/media/media_codecs_dolby.xml
 new file mode 100644
-index 000000000..f722dd720
+index 0000000..f722dd7
 --- /dev/null
 +++ b/configs/media/media_codecs_dolby.xml
 @@ -0,0 +1,25 @@
@@ -672,7 +672,7 @@ index 000000000..f722dd720
 +    </Settings>
 +</MediaCodecs>
 diff --git a/sm6150.mk b/sm6150.mk
-index 903c7da1b..d5ef2592f 100644
+index 903c7da..d5ef259 100644
 --- a/sm6150.mk
 +++ b/sm6150.mk
 @@ -59,10 +59,18 @@ PRODUCT_PACKAGES += \
@@ -726,4 +726,5 @@ index 903c7da1b..d5ef2592f 100644
      $(LOCAL_PATH)/configs/media/media_codecs_performance_c2.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_performance_c2.xml \
      $(LOCAL_PATH)/configs/media/media_profiles.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_profiles_V1_0.xml
 -- 
+2.47.1.windows.1
 

@@ -1,0 +1,27 @@
+From 144326b9af70e444607baaeb2e7db830b7ab72f1 Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Wed, 3 Sep 2025 22:26:55 +0530
+Subject: [PATCH] Settings: Enable expressive theme layout for various
+ activities
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ AndroidManifest.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index 3b810fc6a6f..b112acf2b4b 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -831,7 +831,7 @@
+                 android:configChanges="orientation|keyboardHidden|screenSize"
+                 android:exported="true"
+                 android:clearTaskOnLaunch="true"
+-                android:theme="@style/Theme.SubSettingsBase">
++                android:theme="@style/Theme.SubSettingsBase.Expressive">
+             <intent-filter>
+                 <action android:name="android.bluetooth.devicepicker.action.LAUNCH" />
+                 <category android:name="android.intent.category.DEFAULT" />
+-- 
+2.47.1.windows.1
+

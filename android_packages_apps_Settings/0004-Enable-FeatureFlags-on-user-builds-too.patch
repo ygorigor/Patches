@@ -1,0 +1,28 @@
+From e194f22bf2bcfb69b2b086fa37661a7e05cb4b1a Mon Sep 17 00:00:00 2001
+From: ezio84 <brabus84@gmail.com>
+Date: Mon, 21 Oct 2019 00:05:35 +0200
+Subject: [PATCH] Enable FeatureFlags on "user" builds too
+
+Change-Id: I72c90ae2f66eb1d6a9c6a423f50ea9df626559d2
+Signed-off-by: Joey Huab <joey@evolution-x.org>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../featureflags/FeatureFlagsPreferenceController.java          | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/com/android/settings/development/featureflags/FeatureFlagsPreferenceController.java b/src/com/android/settings/development/featureflags/FeatureFlagsPreferenceController.java
+index f0b7961bb65..f5559c8365c 100644
+--- a/src/com/android/settings/development/featureflags/FeatureFlagsPreferenceController.java
++++ b/src/com/android/settings/development/featureflags/FeatureFlagsPreferenceController.java
+@@ -40,7 +40,7 @@ public class FeatureFlagsPreferenceController extends BasePreferenceController {
+ 
+     @Override
+     public int getAvailabilityStatus() {
+-        return Build.IS_DEBUGGABLE ? AVAILABLE : UNSUPPORTED_ON_DEVICE;
++        return AVAILABLE;
+     }
+ 
+     @Override
+-- 
+2.47.1.windows.1
+

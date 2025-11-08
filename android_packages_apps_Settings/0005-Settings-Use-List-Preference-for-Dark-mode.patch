@@ -1,0 +1,62 @@
+From 5f62cca71dcafe8c52e7fbcbc53a6f95a714e12b Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Tue, 10 Mar 2020 14:09:53 +0530
+Subject: [PATCH] Settings: Use List Preference for Dark mode
+
+* Rather ugly Drop Down
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+Signed-off-by: Joey Huab <joey@evolution-x.org>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ res/xml/dark_mode_settings.xml                              | 2 +-
+ .../darkmode/DarkModeScheduleSelectorController.java        | 6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/res/xml/dark_mode_settings.xml b/res/xml/dark_mode_settings.xml
+index 6a3f6c3492c..ebe99a18e09 100644
+--- a/res/xml/dark_mode_settings.xml
++++ b/res/xml/dark_mode_settings.xml
+@@ -45,7 +45,7 @@
+             android:title="@string/accessibility_force_invert_title"
+             settings:controller="com.android.settings.accessibility.ToggleForceInvertPreferenceController"/>
+ 
+-        <DropDownPreference
++        <ListPreference
+             android:key="dark_ui_auto_mode"
+             android:title="@string/dark_ui_auto_mode_title"
+             android:summary="%s"
+diff --git a/src/com/android/settings/display/darkmode/DarkModeScheduleSelectorController.java b/src/com/android/settings/display/darkmode/DarkModeScheduleSelectorController.java
+index faca631742a..87a978f9f31 100644
+--- a/src/com/android/settings/display/darkmode/DarkModeScheduleSelectorController.java
++++ b/src/com/android/settings/display/darkmode/DarkModeScheduleSelectorController.java
+@@ -20,7 +20,7 @@ import android.content.res.Configuration;
+ import android.location.LocationManager;
+ import android.os.PowerManager;
+ 
+-import androidx.preference.DropDownPreference;
++import androidx.preference.ListPreference;
+ import androidx.preference.Preference;
+ import androidx.preference.PreferenceScreen;
+ 
+@@ -29,7 +29,7 @@ import com.android.settings.core.BasePreferenceController;
+ import com.android.settings.display.TwilightLocationDialog;
+ 
+ /**
+- * Controller for the dark ui option dropdown
++ * Controller for the dark ui option list
+  */
+ public class DarkModeScheduleSelectorController extends BasePreferenceController
+         implements Preference.OnPreferenceChangeListener {
+@@ -40,7 +40,7 @@ public class DarkModeScheduleSelectorController extends BasePreferenceController
+     private final LocationManager mLocationManager;
+     private final BedtimeSettings mBedtimeSettings;
+ 
+-    private DropDownPreference mPreference;
++    private ListPreference mPreference;
+     private int mCurrentMode;
+ 
+     public DarkModeScheduleSelectorController(Context context, String key) {
+-- 
+2.47.1.windows.1
+

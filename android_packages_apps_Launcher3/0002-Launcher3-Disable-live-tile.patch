@@ -1,0 +1,48 @@
+From 24c92463c7a713a7ca91d40cef7f333fdedd2733 Mon Sep 17 00:00:00 2001
+From: nift4 <nift4@protonmail.com>
+Date: Wed, 23 Aug 2023 17:56:27 +0200
+Subject: [PATCH] Launcher3: Disable live tile
+
+Method as per Google commit 25399db1e7495132eafc5eb9ca0cacdcb38148fd
+("[DO NOT MERGE] Disable live tile in split mode for S").
+
+Live tile has a LOT of bugs even in AOSP and Pixel stock ROMs:
+* Alpha animation randomly not applying causing app to get stuck
+* X/Y translation not applying causing app to get stuck
+* Causes extreme jank (enable HWUI bars and swipe in recents...)
+* Sidescroll tile minimization cuts off content instead of shrinking it.
+* Screenshotting a sidescolled live tile causes it to become invisible.
+
+Combined with our blur/transparency changes:
+* The tile doesn't actually shrink because Google just draws background
+  over the tile instead of shrinking it...
+* The tile gets blurred which has to be fixed in very hacky ways,
+  because it is on a very low layer, which is below the blur
+...the end result is a total mess.
+Kill this feature, and revisit fixing our issues once Google gets their
+own shit together.
+
+Change-Id: I33e6dab845b2147fd72fe0fb4c151e78035560ec
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ quickstep/src/com/android/quickstep/views/RecentsView.java | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/quickstep/src/com/android/quickstep/views/RecentsView.java b/quickstep/src/com/android/quickstep/views/RecentsView.java
+index b90cdc7f6a..05ff28f659 100644
+--- a/quickstep/src/com/android/quickstep/views/RecentsView.java
++++ b/quickstep/src/com/android/quickstep/views/RecentsView.java
+@@ -3080,6 +3080,10 @@ public abstract class RecentsView<
+         }
+ 
+         mCurrentGestureEndTarget = null;
++
++        switchToScreenshot(
++            () -> finishRecentsAnimation(true /* toRecents */, false /* shouldPip */,
++                    null));
+     }
+ 
+     /**
+-- 
+2.47.1.windows.1
+

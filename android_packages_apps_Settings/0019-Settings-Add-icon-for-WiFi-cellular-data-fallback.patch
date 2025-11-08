@@ -1,0 +1,24 @@
+From e136c1554f6cd7c7300ffb33e6408334d0907dcd Mon Sep 17 00:00:00 2001
+From: ShevT <evgeny.shishkov@gmail.com>
+Date: Tue, 21 Nov 2023 10:54:19 +0300
+Subject: [PATCH] Settings: Add icon for 'WiFi cellular data fallback'
+
+---
+ res/xml/wifi_configure_settings.xml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/res/xml/wifi_configure_settings.xml b/res/xml/wifi_configure_settings.xml
+index 6db44538161..d59d92e583e 100644
+--- a/res/xml/wifi_configure_settings.xml
++++ b/res/xml/wifi_configure_settings.xml
+@@ -43,6 +43,7 @@
+         android:key="wifi_cellular_data_fallback"
+         android:title="@string/wifi_cellular_data_fallback_title"
+         android:summary="@string/wifi_cellular_data_fallback_summary"
++        android:icon="@drawable/ic_sim_card_download"
+         settings:controller="com.android.settings.wifi.CellularFallbackPreferenceController" />
+ 
+     <Preference
+-- 
+2.47.1.windows.1
+

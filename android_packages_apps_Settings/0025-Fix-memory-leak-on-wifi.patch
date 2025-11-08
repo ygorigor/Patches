@@ -1,0 +1,34 @@
+From ca0b23aa8f34e22298b71764de3af0dca3927a38 Mon Sep 17 00:00:00 2001
+From: Gao Honghua <gao.honghua@zte.com.cn>
+Date: Thu, 19 Dec 2024 14:48:59 +0800
+Subject: [PATCH] Fix memory leak on wifi
+
+Google: 3425623
+Change-Id: I5cd3c427280ebb2e8ed1b18d39d1b29c962b7658
+Signed-off-by: Jia Jia <jia.jia@zte.com.cn>
+---
+ src/com/android/settings/wifi/WifiEntryPreference.java | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/src/com/android/settings/wifi/WifiEntryPreference.java b/src/com/android/settings/wifi/WifiEntryPreference.java
+index 4eb9d51f01f..f701e433417 100644
+--- a/src/com/android/settings/wifi/WifiEntryPreference.java
++++ b/src/com/android/settings/wifi/WifiEntryPreference.java
+@@ -262,7 +262,13 @@ public class WifiEntryPreference extends RestrictedPreference implements
+             // Fallback for platforms that do not need friction icon resources.
+             frictionSld = null;
+         }
+-        return frictionSld != null ? (StateListDrawable) frictionSld.getDrawable(0) : null;
++        if (frictionSld != null) {
++            StateListDrawable val = (StateListDrawable) frictionSld.getDrawable(0);
++            frictionSld.recycle();
++            return val;
++        } else {
++            return null;
++        }
+     }
+ 
+     /**
+-- 
+2.47.1.windows.1
+

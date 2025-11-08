@@ -1,0 +1,173 @@
+From ef3e2da45d2330fc92478162e5bd4d158b444dce Mon Sep 17 00:00:00 2001
+From: Igor <sorocean.igor@gmail.com>
+Date: Mon, 3 Nov 2025 08:40:01 +0200
+Subject: [PATCH 2/2] Add Vazirmatn font RRO and configs
+
+Change-Id: I3291c875ed4432d07f55e0a004f5843eebffae00
+---
+ fonts/FontVazirmatnOverlay/Android.bp         | 25 ++++++++++++++
+ .../FontVazirmatnOverlay/AndroidManifest.xml  | 33 +++++++++++++++++++
+ .../res/values/config.xml                     | 29 ++++++++++++++++
+ .../res/values/strings.xml                    | 21 ++++++++++++
+ fonts/etc/fonts_customization.xml             | 11 +++++++
+ 5 files changed, 119 insertions(+)
+ create mode 100644 fonts/FontVazirmatnOverlay/Android.bp
+ create mode 100644 fonts/FontVazirmatnOverlay/AndroidManifest.xml
+ create mode 100644 fonts/FontVazirmatnOverlay/res/values/config.xml
+ create mode 100644 fonts/FontVazirmatnOverlay/res/values/strings.xml
+
+diff --git a/fonts/FontVazirmatnOverlay/Android.bp b/fonts/FontVazirmatnOverlay/Android.bp
+new file mode 100644
+index 0000000..f4b4201
+--- /dev/null
++++ b/fonts/FontVazirmatnOverlay/Android.bp
+@@ -0,0 +1,25 @@
++//
++// Copyright (c) 2024 The LibreMobileOS Foundation
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//     http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++
++package {
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++runtime_resource_overlay {
++    name: "FontVazirmatnOverlay",
++    theme: "FontVazirmatn",
++    product_specific: true,
++}
+diff --git a/fonts/FontVazirmatnOverlay/AndroidManifest.xml b/fonts/FontVazirmatnOverlay/AndroidManifest.xml
+new file mode 100644
+index 0000000..8cf06b7
+--- /dev/null
++++ b/fonts/FontVazirmatnOverlay/AndroidManifest.xml
+@@ -0,0 +1,33 @@
++<!--
++    Copyright (c) 2024, The LibreMobileOS Foundation
++
++    Licensed under the Apache License, Version 2.0 (the "License");
++    you may not use this file except in compliance with the License.
++    You may obtain a copy of the License at
++
++        http://www.apache.org/licenses/LICENSE-2.0
++
++    Unless required by applicable law or agreed to in writing, software
++    distributed under the License is distributed on an "AS IS" BASIS,
++    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++    See the License for the specific language governing permissions and
++    limitations under the License.
++-->
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="com.lineageos.overlay.font.vazirmatn"
++    android:versionCode="1"
++    android:versionName="1.0">
++
++    <overlay
++        android:targetPackage="android"
++        android:category="android.theme.customization.font"
++        android:priority="1" />
++
++    <application
++        android:hasCode="false"
++        android:label="@string/font_vazirmatn_overlay">
++        <meta-data
++            android:name="android.theme.customization.REQUIRED_SYSTEM_FONTS"
++            android:value="vazirmatn,vazirmatn-medium" />
++    </application>
++</manifest>
+diff --git a/fonts/FontVazirmatnOverlay/res/values/config.xml b/fonts/FontVazirmatnOverlay/res/values/config.xml
+new file mode 100644
+index 0000000..daf3287
+--- /dev/null
++++ b/fonts/FontVazirmatnOverlay/res/values/config.xml
+@@ -0,0 +1,29 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++/**
++ * Copyright (c) 2024, The LibreMobileOS Foundation
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++-->
++<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
++     <!-- Name of a font family to use for body text. -->
++    <string name="config_bodyFontFamily" translatable="false">vazirmatn</string>
++    <!-- Name of a font family to use for medium body text. -->
++    <string name="config_bodyFontFamilyMedium" translatable="false">vazirmatn-medium</string>
++    <!-- Name of a font family to use for headlines. If empty, falls back to platform default -->
++    <string name="config_headlineFontFamily" translatable="false">vazirmatn</string>
++    <!-- Name of the font family used for system surfaces where the font should use medium weight -->
++    <string name="config_headlineFontFamilyMedium" translatable="false">vazirmatn-medium</string>
++</resources>
++
+diff --git a/fonts/FontVazirmatnOverlay/res/values/strings.xml b/fonts/FontVazirmatnOverlay/res/values/strings.xml
+new file mode 100644
+index 0000000..2f71fef
+--- /dev/null
++++ b/fonts/FontVazirmatnOverlay/res/values/strings.xml
+@@ -0,0 +1,21 @@
++<!--
++/**
++ * Copyright (c) 2024, The LibreMobileOS Foundation
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++-->
++<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
++    <!-- Headline / Body font Lato overlay -->
++    <string name="font_vazirmatn_overlay" translatable="false">Vazirmatn</string>
++</resources>
+diff --git a/fonts/etc/fonts_customization.xml b/fonts/etc/fonts_customization.xml
+index 5cc7c98..659f88f 100644
+--- a/fonts/etc/fonts_customization.xml
++++ b/fonts/etc/fonts_customization.xml
+@@ -32,4 +32,15 @@
+     </family>
+     <alias name="rubik-medium" to="rubik" weight="500" />
+     <alias name="rubik-bold" to="rubik" weight="700" />
++
++    <family customizationType="new-named-family" name="vazirmatn">
++        <font weight="400" style="normal">Vazirmatn-Regular.ttf</font>
++        <font weight="400" style="italic">Vazirmatn-Light.ttf</font>
++        <font weight="500" style="normal">Vazirmatn-Medium.ttf</font>
++        <font weight="500" style="italic">Vazirmatn-ExtraLight.ttf</font>
++        <font weight="700" style="normal">Vazirmatn-Bold.ttf</font>
++        <font weight="700" style="italic">Vazirmatn-ExtraBold.ttf</font>
++    </family>
++    <alias name="vazirmatn-medium" to="vazirmatn" weight="500" />
++    <alias name="vazirmatn-bold" to="vazirmatn" weight="700" />
+ </fonts-modification>
+-- 
+2.47.1.windows.1
+

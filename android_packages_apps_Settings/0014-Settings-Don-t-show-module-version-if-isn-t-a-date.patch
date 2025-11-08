@@ -1,0 +1,31 @@
+From a050f05c0c7c3d7239e0d3e37b16f4e3ddfb9a68 Mon Sep 17 00:00:00 2001
+From: jhenrique09 <jhenrique09.mcz@hotmail.com>
+Date: Thu, 19 Nov 2020 17:35:13 -0300
+Subject: [PATCH] Settings: Don't show module version if isn't a date
+
+What's the sense on showing Android version instead of date?
+
+Change-Id: I4cd2ae780c19182db2f66811be63dff131d26d6b
+Signed-off-by: Joey Huab <joey@evolution-x.org>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../MainlineModuleVersionPreferenceController.java             | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/com/android/settings/deviceinfo/firmwareversion/MainlineModuleVersionPreferenceController.java b/src/com/android/settings/deviceinfo/firmwareversion/MainlineModuleVersionPreferenceController.java
+index b65497f6808..b96733f0ec2 100644
+--- a/src/com/android/settings/deviceinfo/firmwareversion/MainlineModuleVersionPreferenceController.java
++++ b/src/com/android/settings/deviceinfo/firmwareversion/MainlineModuleVersionPreferenceController.java
+@@ -71,7 +71,8 @@ public class MainlineModuleVersionPreferenceController extends BasePreferenceCon
+ 
+     @Override
+     public int getAvailabilityStatus() {
+-        return !TextUtils.isEmpty(mModuleVersion) ? AVAILABLE : UNSUPPORTED_ON_DEVICE;
++        return !TextUtils.isEmpty(mModuleVersion) &&
++            parseDateFromVersionName(mModuleVersion).isPresent() ? AVAILABLE : UNSUPPORTED_ON_DEVICE;
+     }
+ 
+     private void initModules() {
+-- 
+2.47.1.windows.1
+

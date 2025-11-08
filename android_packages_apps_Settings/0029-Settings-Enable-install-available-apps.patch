@@ -1,0 +1,37 @@
+From 05a99677ed2b06f1b2c5703444dedaf4a81a7700 Mon Sep 17 00:00:00 2001
+From: Pratyush <codelab@pratyush.dev>
+Date: Sat, 3 Sep 2022 15:52:37 +0530
+Subject: [PATCH] Settings: Enable "install available apps"
+
+allowing adding (installed) apps from (owner) user manager ui.
+
+Signed-off-by: Saikrishna1504 <saikrishna26918@gmail.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ src/com/android/settings/users/UserDetailsSettings.java | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/src/com/android/settings/users/UserDetailsSettings.java b/src/com/android/settings/users/UserDetailsSettings.java
+index ec4a4ff2558..305a154a2c0 100644
+--- a/src/com/android/settings/users/UserDetailsSettings.java
++++ b/src/com/android/settings/users/UserDetailsSettings.java
+@@ -78,7 +78,7 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+     private static final int DIALOG_CONFIRM_GRANT_ADMIN = 7;
+ 
+     /** Whether to enable the app_copying fragment. */
+-    private static final boolean SHOW_APP_COPYING_PREF = false;
++    private static final boolean SHOW_APP_COPYING_PREF = true;
+     private static final int MESSAGE_PADDING = 20;
+ 
+     private UserManager mUserManager;
+@@ -422,7 +422,6 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+                 mPhonePref.setChecked(!mUserManager.hasUserRestriction(
+                         UserManager.DISALLOW_OUTGOING_CALLS, new UserHandle(userId)));
+                 mRemoveUserPref.setTitle(R.string.user_remove_user);
+-                removePreference(KEY_APP_COPYING);
+             }
+ 
+             // Remove preference KEY_REMOVE_USER if DISALLOW_REMOVE_USER restriction is set
+-- 
+2.47.1.windows.1
+

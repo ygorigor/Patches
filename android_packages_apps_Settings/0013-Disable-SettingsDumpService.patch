@@ -1,0 +1,29 @@
+From 61704f853f2848bd6573b13da552937ffa49099f Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Mon, 6 Jan 2025 06:50:34 +0800
+Subject: [PATCH] Disable SettingsDumpService
+
+* this consumes a lot of resources for some reason
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ AndroidManifest.xml | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index 34d54194e4d..3b810fc6a6f 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -4838,7 +4838,8 @@
+ 
+         <service
+             android:name=".SettingsDumpService"
+-            android:exported="true"
++            android:enabled="false"
++            android:exported="false"
+             android:permission="android.permission.DUMP" />
+ 
+         <!-- Quick Settings tiles for Developer Options -->
+-- 
+2.47.1.windows.1
+

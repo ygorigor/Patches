@@ -1,0 +1,25 @@
+From 54c274b455a69ba49230bdd2772ccf490b8a2fe3 Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Tue, 2 Sep 2025 14:32:59 +0530
+Subject: [PATCH] Settings: Make ticks visible for Vibration intensity prefs
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../accessibility/VibrationIntensityPreferenceController.java    | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/com/android/settings/accessibility/VibrationIntensityPreferenceController.java b/src/com/android/settings/accessibility/VibrationIntensityPreferenceController.java
+index f39cd96d63f..b4d35765e64 100644
+--- a/src/com/android/settings/accessibility/VibrationIntensityPreferenceController.java
++++ b/src/com/android/settings/accessibility/VibrationIntensityPreferenceController.java
+@@ -76,6 +76,7 @@ public abstract class VibrationIntensityPreferenceController extends SliderPrefe
+         preference.setMin(getMin());
+         preference.setMax(getMax());
+         preference.setSliderIncrement(1); // Discrete slider
++        preference.setTickVisible(true);
+         // Haptics previews played by the Settings app don't bypass user settings to be played.
+         // The sliders continuously updates the intensity value so the previews can apply them.
+         preference.setUpdatesContinuously(true);
+-- 
+2.47.1.windows.1
+

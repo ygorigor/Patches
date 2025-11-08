@@ -1,0 +1,36 @@
+From d4b05ca9606786cd807a56dcbdc89072c41cff71 Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Thu, 4 Sep 2025 22:11:56 +0530
+Subject: [PATCH] Settings: Fixup compose preference layout
+
+* This fixes misaligned Developer Options, Data Usage, Roaming toggle, etc.
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ res/layout/preference_compose.xml | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/res/layout/preference_compose.xml b/res/layout/preference_compose.xml
+index 992b8261646..25b127ee4bb 100644
+--- a/res/layout/preference_compose.xml
++++ b/res/layout/preference_compose.xml
+@@ -23,7 +23,7 @@
+     android:minHeight="?android:attr/listPreferredItemHeightSmall"
+     android:gravity="center_vertical"
+     android:paddingStart="?android:attr/listPreferredItemPaddingStart"
+-    android:background="?android:attr/activatedBackgroundIndicator"
++    android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
+     android:clipToPadding="false">
+ 
+     <LinearLayout
+@@ -46,7 +46,6 @@
+ 
+     <androidx.compose.ui.platform.ComposeView
+         android:id="@+id/compose_view"
+-        android:paddingStart="-24dp"
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"/>
+ </LinearLayout>
+-- 
+2.47.1.windows.1
+

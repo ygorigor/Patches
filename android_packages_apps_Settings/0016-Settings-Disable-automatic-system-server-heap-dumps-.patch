@@ -1,0 +1,29 @@
+From bc0e8867a4e3059247cf979bc77af1606320c3f9 Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Sun, 27 Aug 2023 11:18:17 +0800
+Subject: [PATCH] Settings: Disable automatic system server heap dumps by
+ default
+
+Change-Id: I83534dfb3f84f9c4a986cf071dd60b5bf057575e
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../AutomaticSystemServerHeapDumpPreferenceController.java      | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/com/android/settings/development/AutomaticSystemServerHeapDumpPreferenceController.java b/src/com/android/settings/development/AutomaticSystemServerHeapDumpPreferenceController.java
+index 05a5dc90b4c..fbd661b653a 100644
+--- a/src/com/android/settings/development/AutomaticSystemServerHeapDumpPreferenceController.java
++++ b/src/com/android/settings/development/AutomaticSystemServerHeapDumpPreferenceController.java
+@@ -70,7 +70,7 @@ public class AutomaticSystemServerHeapDumpPreferenceController extends
+     @Override
+     public void updateState(Preference preference) {
+         final int mode = Settings.Secure.getInt(mContext.getContentResolver(),
+-                Settings.Global.ENABLE_AUTOMATIC_SYSTEM_SERVER_HEAP_DUMPS, SETTING_VALUE_ON);
++                Settings.Global.ENABLE_AUTOMATIC_SYSTEM_SERVER_HEAP_DUMPS, SETTING_VALUE_OFF);
+         ((TwoStatePreference) mPreference).setChecked(mode != SETTING_VALUE_OFF);
+     }
+ 
+-- 
+2.47.1.windows.1
+

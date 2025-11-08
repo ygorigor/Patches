@@ -1,0 +1,51 @@
+From 81e5c752d0c709f59715ac94108f1d54a81a4312 Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Mon, 19 Jun 2023 00:02:45 +0530
+Subject: [PATCH] Use ListPreference for charging control fragment
+
+* DropDownPreference is 2013.
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ res/xml/charging_control_settings.xml                         | 2 +-
+ .../lineageparts/health/ChargingControlSettings.java          | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/res/xml/charging_control_settings.xml b/res/xml/charging_control_settings.xml
+index c63001d..0ea7c5e 100644
+--- a/res/xml/charging_control_settings.xml
++++ b/res/xml/charging_control_settings.xml
+@@ -11,7 +11,7 @@
+         android:key="charging_control_enabled"
+         android:title="@string/charging_control_enable_title" />
+ 
+-    <lineageos.preference.LineageSystemSettingDropDownPreference
++    <lineageos.preference.LineageSystemSettingListPreference
+         android:key="charging_control_mode"
+         android:title="@string/charging_control_mode_title"
+         android:entries="@array/charging_control_mode_entries"
+diff --git a/src/org/lineageos/lineageparts/health/ChargingControlSettings.java b/src/org/lineageos/lineageparts/health/ChargingControlSettings.java
+index b9cc92b..7c892d8 100644
+--- a/src/org/lineageos/lineageparts/health/ChargingControlSettings.java
++++ b/src/org/lineageos/lineageparts/health/ChargingControlSettings.java
+@@ -21,7 +21,7 @@ import androidx.preference.Preference;
+ import androidx.preference.PreferenceScreen;
+ 
+ import lineageos.health.HealthInterface;
+-import lineageos.preference.LineageSystemSettingDropDownPreference;
++import lineageos.preference.LineageSystemSettingListPreference;
+ import lineageos.preference.LineageSystemSettingMainSwitchPreference;
+ import lineageos.providers.LineageSettings;
+ 
+@@ -47,7 +47,7 @@ public class ChargingControlSettings extends SettingsPreferenceFragment implemen
+     private static final String CHARGING_CONTROL_LIMIT_PREF = "charging_control_charging_limit";
+ 
+     private LineageSystemSettingMainSwitchPreference mChargingControlEnabledPref;
+-    private LineageSystemSettingDropDownPreference mChargingControlModePref;
++    private LineageSystemSettingListPreference mChargingControlModePref;
+     private StartTimePreference mChargingControlStartTimePref;
+     private TargetTimePreference mChargingControlTargetTimePref;
+     private ChargingLimitPreference mChargingControlLimitPref;
+-- 
+2.47.1.windows.1
+

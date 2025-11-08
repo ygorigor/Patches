@@ -1,0 +1,33 @@
+From 2cea9204aaa5a14d4df7dd3135f1b7f4e72bc9ac Mon Sep 17 00:00:00 2001
+From: Altaf-Mahdi <altaf.mahdi@gmail.com>
+Date: Thu, 7 Jul 2016 09:57:32 +0100
+Subject: [PATCH] InstalledAppDetails: fix refreshing storage summary after
+ force stop
+
+* if app is force stopped, current implementation causes a nasty loop which in turn causes
+  very high cpu usage: refreshUi() > checkForceStop() > mCheckKillProcessesReceiver > refreshUi()
+
+* fix storage not being updated by running refreshUi() in onRunningStateChanged from AppInfoBase
+
+Change-Id: Iec24bb620d1a6287d7ccf583db978ef338ef762e
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ src/com/android/settings/applications/AppInfoBase.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/com/android/settings/applications/AppInfoBase.java b/src/com/android/settings/applications/AppInfoBase.java
+index 02237b886d9..2a573e75245 100644
+--- a/src/com/android/settings/applications/AppInfoBase.java
++++ b/src/com/android/settings/applications/AppInfoBase.java
+@@ -214,7 +214,7 @@ public abstract class AppInfoBase extends SettingsPreferenceFragment
+ 
+     @Override
+     public void onRunningStateChanged(boolean running) {
+-        // No op.
++        refreshUi();
+     }
+ 
+     @Override
+-- 
+2.47.1.windows.1
+

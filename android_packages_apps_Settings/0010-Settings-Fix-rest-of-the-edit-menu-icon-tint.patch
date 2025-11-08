@@ -1,0 +1,59 @@
+From ac78a698173c1a99910a981c5aec4de5f6661ebb Mon Sep 17 00:00:00 2001
+From: jhonboy121 <alfredmathew05@gmail.com>
+Date: Sat, 8 Jan 2022 15:52:47 +0530
+Subject: [PATCH] Settings: Fix rest of the edit menu icon tint
+
+Signed-off-by: jhonboy121 <alfredmathew05@gmail.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../settings/network/telephony/MobileNetworkSettings.java     | 4 ++++
+ .../settings/wifi/details/WifiNetworkDetailsFragment.java     | 4 ++++
+ 2 files changed, 8 insertions(+)
+
+diff --git a/src/com/android/settings/network/telephony/MobileNetworkSettings.java b/src/com/android/settings/network/telephony/MobileNetworkSettings.java
+index 156a1c8838a..4ecf5f5e8c2 100644
+--- a/src/com/android/settings/network/telephony/MobileNetworkSettings.java
++++ b/src/com/android/settings/network/telephony/MobileNetworkSettings.java
+@@ -24,6 +24,7 @@ import android.content.BroadcastReceiver;
+ import android.content.Context;
+ import android.content.Intent;
+ import android.content.IntentFilter;
++import android.content.res.ColorStateList;
+ import android.os.Bundle;
+ import android.os.UserManager;
+ import android.provider.Settings;
+@@ -472,6 +473,9 @@ public class MobileNetworkSettings extends AbstractMobileNetworkSettings impleme
+             final MenuItem item = menu.add(Menu.NONE, R.id.edit_sim_name, Menu.NONE,
+                     R.string.mobile_network_sim_label_color_title);
+             item.setIcon(com.android.internal.R.drawable.ic_mode_edit);
++            item.setIconTintList(ColorStateList.valueOf(
++                com.android.settingslib.Utils.getColorAttrDefaultColor(getContext(),
++                    android.R.attr.colorControlNormal)));
+             item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+         }
+         super.onCreateOptionsMenu(menu, inflater);
+diff --git a/src/com/android/settings/wifi/details/WifiNetworkDetailsFragment.java b/src/com/android/settings/wifi/details/WifiNetworkDetailsFragment.java
+index 8aab0e1fb6c..63c3f3aa7a8 100644
+--- a/src/com/android/settings/wifi/details/WifiNetworkDetailsFragment.java
++++ b/src/com/android/settings/wifi/details/WifiNetworkDetailsFragment.java
+@@ -23,6 +23,7 @@ import android.app.Dialog;
+ import android.app.admin.DevicePolicyManager;
+ import android.app.settings.SettingsEnums;
+ import android.content.Context;
++import android.content.res.ColorStateList;
+ import android.graphics.drawable.Drawable;
+ import android.net.ConnectivityManager;
+ import android.net.wifi.WifiManager;
+@@ -213,6 +214,9 @@ public class WifiNetworkDetailsFragment extends RestrictedDashboardFragment impl
+         if (!mIsUiRestricted && isEditable()) {
+             MenuItem item = menu.add(0, Menu.FIRST, 0, R.string.wifi_modify);
+             item.setIcon(com.android.internal.R.drawable.ic_mode_edit);
++            item.setIconTintList(ColorStateList.valueOf(
++                com.android.settingslib.Utils.getColorAttrDefaultColor(getContext(),
++                    android.R.attr.colorControlNormal)));
+             item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+         }
+         super.onCreateOptionsMenu(menu, inflater);
+-- 
+2.47.1.windows.1
+
