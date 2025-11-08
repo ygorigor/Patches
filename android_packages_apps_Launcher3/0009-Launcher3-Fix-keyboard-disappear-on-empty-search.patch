@@ -1,0 +1,38 @@
+From 9a0293379ba7d7dbfbfeec4399933ff0d736b9ac Mon Sep 17 00:00:00 2001
+From: MrSluffy <werdna.jac@gmail.com>
+Date: Sat, 22 Jun 2024 15:12:51 +0800
+Subject: [PATCH] Launcher3: Fix keyboard disappear on empty search
+
+neobuddy89 -
+Fixes: https://github.com/LawnchairLauncher/lawnchair/issues/4095
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../launcher3/allapps/ActivityAllAppsContainerView.java      | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/src/com/android/launcher3/allapps/ActivityAllAppsContainerView.java b/src/com/android/launcher3/allapps/ActivityAllAppsContainerView.java
+index 1f1bc7a584..58e3af424a 100644
+--- a/src/com/android/launcher3/allapps/ActivityAllAppsContainerView.java
++++ b/src/com/android/launcher3/allapps/ActivityAllAppsContainerView.java
+@@ -558,17 +558,12 @@ public class ActivityAllAppsContainerView<T extends Context & ActivityContext>
+             // Will be called at the end of the animation.
+             return;
+         }
+-        if (currentActivePage != SEARCH) {
+-            mActivityContext.hideKeyboard();
+-        }
+         if (mAH.get(currentActivePage).mRecyclerView != null) {
+             mAH.get(currentActivePage).mRecyclerView.bindFastScrollbar(mFastScroller,
+                     ALL_APPS_SCROLLER);
+         }
+         // Header keeps track of active recycler view to properly render header protection.
+         mHeader.setActiveRV(currentActivePage);
+-        reset(true /* animate */, !isSearching() /* exitSearch */);
+-
+         mWorkManager.onActivePageChanged(currentActivePage);
+     }
+ 
+-- 
+2.51.2.windows.1
+

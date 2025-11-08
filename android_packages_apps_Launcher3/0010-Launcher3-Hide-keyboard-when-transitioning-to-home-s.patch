@@ -1,0 +1,38 @@
+From d5395b34d454be8ebeb64607a9fc5eb2edcc3e01 Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Sat, 27 Jul 2024 04:46:48 +0530
+Subject: [PATCH] Launcher3: Hide keyboard when transitioning to home screen
+
+Squashed:
+
+    From: Pranav Vashi <neobuddy89@gmail.com>
+    Date: Fri, 6 Sep 2024 19:54:04 +0530
+    Subject: [PATCH 298/300] Launcher3: Improve hide keyboard when transitioning
+     to home screen
+
+    Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+
+Fixes: https://github.com/crdroidandroid/issue_tracker/issues/448
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ src/com/android/launcher3/Launcher.java | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/com/android/launcher3/Launcher.java b/src/com/android/launcher3/Launcher.java
+index 2e69ddb631..3439a43e17 100644
+--- a/src/com/android/launcher3/Launcher.java
++++ b/src/com/android/launcher3/Launcher.java
+@@ -2803,7 +2803,9 @@ public class Launcher extends StatefulActivity<LauncherState>
+      * @param progress Transition progress from 0 to 1; where 0 => home and 1 => all apps.
+      */
+     public void onAllAppsTransition(float progress) {
+-        // No-Op
++        if (progress == 0 && mAppsView != null) {
++            hideKeyboard();
++        }
+     }
+ 
+     /**
+-- 
+2.51.2.windows.1
+

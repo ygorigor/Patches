@@ -1,0 +1,44 @@
+From 177f287640086d531c15b0182e360b1bb58d4f1c Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Fri, 7 Apr 2023 08:46:03 +0530
+Subject: [PATCH] Launcher3: Add vibrate for all overview actions
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../com/android/quickstep/views/OverviewActionsView.java    | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/quickstep/src/com/android/quickstep/views/OverviewActionsView.java b/quickstep/src/com/android/quickstep/views/OverviewActionsView.java
+index ea0a93b56e..8007111a90 100644
+--- a/quickstep/src/com/android/quickstep/views/OverviewActionsView.java
++++ b/quickstep/src/com/android/quickstep/views/OverviewActionsView.java
+@@ -39,6 +39,7 @@ import com.android.launcher3.anim.AnimatedFloat;
+ import com.android.launcher3.util.DisplayController;
+ import com.android.launcher3.util.MultiValueAlpha;
+ import com.android.launcher3.util.NavigationMode;
++import com.android.launcher3.util.VibratorWrapper;
+ import com.android.quickstep.TaskOverlayFactory.OverlayUICallbacks;
+ import com.android.quickstep.util.LayoutUtils;
+ import com.android.wm.shell.shared.TypefaceUtils;
+@@ -204,13 +205,18 @@ public class OverviewActionsView<T extends OverlayUICallbacks> extends FrameLayo
+         }
+         final int id = view.getId();
+         if (id == R.id.action_screenshot) {
++            VibratorWrapper.INSTANCE.get(getContext()).vibrate(VibratorWrapper.EFFECT_CLICK);
+             mCallbacks.onScreenshot();
+         } else if (id == R.id.action_split) {
++            VibratorWrapper.INSTANCE.get(getContext()).vibrate(VibratorWrapper.EFFECT_CLICK);
+             mCallbacks.onSplit();
+         } else if (id == R.id.action_save_app_pair) {
++            VibratorWrapper.INSTANCE.get(getContext()).vibrate(VibratorWrapper.EFFECT_CLICK);
+             mCallbacks.onSaveAppPair();
+         } else if (id == R.id.action_clear_all) {
++            VibratorWrapper.INSTANCE.get(getContext()).vibrate(VibratorWrapper.EFFECT_CLICK);
+             mCallbacks.onClearAllTasksRequested();
++            VibratorWrapper.INSTANCE.get(getContext()).vibrate(VibratorWrapper.EFFECT_CLICK);
+         }
+     }
+ 
+-- 
+2.51.2.windows.1
+

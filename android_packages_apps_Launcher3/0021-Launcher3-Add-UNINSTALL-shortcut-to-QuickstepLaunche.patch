@@ -1,0 +1,33 @@
+From dedafb3b694d3a4f6f5a3f7b34bd2e9f738dac0f Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Sun, 25 Jun 2023 21:35:05 +0530
+Subject: [PATCH] Launcher3: Add UNINSTALL shortcut to QuickstepLauncher
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../com/android/launcher3/uioverrides/QuickstepLauncher.java    | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/quickstep/src/com/android/launcher3/uioverrides/QuickstepLauncher.java b/quickstep/src/com/android/launcher3/uioverrides/QuickstepLauncher.java
+index 0dc8981d6a..034069b8dc 100644
+--- a/quickstep/src/com/android/launcher3/uioverrides/QuickstepLauncher.java
++++ b/quickstep/src/com/android/launcher3/uioverrides/QuickstepLauncher.java
+@@ -49,6 +49,7 @@ import static com.android.launcher3.popup.SystemShortcut.BUBBLE_SHORTCUT;
+ import static com.android.launcher3.popup.SystemShortcut.DONT_SUGGEST_APP;
+ import static com.android.launcher3.popup.SystemShortcut.INSTALL;
+ import static com.android.launcher3.popup.SystemShortcut.PRIVATE_PROFILE_INSTALL;
++import static com.android.launcher3.popup.SystemShortcut.UNINSTALL;
+ import static com.android.launcher3.popup.SystemShortcut.UNINSTALL_APP;
+ import static com.android.launcher3.popup.SystemShortcut.WIDGETS;
+ import static com.android.launcher3.taskbar.LauncherTaskbarUIController.ALL_APPS_PAGE_PROGRESS_INDEX;
+@@ -484,6 +485,7 @@ public class QuickstepLauncher extends Launcher implements RecentsViewContainer,
+                 APP_INFO, WellbeingModel.SHORTCUT_FACTORY, mHotseatPredictionController));
+ 
+         shortcuts.addAll(getSplitShortcuts());
++        shortcuts.add(UNINSTALL);
+         shortcuts.add(WIDGETS);
+         shortcuts.add(INSTALL);
+         if (Flags.enablePrivateSpaceInstallShortcut()) {
+-- 
+2.51.2.windows.1
+

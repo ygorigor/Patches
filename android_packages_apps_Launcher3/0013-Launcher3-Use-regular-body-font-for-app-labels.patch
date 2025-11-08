@@ -1,0 +1,29 @@
+From e76fc25262019d38df69e954825b413e2ce6f274 Mon Sep 17 00:00:00 2001
+From: Adithya R <gh0strider.2k18.reborn@gmail.com>
+Date: Tue, 2 Nov 2021 23:36:14 +0530
+Subject: [PATCH] Launcher3: Use regular body font for app labels
+
+Change-Id: I00e07f23ae944c5986f26080f1a6ebf0898f9726
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ res/values/styles.xml | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/res/values/styles.xml b/res/values/styles.xml
+index 431e92202f..5e1f26a2fe 100644
+--- a/res/values/styles.xml
++++ b/res/values/styles.xml
+@@ -339,7 +339,9 @@
+         <item name="android:importantForAccessibility">no</item>
+     </style>
+ 
+-    <style name="BaseIconRoot" parent="@android:style/TextAppearance.DeviceDefault.DialogWindowTitle"/>
++    <style name="BaseIconRoot" parent="@android:style/TextAppearance.DeviceDefault.DialogWindowTitle">
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
++    </style>
+ 
+     <style name="BaseIconUnBounded" parent="BaseIconRoot">
+         <item name="android:layout_width">match_parent</item>
+-- 
+2.51.2.windows.1
+

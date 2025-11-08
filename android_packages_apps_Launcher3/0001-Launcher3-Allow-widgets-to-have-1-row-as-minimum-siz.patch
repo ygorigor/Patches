@@ -1,0 +1,35 @@
+From 84c0b7b3e6abf0b2df56e0ade06c79ac71769acc Mon Sep 17 00:00:00 2001
+From: Saul Henriquez <saul_henriquez@hotmail.com>
+Date: Thu, 21 Oct 2021 20:30:27 -0600
+Subject: [PATCH] Launcher3: Allow widgets to have 1 row as minimum size
+
+Signed-off-by: Saul Henriquez <saul_henriquez@hotmail.com>
+---
+ .../launcher3/widget/LauncherAppWidgetProviderInfo.java       | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/com/android/launcher3/widget/LauncherAppWidgetProviderInfo.java b/src/com/android/launcher3/widget/LauncherAppWidgetProviderInfo.java
+index 94ae69cccd..e566ceb1b0 100644
+--- a/src/com/android/launcher3/widget/LauncherAppWidgetProviderInfo.java
++++ b/src/com/android/launcher3/widget/LauncherAppWidgetProviderInfo.java
+@@ -103,7 +103,7 @@ public class LauncherAppWidgetProviderInfo extends AppWidgetProviderInfo impleme
+     public void initSpans(Context context, InvariantDeviceProfile idp) {
+         mPM = context.getApplicationContext().getPackageManager();
+         int minSpanX = 0;
+-        int minSpanY = 0;
++        int minSpanY = 1;
+         int maxSpanX = idp.numColumns;
+         int maxSpanY = idp.numRows;
+         int spanX = 0;
+@@ -124,7 +124,7 @@ public class LauncherAppWidgetProviderInfo extends AppWidgetProviderInfo impleme
+             minSpanX = Math.max(minSpanX,
+                     getSpanX(widgetPadding, minResizeWidth, dp.cellLayoutBorderSpacePx.x,
+                             cellSize.x));
+-            minSpanY = Math.max(minSpanY,
++            minSpanY = Math.min(minSpanY,
+                     getSpanY(widgetPadding, minResizeHeight, dp.cellLayoutBorderSpacePx.y,
+                             cellSize.y));
+ 
+-- 
+2.51.2.windows.1
+

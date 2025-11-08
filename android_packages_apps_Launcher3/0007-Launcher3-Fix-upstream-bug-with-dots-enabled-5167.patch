@@ -1,0 +1,37 @@
+From 4a25760aedc42556b0d481d77eb26b66fbca6f69 Mon Sep 17 00:00:00 2001
+From: Yaksh Bariya <yakshbari4@gmail.com>
+Date: Wed, 15 Jan 2025 13:06:26 +0530
+Subject: [PATCH] Launcher3: Fix upstream bug with dots enabled (#5167)
+
+https://github.com/GrapheneOS/os-issue-tracker/issues/2601
+
+I did not find any issue reported upstream, but I can confirm that this
+bug exists on Moto App Launcher (the launcher on Motorola's devices),
+which seems to imply this is a bug in AOSP itself. I had asked
+@agnostic-apollo about this is a bug, and he said that this is a bug in
+Android's libraries itself
+
+@neobuddy89: Update error message.
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../android/launcher3/notification/NotificationListener.java   | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/src/com/android/launcher3/notification/NotificationListener.java b/src/com/android/launcher3/notification/NotificationListener.java
+index 864fed064f..a92de1bcdf 100644
+--- a/src/com/android/launcher3/notification/NotificationListener.java
++++ b/src/com/android/launcher3/notification/NotificationListener.java
+@@ -209,6 +209,9 @@ public class NotificationListener extends NotificationListenerService {
+             result = getActiveNotifications(keys);
+         } catch (SecurityException e) {
+             Log.e(TAG, "SecurityException: failed to fetch notifications");
++        } catch (RuntimeException e) {
++            // This is an upstream bug in the Android framework
++            Log.e(TAG, "RuntimeException: failed to fetch notifications");
+         }
+         return result == null ? new StatusBarNotification[0] : result;
+     }
+-- 
+2.51.2.windows.1
+

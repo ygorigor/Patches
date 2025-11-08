@@ -1,0 +1,37 @@
+From d0ea2a641613868f5ee52b804c4146e91f21db3b Mon Sep 17 00:00:00 2001
+From: jhenrique09 <jhsv09@gmail.com>
+Date: Sun, 29 Jan 2023 13:00:54 +0800
+Subject: [PATCH] Launcher3: Fix app icon font
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ res/values/styles.xml | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/res/values/styles.xml b/res/values/styles.xml
+index 5e1f26a2fe..68d5a24c89 100644
+--- a/res/values/styles.xml
++++ b/res/values/styles.xml
+@@ -340,7 +340,7 @@
+     </style>
+ 
+     <style name="BaseIconRoot" parent="@android:style/TextAppearance.DeviceDefault.DialogWindowTitle">
+-        <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+     </style>
+ 
+     <style name="BaseIconUnBounded" parent="BaseIconRoot">
+@@ -412,7 +412,9 @@
+         <item name="android:fontFamily" android:featureFlag="com.android.launcher3.gsf_res">variable-title-medium</item>
+     </style>
+ 
+-    <style name="TextHeadline" parent="@android:style/TextAppearance.DeviceDefault.DialogWindowTitle" />
++    <style name="TextHeadline" parent="@android:style/TextAppearance.DeviceDefault.DialogWindowTitle">
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
++    </style>
+ 
+     <style name="PrimaryHeadline" parent="@android:style/TextAppearance.DeviceDefault.DialogWindowTitle"/>
+ 
+-- 
+2.51.2.windows.1
+

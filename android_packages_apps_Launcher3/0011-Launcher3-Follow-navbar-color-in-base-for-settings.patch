@@ -1,0 +1,41 @@
+From 22727cf0f337863c5400b208203001515acb10bc Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Tue, 9 Aug 2022 10:28:30 +0530
+Subject: [PATCH] Launcher3: Follow navbar color in base for settings
+
+* Ref: https://github.com/crdroidandroid/android_frameworks_base/commit/d5915acc696dbdbfea1889d5688c8dc6a3c67ecd
+
+Change-Id: Ic8f27892bdb31b9b3bba41db2a543fc3befcd6d9
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ res/values-v31/styles.xml | 1 -
+ res/values/styles.xml     | 1 -
+ 2 files changed, 2 deletions(-)
+
+diff --git a/res/values-v31/styles.xml b/res/values-v31/styles.xml
+index 7f4ab553b2..8e3090fd07 100644
+--- a/res/values-v31/styles.xml
++++ b/res/values-v31/styles.xml
+@@ -22,7 +22,6 @@
+     <style name="HomeSettings.Theme" parent="@android:style/Theme.DeviceDefault.Settings">
+         <item name="android:listPreferredItemPaddingEnd">16dp</item>
+         <item name="android:listPreferredItemPaddingStart">24dp</item>
+-        <item name="android:navigationBarColor">@android:color/transparent</item>
+         <item name="android:statusBarColor">@android:color/transparent</item>
+         <item name="android:switchStyle">@style/SwitchStyle</item>
+         <item name="android:textAppearanceListItem">@style/HomeSettings.PreferenceTitle</item>
+diff --git a/res/values/styles.xml b/res/values/styles.xml
+index b1d5e7d39b..9374e3dc76 100644
+--- a/res/values/styles.xml
++++ b/res/values/styles.xml
+@@ -174,7 +174,6 @@
+     <style name="AppTheme.Dark.DarkText" parent="@style/LauncherTheme.Dark.DarkText" />
+ 
+     <style name="HomeSettings.Theme" parent="@android:style/Theme.DeviceDefault.Settings">
+-        <item name="android:navigationBarColor">?android:colorPrimaryDark</item>
+         <item name="android:windowActionBar">false</item>
+         <item name="android:windowNoTitle">true</item>
+         <item name="preferenceTheme">@style/HomeSettings.PreferenceTheme</item>
+-- 
+2.51.2.windows.1
+

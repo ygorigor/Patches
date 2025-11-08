@@ -1,0 +1,41 @@
+From 32f0ab81bb9d7c037ce53f7ff84d78c7081938cc Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Fri, 14 Mar 2025 11:40:53 +0530
+Subject: [PATCH] Launcher3: Bump launcher min sdk version
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ Android.bp          | 2 +-
+ AndroidManifest.xml | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Android.bp b/Android.bp
+index 87aa71c1b8..ffc0aaf6b7 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -17,7 +17,7 @@ package {
+     default_applicable_licenses: ["Android-Apache-2.0"],
+ }
+ 
+-min_launcher3_sdk_version = "31"
++min_launcher3_sdk_version = "36"
+ 
+ // Targets that don't inherit framework aconfig libs (i.e., those that don't set
+ // `platform_apis: true`) must manually link them.
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index 486f99b104..609cdd196d 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -20,7 +20,7 @@
+ <manifest
+     xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:tools="http://schemas.android.com/tools"
+     package="com.android.launcher3">
+-    <uses-sdk android:targetSdkVersion="33" android:minSdkVersion="30"/>
++    <uses-sdk android:targetSdkVersion="36" android:minSdkVersion="36"/>
+     <!--
+     Manifest entries specific to Launcher3. This is merged with AndroidManifest-common.xml.
+     Refer comments around specific entries on how to extend individual components.
+-- 
+2.51.2.windows.1
+

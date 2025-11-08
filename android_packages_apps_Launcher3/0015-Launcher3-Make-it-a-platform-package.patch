@@ -1,0 +1,65 @@
+From 8e446634458367ac9e1af3e496759d6b20c1a112 Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Tue, 13 Dec 2022 23:19:47 +0530
+Subject: [PATCH] Launcher3: Make it a platform package
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ Android.bp                 | 4 ++++
+ AndroidManifest-common.xml | 4 +++-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/Android.bp b/Android.bp
+index 9471cd0d77..17f8ea93b3 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -458,6 +458,7 @@ android_app {
+     min_sdk_version: min_launcher3_sdk_version,
+     target_sdk_version: "current",
+     plugins: ["dagger2-compiler"],
++    certificate: "platform",
+     privileged: true,
+     system_ext_specific: true,
+ 
+@@ -603,6 +604,7 @@ android_app {
+     min_sdk_version: "current",
+     target_sdk_version: "current",
+ 
++    certificate: "platform",
+     privileged: true,
+     system_ext_specific: true,
+     overrides: [
+@@ -649,6 +651,7 @@ android_app {
+         shrink_resources: true,
+     },
+ 
++    certificate: "platform",
+     privileged: true,
+     system_ext_specific: true,
+     overrides: [
+@@ -690,6 +693,7 @@ android_app {
+         shrink_resources: true,
+     },
+ 
++    certificate: "platform",
+     privileged: true,
+     system_ext_specific: true,
+     overrides: [
+diff --git a/AndroidManifest-common.xml b/AndroidManifest-common.xml
+index 109e90e7b5..76ab7cef84 100644
+--- a/AndroidManifest-common.xml
++++ b/AndroidManifest-common.xml
+@@ -20,7 +20,9 @@
+ <manifest
+     xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:tools="http://schemas.android.com/tools"
+-    package="com.android.launcher3">
++    package="com.android.launcher3"
++    coreApp="true"
++    android:sharedUserId="android.uid.system">
+ 
+     <!--
+     The manifest defines the common entries that should be present in any derivative of Launcher3.
+-- 
+2.51.2.windows.1
+

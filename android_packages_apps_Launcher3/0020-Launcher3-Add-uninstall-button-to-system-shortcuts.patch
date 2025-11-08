@@ -1,0 +1,236 @@
+From a734038aa306dfa57b478cce7da6bd3bf8149348 Mon Sep 17 00:00:00 2001
+From: Ali B <abittin@gmail.com>
+Date: Sat, 30 Jan 2021 22:36:40 +0300
+Subject: [PATCH] Launcher3: Add uninstall button to system shortcuts
+
+[ghostrider-reborn: Adapt to Sv2, 13]
+
+Squashed:
+
+    Author: Adithya R <gh0strider.2k18.reborn@gmail.com>
+    Date:   Sun Jun 26 18:44:18 2022 +0530
+
+    Launcher3: SystemShortcut: Avoid NPE due to uninstall button
+
+    Crash log: https://bin.kv2.dev/~62b85c7008bb984d9dc61e94
+
+    Steps to reproduce:
+    - Add Now Playing widget to home screen
+    - Long press on it
+    - Launcher crashes
+
+    Test: manual; no longer crashes
+    Change-Id: I6c0f73e38a3695a64d820c40b58f5e87ba7013c5
+
+    From: Pranav Vashi <neobuddy89@gmail.com>
+    Date: Thu, 3 Feb 2022 22:14:38 +0530
+    Subject: Launcher3: Use standard launcher method for uninstalling
+
+    Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+
+    From: Pranav Vashi <neobuddy89@gmail.com>
+    Date: Tue, 24 Sep 2024 00:06:28 +0530
+    Subject: Launcher3: Update UNINSTALL TaskShortcutFactory for A15
+
+    Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+
+neobuddy89: Add back removed method to check system app and adapt.
+
+Change-Id: I005d676d9a98f65296c330e5e13fd0d849df6fe5
+Co-authored-by: Adithya R <gh0strider.2k18.reborn@gmail.com>
+Co-authored-by: Pranav Vashi <neobuddy89@gmail.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../android/quickstep/TaskOverlayFactory.java |  1 +
+ .../quickstep/TaskShortcutFactory.java        | 12 +++++
+ src/com/android/launcher3/Launcher.java       |  3 +-
+ .../launcher3/popup/SystemShortcut.java       | 29 ++++++++++++
+ .../launcher3/util/PackageManagerHelper.java  | 44 +++++++++++++++++++
+ 5 files changed, 88 insertions(+), 1 deletion(-)
+
+diff --git a/quickstep/src/com/android/quickstep/TaskOverlayFactory.java b/quickstep/src/com/android/quickstep/TaskOverlayFactory.java
+index e9038a7892..5691a96cd3 100644
+--- a/quickstep/src/com/android/quickstep/TaskOverlayFactory.java
++++ b/quickstep/src/com/android/quickstep/TaskOverlayFactory.java
+@@ -113,6 +113,7 @@ public class TaskOverlayFactory implements ResourceBasedOverride {
+     private static final TaskShortcutFactory[] MENU_OPTIONS = new TaskShortcutFactory[]{
+             TaskShortcutFactory.APP_INFO,
+             TaskShortcutFactory.SPLIT_SELECT,
++            TaskShortcutFactory.UNINSTALL,
+             TaskShortcutFactory.PIN,
+             TaskShortcutFactory.INSTALL,
+             TaskShortcutFactory.FREE_FORM,
+diff --git a/quickstep/src/com/android/quickstep/TaskShortcutFactory.java b/quickstep/src/com/android/quickstep/TaskShortcutFactory.java
+index bc46ace741..cab707350b 100644
+--- a/quickstep/src/com/android/quickstep/TaskShortcutFactory.java
++++ b/quickstep/src/com/android/quickstep/TaskShortcutFactory.java
+@@ -50,6 +50,7 @@ import com.android.launcher3.model.WellbeingModel;
+ import com.android.launcher3.popup.SystemShortcut;
+ import com.android.launcher3.popup.SystemShortcut.AppInfo;
+ import com.android.launcher3.util.InstantAppResolver;
++import com.android.launcher3.util.PackageManagerHelper;
+ import com.android.launcher3.util.SplitConfigurationOptions;
+ import com.android.launcher3.util.SplitConfigurationOptions.SplitPositionOption;
+ import com.android.launcher3.views.ActivityContext;
+@@ -409,6 +410,17 @@ public interface TaskShortcutFactory {
+         }
+     };
+ 
++    TaskShortcutFactory UNINSTALL = new TaskShortcutFactory() {
++        @Override
++        public List<SystemShortcut> getShortcuts(RecentsViewContainer container,
++                TaskContainer taskContainer) {
++            return PackageManagerHelper.isSystemApp(container.asContext(),
++                    taskContainer.getTask().getTopComponent().getPackageName()) ? null :
++                    Collections.singletonList(new SystemShortcut.UnInstall(container,
++                            taskContainer.getItemInfo(), taskContainer.getTaskView()));
++        }
++    };
++
+     TaskShortcutFactory FREE_FORM = new TaskShortcutFactory() {
+         @Override
+         public List<SystemShortcut> getShortcuts(RecentsViewContainer container,
+diff --git a/src/com/android/launcher3/Launcher.java b/src/com/android/launcher3/Launcher.java
+index 3439a43e17..f95a132e0c 100644
+--- a/src/com/android/launcher3/Launcher.java
++++ b/src/com/android/launcher3/Launcher.java
+@@ -100,6 +100,7 @@ import static com.android.launcher3.model.ItemInstallQueue.FLAG_ACTIVITY_PAUSED;
+ import static com.android.launcher3.model.ItemInstallQueue.FLAG_DRAG_AND_DROP;
+ import static com.android.launcher3.popup.SystemShortcut.APP_INFO;
+ import static com.android.launcher3.popup.SystemShortcut.INSTALL;
++import static com.android.launcher3.popup.SystemShortcut.UNINSTALL;
+ import static com.android.launcher3.popup.SystemShortcut.WIDGETS;
+ import static com.android.launcher3.states.RotationHelper.REQUEST_LOCK;
+ import static com.android.launcher3.states.RotationHelper.REQUEST_NONE;
+@@ -3038,7 +3039,7 @@ public class Launcher extends StatefulActivity<LauncherState>
+     }
+ 
+     public Stream<SystemShortcut.Factory> getSupportedShortcuts() {
+-        return Stream.of(APP_INFO, WIDGETS, INSTALL);
++        return Stream.of(APP_INFO, WIDGETS, INSTALL, UNINSTALL);
+     }
+ 
+     /**
+diff --git a/src/com/android/launcher3/popup/SystemShortcut.java b/src/com/android/launcher3/popup/SystemShortcut.java
+index 25be998ffe..49ac223907 100644
+--- a/src/com/android/launcher3/popup/SystemShortcut.java
++++ b/src/com/android/launcher3/popup/SystemShortcut.java
+@@ -13,6 +13,7 @@ import android.content.Context;
+ import android.content.Intent;
+ import android.content.pm.ShortcutInfo;
+ import android.graphics.Rect;
++import android.net.Uri;
+ import android.os.Process;
+ import android.os.UserHandle;
+ import android.util.Log;
+@@ -46,6 +47,7 @@ import com.android.launcher3.views.Snackbar;
+ import com.android.launcher3.widget.WidgetsBottomSheet;
+ import com.android.launcher3.widget.picker.model.data.WidgetPickerData;
+ 
++import java.net.URISyntaxException;
+ import java.util.Arrays;
+ 
+ /**
+@@ -396,6 +398,33 @@ public abstract class SystemShortcut<T extends ActivityContext> extends ItemInfo
+         }
+     }
+ 
++    public static final Factory<ActivityContext> UNINSTALL = (activity, itemInfo, originalView) ->
++            itemInfo.getTargetComponent() == null ||
++                    PackageManagerHelper.isSystemApp((Context) activity,
++                    itemInfo.getTargetComponent().getPackageName())
++                    ? null : new UnInstall(activity, itemInfo, originalView);
++
++    public static class UnInstall<T extends ActivityContext> extends SystemShortcut<T> {
++
++        public UnInstall(T target, ItemInfo itemInfo, View originalView) {
++            super(R.drawable.ic_uninstall_no_shadow, R.string.uninstall_drop_target_label,
++                    target, itemInfo, originalView);
++        }
++
++        @Override
++        public void onClick(View view) {
++            try {
++                Intent intent = Intent.parseUri(view.getContext().getString(R.string.delete_package_intent), 0)
++                    .setData(Uri.fromParts("package", mItemInfo.getTargetComponent().getPackageName(),
++                    mItemInfo.getTargetComponent().getClassName())).putExtra(Intent.EXTRA_USER, mItemInfo.user);
++                mTarget.startActivitySafely(view, intent, mItemInfo);
++                AbstractFloatingView.closeAllOpenViews(mTarget);
++            } catch (URISyntaxException e) {
++                // Do nothing.
++            }
++        }
++    }
++
+     protected void dismissTaskMenuView() {
+         mAbstractFloatingViewHelper.closeOpenViews(mTarget, true,
+                 AbstractFloatingView.TYPE_ALL & ~AbstractFloatingView.TYPE_REBIND_SAFE);
+diff --git a/src/com/android/launcher3/util/PackageManagerHelper.java b/src/com/android/launcher3/util/PackageManagerHelper.java
+index 3d01f246ec..d17dd8f934 100644
+--- a/src/com/android/launcher3/util/PackageManagerHelper.java
++++ b/src/com/android/launcher3/util/PackageManagerHelper.java
+@@ -22,10 +22,13 @@ import android.content.ActivityNotFoundException;
+ import android.content.ComponentName;
+ import android.content.Context;
+ import android.content.Intent;
++import android.content.pm.ApplicationInfo;
+ import android.content.pm.LauncherActivityInfo;
+ import android.content.pm.LauncherApps;
++import android.content.pm.PackageInfo;
+ import android.content.pm.PackageManager;
+ import android.content.pm.PackageManager.NameNotFoundException;
++import android.content.pm.ResolveInfo;
+ import android.graphics.Rect;
+ import android.os.Bundle;
+ import android.os.Process;
+@@ -144,6 +147,47 @@ public class PackageManagerHelper {
+         }
+     }
+ 
++    public static boolean isSystemApp(@NonNull final Context context, String pkgName) {
++        return isSystemApp(context, null, pkgName);
++    }
++
++    public static boolean isSystemApp(@NonNull final Context context, Intent intent) {
++        return isSystemApp(context, intent, null);
++    }
++
++    public static boolean isSystemApp(@NonNull final Context context, Intent intent, String pkgName) {
++        PackageManager pm = context.getPackageManager();
++        String packageName = null;
++        // If the intent is not null, let's get the package name from the intent.
++        if (intent != null) {
++            ComponentName cn = intent.getComponent();
++            if (cn == null) {
++                ResolveInfo info = pm.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
++                if ((info != null) && (info.activityInfo != null)) {
++                    packageName = info.activityInfo.packageName;
++                }
++            } else {
++                packageName = cn.getPackageName();
++            }
++        }
++        // Otherwise we have the package name passed from the method.
++        else {
++            packageName = pkgName;
++        }
++        // Check if the provided package is a system app.
++        if (packageName != null) {
++            try {
++                PackageInfo info = pm.getPackageInfo(packageName, 0);
++                return (info != null) && (info.applicationInfo != null) &&
++                        ((info.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0);
++            } catch (NameNotFoundException e) {
++                return false;
++            }
++        } else {
++            return false;
++        }
++    }
++
+     /**
+      * Returns true if the intent is a valid launch intent for a launcher activity of an app.
+      * This is used to identify shortcuts which are different from the ones exposed by the
+-- 
+2.51.2.windows.1
+

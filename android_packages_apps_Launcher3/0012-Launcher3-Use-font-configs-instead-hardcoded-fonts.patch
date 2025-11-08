@@ -1,0 +1,268 @@
+From 7becf4e8ba728cbfdc98a7a600e6c4358317466c Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Sun, 24 Apr 2022 02:11:35 +0530
+Subject: [PATCH] Launcher3: Use font configs instead hardcoded fonts
+
+Change-Id: Ia9a954cd3fe3e2b56d791f3fc88283603a342664
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ go/quickstep/res/values/styles.xml            |  6 ++---
+ .../res/layout/predicted_hotseat_edu.xml      |  2 +-
+ quickstep/res/values/styles.xml               | 22 +++++++++----------
+ .../appprediction/AppsDividerView.java        |  2 +-
+ res/layout/all_apps_empty_search.xml          |  2 +-
+ res/layout/drop_target_tool_tip.xml           |  2 +-
+ res/values-v31/styles.xml                     | 15 ++++++-------
+ res/values/styles.xml                         |  2 +-
+ 8 files changed, 26 insertions(+), 27 deletions(-)
+
+diff --git a/go/quickstep/res/values/styles.xml b/go/quickstep/res/values/styles.xml
+index 2524c760f4..4f66829d3e 100644
+--- a/go/quickstep/res/values/styles.xml
++++ b/go/quickstep/res/values/styles.xml
+@@ -41,7 +41,7 @@
+     </style>
+ 
+     <style name="GoOverviewActionButtonCaption">
+-        <item name="android:fontFamily">sans-serif-medium</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+         <item name="android:textSize">14dp</item>
+         <item name="android:textColor">?attr/overviewButtonTextColor</item>
+         <item name="android:lineHeight">20dp</item>
+@@ -61,7 +61,7 @@
+ 
+     <!-- Modal Dialogs -->
+     <style name="ModalDialogTitle">
+-        <item name="android:fontFamily">sans-serif-medium</item>
++        <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
+         <item name="android:textSize">20sp</item>
+         <item name="android:textColor">?android:attr/textColorPrimary</item>
+         <item name="android:lineHeight">24dp</item>
+@@ -71,7 +71,7 @@
+     </style>
+ 
+     <style name="ModalDialogText">
+-        <item name="android:fontFamily">sans-serif-medium</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+         <item name="android:textSize">16sp</item>
+         <item name="android:textColor">?android:attr/textColorTertiary</item>
+         <item name="android:lineHeight">24dp</item>
+diff --git a/quickstep/res/layout/predicted_hotseat_edu.xml b/quickstep/res/layout/predicted_hotseat_edu.xml
+index f0c12f1029..9b5fb13ea9 100644
+--- a/quickstep/res/layout/predicted_hotseat_edu.xml
++++ b/quickstep/res/layout/predicted_hotseat_edu.xml
+@@ -42,7 +42,7 @@
+             android:paddingLeft="@dimen/bottom_sheet_edu_padding"
+             android:paddingRight="@dimen/bottom_sheet_edu_padding"
+             android:text="@string/hotseat_edu_title_migrate"
+-            android:fontFamily="google-sans"
++            android:fontFamily="@*android:string/config_bodyFontFamily"
+             android:textAlignment="center"
+             android:textColor="@android:color/white"
+             android:textSize="20sp" />
+diff --git a/quickstep/res/values/styles.xml b/quickstep/res/values/styles.xml
+index f8ca8d9adf..992e0fdc7e 100644
+--- a/quickstep/res/values/styles.xml
++++ b/quickstep/res/values/styles.xml
+@@ -42,7 +42,7 @@
+         parent="TextAppearance.GestureTutorial">
+         <item name="android:gravity">start</item>
+         <item name="android:textColor">?android:attr/textColorPrimary</item>
+-        <item name="android:fontFamily">google-sans</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
+         <item name="android:letterSpacing">0.03</item>
+         <item name="android:textSize">36sp</item>
+         <item name="android:lineHeight">44sp</item>
+@@ -79,7 +79,7 @@
+     <style name="TextAppearance.GestureTutorial.Dialog.Title"
+         parent="TextAppearance.GestureTutorial.Feedback.Title">
+         <item name="android:gravity">center_horizontal</item>
+-        <item name="android:fontFamily">google-sans</item>
++        <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
+         <item name="android:lineHeight">32sp</item>
+         <item name="android:textSize">24sp</item>
+     </style>
+@@ -88,7 +88,7 @@
+         parent="TextAppearance.GestureTutorial">
+         <item name="android:gravity">start</item>
+         <item name="android:textColor">?android:attr/textColorPrimary</item>
+-        <item name="android:fontFamily">google-sans-text</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
+         <item name="android:letterSpacing">0.03</item>
+         <item name="android:textSize">14sp</item>
+         <item name="android:lineHeight">20sp</item>
+@@ -103,7 +103,7 @@
+     <style name="TextAppearance.GestureTutorial.Dialog.Subtitle"
+         parent="TextAppearance.GestureTutorial.Feedback.Subtitle">
+         <item name="android:gravity">center_horizontal</item>
+-        <item name="android:fontFamily">google-sans-text</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
+         <item name="android:letterSpacing">0.025</item>
+         <item name="android:lineHeight">20sp</item>
+         <item name="android:textSize">14sp</item>
+@@ -128,7 +128,7 @@
+         <item name="android:letterSpacing">0.02</item>
+         <item name="android:textSize">16sp</item>
+         <item name="android:textAllCaps">false</item>
+-        <item name="android:fontFamily">google-sans-text-medium</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+     </style>
+ 
+     <style name="TextAppearance.GestureTutorial.ButtonLabel.Home"
+@@ -164,7 +164,7 @@
+     <style name="TextAppearance.GestureTutorial.MainTitle"
+         parent="TextAppearance.GestureTutorial">
+         <item name="android:textSize">36sp</item>
+-        <item name="android:fontFamily">google-sans</item>
++        <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
+     </style>
+ 
+     <style name="TextAppearance.GestureTutorial.MainTitle.Home"
+@@ -201,7 +201,7 @@
+         parent="TextAppearance.GestureTutorial.Subtitle">
+         <item name="android:textSize">16sp</item>
+         <item name="android:letterSpacing">0.02</item>
+-        <item name="android:fontFamily">google-sans-text</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
+         <item name="android:textColor">?attr/tutorialSubtitle</item>
+     </style>
+ 
+@@ -256,18 +256,18 @@
+ 
+     <style name="TextAppearance.TaskbarEduTooltip.Title" parent="@android:style/TextAppearance.DeviceDefault.DialogWindowTitle">
+         <item name="android:gravity">center_horizontal</item>
+-        <item name="android:fontFamily">google-sans</item>
++        <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
+         <item name="android:textSize">24sp</item>
+     </style>
+ 
+     <style name="TextAppearance.TaskbarEduTooltip.Subtext" parent="android:TextAppearance.Material.Body1">
+         <item name="android:layout_marginTop">16dp</item>
+-        <item name="android:fontFamily">google-sans-text</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
+         <item name="android:textSize">14sp</item>
+     </style>
+ 
+     <style name="KeyboardQuickSwitchText">
+-        <item name="fontFamily">google-sans-text</item>
++        <item name="fontFamily">@*android:string/config_bodyFontFamily</item>
+         <item name="android:textSize">14sp</item>
+         <item name="android:textColor">@color/materialColorOnSurface</item>
+         <item name="lineHeight">20sp</item>
+@@ -318,7 +318,7 @@
+     </style>
+ 
+     <style name="IconAppChipMenuTextStyle">
+-        <item name="android:fontFamily">google-sans-text-medium</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+         <item name="android:textSize">@dimen/task_thumbnail_icon_menu_text_size</item>
+         <item name="android:textColor">@color/materialColorOnSurface</item>
+         <item name="android:includeFontPadding">false</item>
+diff --git a/quickstep/src/com/android/launcher3/appprediction/AppsDividerView.java b/quickstep/src/com/android/launcher3/appprediction/AppsDividerView.java
+index e1e3eec790..994232ad10 100644
+--- a/quickstep/src/com/android/launcher3/appprediction/AppsDividerView.java
++++ b/quickstep/src/com/android/launcher3/appprediction/AppsDividerView.java
+@@ -211,7 +211,7 @@ public class AppsDividerView extends View implements FloatingHeaderRow {
+     private Layout getAllAppsLabelLayout() {
+         if (mAllAppsLabelLayout == null) {
+             mPaint.setAntiAlias(true);
+-            mPaint.setTypeface(Typeface.create("google-sans", Typeface.NORMAL));
++            mPaint.setTypeface(Typeface.create("@*android:string/config_bodyFontFamilyMedium", Typeface.NORMAL));
+             mPaint.setTextSize(
+                     getResources().getDimensionPixelSize(R.dimen.all_apps_label_text_size));
+ 
+diff --git a/res/layout/all_apps_empty_search.xml b/res/layout/all_apps_empty_search.xml
+index 463adac0c6..1e890ca4ac 100644
+--- a/res/layout/all_apps_empty_search.xml
++++ b/res/layout/all_apps_empty_search.xml
+@@ -23,7 +23,7 @@
+     android:paddingBottom="8dp"
+     android:paddingLeft="16dp"
+     android:paddingRight="16dp"
+-    android:fontFamily="sans-serif-medium"
++    android:fontFamily="@*android:string/config_bodyFontFamilyMedium"
+     android:textSize="14sp"
+     android:textColor="?android:attr/textColorTertiary"
+     android:focusable="false" />
+diff --git a/res/layout/drop_target_tool_tip.xml b/res/layout/drop_target_tool_tip.xml
+index a3efec4e31..2e33b87631 100644
+--- a/res/layout/drop_target_tool_tip.xml
++++ b/res/layout/drop_target_tool_tip.xml
+@@ -27,5 +27,5 @@
+     android:paddingStart="16dp"
+     android:paddingTop="6.5dp"
+     android:textSize="14sp"
+-    android:fontFamily="sans-serif"
++    android:fontFamily="@*android:string/config_bodyFontFamily"
+     android:textColor="?android:attr/colorForeground" />
+diff --git a/res/values-v31/styles.xml b/res/values-v31/styles.xml
+index 8e3090fd07..6949e66411 100644
+--- a/res/values-v31/styles.xml
++++ b/res/values-v31/styles.xml
+@@ -28,7 +28,7 @@
+         <item name="android:windowActionBar">false</item>
+         <item name="android:windowNoTitle">true</item>
+         <item name="preferenceTheme">@style/HomeSettings.PreferenceTheme</item>
+-        <item name="android:fontFamily" android:featureFlag="com.android.launcher3.gsf_res">google-sans-flex</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
+     </style>
+ 
+     <style name="HomeSettings.PreferenceTheme" parent="@style/PreferenceThemeOverlay">
+@@ -38,7 +38,7 @@
+         <item name="preferenceScreenStyle">@style/HomeSettings.PreferenceScreenStyle</item>
+         <item name="preferenceStyle">@style/HomeSettings.PreferenceStyle</item>
+         <item name="switchPreferenceCompatStyle">@style/HomeSettings.SwitchPreferenceStyle</item>
+-        <item name="android:fontFamily">google-sans-text</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
+     </style>
+ 
+     <style name="HomeSettings.CategoryStyle" parent="@style/Preference.Category.Material">
+@@ -63,12 +63,12 @@
+ 
+     <style name="HomeSettings.PreferenceTitle"
+             parent="@android:style/TextAppearance.Material.Subhead">
+-        <item name="android:fontFamily">google-sans</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
+         <item name="android:textSize">20sp</item>
+     </style>
+ 
+     <style name="HomeSettings.CategoryTitle" parent="@android:style/TextAppearance.Material.Body2">
+-        <item name="android:fontFamily">google-sans-text-medium</item>
++        <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
+     </style>
+ 
+     <style name="HomeSettings.CollapsingToolbar" parent="@style/Theme.MaterialComponents.DayNight">
+@@ -80,13 +80,12 @@
+ 
+     <style name="HomeSettings.CollapsedToolbarTitle"
+             parent="@android:style/TextAppearance.DeviceDefault.Widget.ActionBar.Title">
+-        <item name="android:fontFamily" android:featureFlag="!com.android.launcher3.gsf_res">google-sans</item>
+-        <item name="android:fontFamily" android:featureFlag="com.android.launcher3.gsf_res">variable-title-large</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
+         <item name="android:textSize">20sp</item>
+     </style>
+ 
+     <style name="HomeSettings.ExpandedToolbarTitle" parent="HomeSettings.CollapsedToolbarTitle">
+-        <item name="android:fontFamily" android:featureFlag="com.android.launcher3.gsf_res">variable-display-small</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
+         <item name="android:textSize">36sp</item>
+     </style>
+-</resources>
+\ No newline at end of file
++</resources>
+diff --git a/res/values/styles.xml b/res/values/styles.xml
+index 9374e3dc76..431e92202f 100644
+--- a/res/values/styles.xml
++++ b/res/values/styles.xml
+@@ -475,7 +475,7 @@
+     <style name="PrivateSpaceHeaderTextStyle">
+         <item name="android:textSize">16sp</item>
+         <item name="android:textColor">@color/materialColorOnSurface</item>
+-        <item name="android:fontFamily">google-sans-text-medium</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+         <item name="android:ellipsize">end</item>
+     </style>
+ </resources>
+-- 
+2.51.2.windows.1
+
