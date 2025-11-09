@@ -1,0 +1,25 @@
+From 2efde463e96cdddc99973ccad6a75de37502ca51 Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Sat, 8 Nov 2025 17:46:19 +0000
+Subject: [PATCH] Ignore font padding for large ls clock
+
+---
+ app/src/main/res/layout/lmo_clock_large.xml | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/app/src/main/res/layout/lmo_clock_large.xml b/app/src/main/res/layout/lmo_clock_large.xml
+index 377417b..3d6ad6a 100644
+--- a/app/src/main/res/layout/lmo_clock_large.xml
++++ b/app/src/main/res/layout/lmo_clock_large.xml
+@@ -11,6 +11,8 @@
+     android:gravity="center_horizontal"
+     android:textSize="@dimen/large_clock_text_size"
+     android:fontFamily="@*android:string/config_clockFontFamily"
++    android:textAlignment="center"
++    android:includeFontPadding="false"
+     android:typeface="monospace"
+     android:elegantTextHeight="false"
+     chargeAnimationDelay="200"
+-- 
+2.51.2.windows.1
+
