@@ -15,7 +15,7 @@ index 55de3f48ad..6e4c28964c 100644
      <string name="trust_apps_info_protected">Aplicațiile protejate necesită autentificare pentru a fi deschise din launcher</string>
      <string name="pref_suggestions_title">Sugestii</string>
      <string name="pref_suggestions_summary">Pentru toate aplicațiile &amp; sugestiile pentru ecranul de pornire</string>
-+    <string name="pref_sleep_gesture_title">Dublă atingere pentru orpire</string>
++    <string name="pref_sleep_gesture_title">Dublă atingere pentru oprire</string>
 +    <string name="pref_sleep_gesture_summary">Atinge de două ori spațiul gol pentru a opri ecranul</string>
  </resources>
 -- 
