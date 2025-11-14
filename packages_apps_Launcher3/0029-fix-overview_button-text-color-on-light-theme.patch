@@ -1,0 +1,30 @@
+From e7bf0fb2dcbd5e84976484c12f9b0c65e9a62a5e Mon Sep 17 00:00:00 2001
+From: ygorigor <sorocean.igor@gmail.com>
+Date: Fri, 14 Nov 2025 08:22:22 +0200
+Subject: [PATCH] fix overview_button text color on light theme
+
+---
+ res/color/overview_button.xml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/res/color/overview_button.xml b/res/color/overview_button.xml
+index aa6c618ef7..239903cdf7 100644
+--- a/res/color/overview_button.xml
++++ b/res/color/overview_button.xml
+@@ -2,10 +2,10 @@
+ <selector xmlns:android="http://schemas.android.com/apk/res/android">
+     <item
+         android:alpha="1"
+-        android:color="@color/materialColorOnSurface"
++        android:color="@color/system_on_surface_dark"
+         android:state_enabled="true" />
+     <item
+         android:alpha="?android:disabledAlpha"
+-        android:color="@color/materialColorOnSurface"
++        android:color="@color/system_on_surface_dark"
+         android:state_enabled="false" />
+ </selector>
+\ No newline at end of file
+-- 
+2.50.1.windows.1
+
