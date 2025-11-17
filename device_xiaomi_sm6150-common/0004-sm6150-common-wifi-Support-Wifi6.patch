@@ -1,0 +1,29 @@
+From a630db5d38501e11adf0c7e667272aaa62925353 Mon Sep 17 00:00:00 2001
+From: Andrew Hexen <SyberHexen@gmail.com>
+Date: Wed, 6 Sep 2023 11:15:18 -0700
+Subject: [PATCH] sm6150-common: wifi: Support Wifi6
+
+Signed-off-by: Andrew Hexen <SyberHexen@gmail.com>
+Change-Id: I32ecb3dad590cb6ab76aef70f5bab26e80d29321
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ rro_overlays/WifiOverlay/res/values/config.xml | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/rro_overlays/WifiOverlay/res/values/config.xml b/rro_overlays/WifiOverlay/res/values/config.xml
+index c515a2c5c..0c6e4c5e3 100644
+--- a/rro_overlays/WifiOverlay/res/values/config.xml
++++ b/rro_overlays/WifiOverlay/res/values/config.xml
+@@ -10,6 +10,9 @@
+          is no longer indicative, and a separate config now exists for each band -->
+     <bool name="config_wifi5ghzSupport" translatable="false">true</bool>
+ 
++    <!-- boolean indicating whether the WiFi chipset has 6GHz band support -->
++    <bool name="config_wifi6ghzSupport">true</bool>
++
+     <!-- Integer indicating maximum hardware supported client number of soft ap -->
+     <integer name="config_wifiHardwareSoftapMaxClientCount" translatable="false">32</integer>
+ 
+-- 
+2.50.1.windows.1
+

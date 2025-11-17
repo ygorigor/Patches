@@ -1,0 +1,30 @@
+From 046e661c4994719b2bc5f28d85008409e3135c8b Mon Sep 17 00:00:00 2001
+From: Michael Wright <michaelwr@google.com>
+Date: Wed, 11 Sep 2019 15:06:36 +0100
+Subject: [PATCH] sm6150-common: overlay: Enable haptic text cursor
+
+Support has landed in WebView, so time to turn it on in framework!
+
+Change-Id: I064cf3512928637895932b3405adaec74b1ceed2
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ overlay/frameworks/base/core/res/res/values/config.xml | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/overlay/frameworks/base/core/res/res/values/config.xml b/overlay/frameworks/base/core/res/res/values/config.xml
+index 5b8980a5b..58ffee7bc 100644
+--- a/overlay/frameworks/base/core/res/res/values/config.xml
++++ b/overlay/frameworks/base/core/res/res/values/config.xml
+@@ -256,4 +256,9 @@
+ 
+     <!-- Whether this device is supporting the camera toggle -->
+     <bool name="config_supportsCamToggle">true</bool>
++
++    <!-- Enables or disables haptic effect when the text insertion/selection handle is moved
++         manually by the user. Off by default, since the expected haptic feedback may not be
++         available on some devices. -->
++    <bool name="config_enableHapticTextHandle">true</bool>
+ </resources>
+-- 
+2.50.1.windows.1
+
