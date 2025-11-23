@@ -1,0 +1,27 @@
+From 918ea2999de5ea991abb62a651d1cf2158d47013 Mon Sep 17 00:00:00 2001
+From: Alexander Koskovich <akoskovich@pm.me>
+Date: Mon, 4 Jul 2022 21:52:26 -0700
+Subject: [PATCH] sm6150-common: Enable concurrent restricted connectivity
+
+Change-Id: I4258a337503e9dc9dea8e35b326a78fbec86bb88
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ rro_overlays/WifiOverlay/res/values/config.xml | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/rro_overlays/WifiOverlay/res/values/config.xml b/rro_overlays/WifiOverlay/res/values/config.xml
+index 27e9dc042..c515a2c5c 100644
+--- a/rro_overlays/WifiOverlay/res/values/config.xml
++++ b/rro_overlays/WifiOverlay/res/values/config.xml
+@@ -85,4 +85,8 @@
+ 
+     <!-- Indicate the device support request channel on Wi-Fi Aware data-path. -->
+     <bool name="config_wifiSupportChannelOnDataPath" translatable="false">true</bool>
++
++    <!-- Enable concurrent restricted connectivity + internet connectivity
++         Note: this is conditional on the device supporting dual concurrent STAs. -->
++    <bool translatable="false" name="config_wifiMultiStaRestrictedConcurrencyEnabled">true</bool>
+ </resources>
+-- 
+2.50.1.windows.1
+

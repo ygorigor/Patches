@@ -1,0 +1,32 @@
+From d65cb04a652dc5588326d7acb433405de9f57f34 Mon Sep 17 00:00:00 2001
+From: afterallafk <shivamatiet2001@gmail.com>
+Date: Thu, 11 Jul 2024 16:43:34 +0530
+Subject: [PATCH] sweet: Increase speaker volume
+
+Change-Id: I97d6ddf3e25fd201cf946e7772ef8e6da11620e1
+Signed-off-by: afterallafk <shivamatiet2001@gmail.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ configs/audio/mixer_paths_idp.xml | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/configs/audio/mixer_paths_idp.xml b/configs/audio/mixer_paths_idp.xml
+index e0fc5c6..ba25ece 100644
+--- a/configs/audio/mixer_paths_idp.xml
++++ b/configs/audio/mixer_paths_idp.xml
+@@ -366,9 +366,9 @@
+     <!-- Volume controls -->
+     <ctl name="WSA_RX0 Digital Volume" value="84" />
+     <ctl name="WSA_RX1 Digital Volume" value="84" />
+-    <ctl name="RX_RX0 Digital Volume" value="84" />
+-    <ctl name="RX_RX1 Digital Volume" value="84" />
+-    <ctl name="RX_RX2 Digital Volume" value="84" />
++    <ctl name="RX_RX0 Digital Volume" value="87" />
++    <ctl name="RX_RX1 Digital Volume" value="87" />
++    <ctl name="RX_RX2 Digital Volume" value="87" />
+     <ctl name="HPHL Volume" value="20" />
+     <ctl name="HPHR Volume" value="20" />
+     <ctl name="EAR SPKR PA Gain" value="G_DEFAULT" />
+-- 
+2.50.1.windows.1
+
