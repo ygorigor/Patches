@@ -1,0 +1,32 @@
+From 54427c6a2b07c4768a6de9e3748a65c2912f88aa Mon Sep 17 00:00:00 2001
+From: LuK1337 <priv.luk@gmail.com>
+Date: Sat, 9 Aug 2025 11:09:53 +0200
+Subject: [PATCH] sm6150-common: Remove vendor/lineage device framework matrix
+ inclusion
+
+See: I78da6340f38b93fdc4c3694cb8f431f387d16c0d
+Change-Id: I0b9f527de50ca02082be9b92375559f4893b2688
+---
+ BoardConfigCommon.mk | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/BoardConfigCommon.mk b/BoardConfigCommon.mk
+index bbd94744b..39a3b36ca 100644
+--- a/BoardConfigCommon.mk
++++ b/BoardConfigCommon.mk
+@@ -51,10 +51,9 @@ TARGET_FS_CONFIG_GEN := $(COMMON_PATH)/configs/config.fs
+ BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE := default
+ 
+ # HIDL
+-DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE := \
++DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE += \
+     hardware/qcom-caf/common/vendor_framework_compatibility_matrix.xml \
+-    hardware/xiaomi/vintf/xiaomi_framework_compatibility_matrix.xml \
+-    vendor/lineage/config/device_framework_matrix.xml
++    hardware/xiaomi/vintf/xiaomi_framework_compatibility_matrix.xml
+ 
+ DEVICE_MANIFEST_FILE := $(COMMON_PATH)/configs/hidl/manifest.xml
+ DEVICE_MANIFEST_FILE += hardware/qcom-caf/sm8150/media/conf_files/sm6150/c2_manifest.xml
+-- 
+2.50.1.windows.1
+
