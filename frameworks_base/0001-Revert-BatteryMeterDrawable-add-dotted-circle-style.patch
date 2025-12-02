@@ -1,0 +1,85 @@
+From 473221c9bd589b3f13e502e4763b00a64bb3a1e2 Mon Sep 17 00:00:00 2001
+From: Igor <sorocean.igor@gmail.com>
+Date: Tue, 2 Dec 2025 08:34:30 +0200
+Subject: [PATCH] Revert "BatteryMeterDrawable: add dotted circle style"
+
+This reverts commit b89ffbdaf27df2b22de434afad10352c9fc7efb5.
+---
+ .../settingslib/graph/CircleBatteryDrawable.kt     | 14 --------------
+ .../android/systemui/battery/BatteryMeterView.java |  7 +------
+ 2 files changed, 1 insertion(+), 20 deletions(-)
+
+diff --git a/packages/SettingsLib/src/com/android/settingslib/graph/CircleBatteryDrawable.kt b/packages/SettingsLib/src/com/android/settingslib/graph/CircleBatteryDrawable.kt
+index be6b477b877d..f1c76b88cb84 100644
+--- a/packages/SettingsLib/src/com/android/settingslib/graph/CircleBatteryDrawable.kt
++++ b/packages/SettingsLib/src/com/android/settingslib/graph/CircleBatteryDrawable.kt
+@@ -42,7 +42,6 @@ class CircleBatteryDrawable(private val context: Context, frameColor: Int) : Dra
+     private val padding = Rect()
+     private val frame = RectF()
+     private val boltFrame = RectF()
+-    private val pathEffect = DashPathEffect(floatArrayOf(3f,2f),0f)
+ 
+     private var chargeColor: Int
+     private var iconTint = Color.WHITE
+@@ -82,12 +81,6 @@ class CircleBatteryDrawable(private val context: Context, frameColor: Int) : Dra
+             postInvalidate()
+         }
+ 
+-    var usePathEffect = false
+-        set(value) {
+-            field = value
+-            postInvalidate()
+-        }
+-
+     // an approximation of View.postInvalidate()
+     private fun postInvalidate() {
+         unscheduleSelf { invalidateSelf() }
+@@ -165,13 +158,6 @@ class CircleBatteryDrawable(private val context: Context, frameColor: Int) : Dra
+         framePaint.style = Paint.Style.STROKE
+         batteryPaint.strokeWidth = strokeWidth
+         batteryPaint.style = Paint.Style.STROKE
+-        if (usePathEffect) {
+-            batteryPaint.pathEffect = pathEffect
+-            powerSavePaint.pathEffect = pathEffect
+-        } else {
+-            batteryPaint.pathEffect = null
+-            powerSavePaint.pathEffect = null
+-        }
+         powerSavePaint.strokeWidth = strokeWidth
+         frame[
+                 strokeWidth / 2.0f + padding.left, strokeWidth / 2.0f,
+diff --git a/packages/SystemUI/src/com/android/systemui/battery/BatteryMeterView.java b/packages/SystemUI/src/com/android/systemui/battery/BatteryMeterView.java
+index e0cff531ae2f..41511d1ac195 100644
+--- a/packages/SystemUI/src/com/android/systemui/battery/BatteryMeterView.java
++++ b/packages/SystemUI/src/com/android/systemui/battery/BatteryMeterView.java
+@@ -72,7 +72,6 @@ public class BatteryMeterView extends LinearLayout implements DarkReceiver {
+     protected static final int BATTERY_STYLE_PORTRAIT = 0;
+     protected static final int BATTERY_STYLE_CIRCLE = 1;
+     protected static final int BATTERY_STYLE_TEXT = 2;
+-    protected static final int BATTERY_STYLE_DOTTED_CIRCLE = 3;
+ 
+     @Retention(SOURCE)
+     @IntDef({MODE_DEFAULT, MODE_ON, MODE_OFF, MODE_ESTIMATE})
+@@ -686,9 +685,7 @@ public class BatteryMeterView extends LinearLayout implements DarkReceiver {
+         float iconScaleFactor = typedValue.getFloat();
+ 
+         int batteryHeight = res.getDimensionPixelSize(R.dimen.status_bar_battery_icon_height);
+-        int batteryWidth =
+-                (getBatteryStyle() == BATTERY_STYLE_CIRCLE
+-                        || getBatteryStyle() == BATTERY_STYLE_DOTTED_CIRCLE) ?
++        int batteryWidth = getBatteryStyle() == BATTERY_STYLE_CIRCLE ?
+                 res.getDimensionPixelSize(R.dimen.status_bar_battery_icon_circle_width) :
+                 res.getDimensionPixelSize(R.dimen.status_bar_battery_icon_width);
+         float mainBatteryHeight = batteryHeight * iconScaleFactor;
+@@ -733,8 +730,6 @@ public class BatteryMeterView extends LinearLayout implements DarkReceiver {
+                 mBatteryIconView.setVisibility(View.VISIBLE);
+                 break;
+             case BATTERY_STYLE_CIRCLE:
+-            case BATTERY_STYLE_DOTTED_CIRCLE:
+-                mCircleDrawable.setUsePathEffect(getBatteryStyle() == BATTERY_STYLE_DOTTED_CIRCLE);
+                 mBatteryIconView.setImageDrawable(mCircleDrawable);
+                 mBatteryIconView.setVisibility(View.VISIBLE);
+                 break;
+-- 
+2.43.0
+
