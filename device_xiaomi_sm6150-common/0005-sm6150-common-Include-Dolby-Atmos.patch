@@ -26,24 +26,21 @@ Signed-off-by: therealmharc <therealmharc@gmail.com>
  create mode 100644 configs/media/media_codecs_dolby.xml
 
 diff --git a/BoardConfigCommon.mk b/BoardConfigCommon.mk
-index bbd9474..1eb1d32 100644
+index 39a3b36c..e9b4af4a 100644
 --- a/BoardConfigCommon.mk
 +++ b/BoardConfigCommon.mk
-@@ -51,12 +51,12 @@ TARGET_FS_CONFIG_GEN := $(COMMON_PATH)/configs/config.fs
- BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE := default
- 
- # HIDL
--DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE := \
-+DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE += \
+@@ -55,9 +55,9 @@ DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE += \
      hardware/qcom-caf/common/vendor_framework_compatibility_matrix.xml \
-     hardware/xiaomi/vintf/xiaomi_framework_compatibility_matrix.xml \
-     vendor/lineage/config/device_framework_matrix.xml
+     hardware/xiaomi/vintf/xiaomi_framework_compatibility_matrix.xml
  
 -DEVICE_MANIFEST_FILE := $(COMMON_PATH)/configs/hidl/manifest.xml
 +DEVICE_MANIFEST_FILE += $(COMMON_PATH)/configs/hidl/manifest.xml
  DEVICE_MANIFEST_FILE += hardware/qcom-caf/sm8150/media/conf_files/sm6150/c2_manifest.xml
- DEVICE_MATRIX_FILE := hardware/qcom-caf/common/compatibility_matrix.xml
+-DEVICE_MATRIX_FILE := hardware/qcom-caf/common/compatibility_matrix.xml
++DEVICE_MATRIX_FILE += hardware/qcom-caf/common/compatibility_matrix.xml
  ODM_MANIFEST_FILES += $(COMMON_PATH)/configs/hidl/manifest-qva.xml
+ 
+ # Kernel
 diff --git a/configs/audio/audio_effects_dolby.xml b/configs/audio/audio_effects_dolby.xml
 new file mode 100644
 index 0000000..fa297fe
