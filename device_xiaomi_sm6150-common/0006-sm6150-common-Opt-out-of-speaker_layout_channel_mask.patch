@@ -1,0 +1,30 @@
+From 8133cb224ab47d64117d3cb91e150c76f98a3902 Mon Sep 17 00:00:00 2001
+From: LuK1337 <priv.luk@gmail.com>
+Date: Sun, 16 Nov 2025 10:56:33 +0100
+Subject: [PATCH] sm6150-common: Opt out of speaker_layout_channel_mask field
+
+Required for ABI compatibility with audio HAL compiled before 15 QPR2.
+
+Fixes: https://gitlab.com/LineageOS/issues/android/-/issues/9426
+Change-Id: Ic910f0634ee0707c21dad77f5264fd89fb33f1c0
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ sm6150.mk | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/sm6150.mk b/sm6150.mk
+index 903c7da1b..99adf8356 100644
+--- a/sm6150.mk
++++ b/sm6150.mk
+@@ -59,6 +59,8 @@ PRODUCT_PACKAGES += \
+ PRODUCT_PACKAGES += \
+     libaudio-resampler
+ 
++$(call soong_config_set,android_hardware_audio,skip_speaker_layout_channel_mask_field,true)
++
+ PRODUCT_COPY_FILES += \
+     $(LOCAL_PATH)/configs/audio/audio_effects.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_effects.xml \
+     $(LOCAL_PATH)/configs/audio/audio_io_policy.conf:$(TARGET_COPY_OUT_VENDOR)/etc/audio_io_policy.conf \
+-- 
+2.50.1.windows.1
+
