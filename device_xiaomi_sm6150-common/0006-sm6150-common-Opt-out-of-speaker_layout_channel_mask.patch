@@ -20,7 +20,7 @@ index d5ef2592f..2b940f015 100644
  PRODUCT_PACKAGES += \
      libaudio-resampler
  
-+$(call soong_config_set_bool,android_hardware_audio,skip_speaker_layout_channel_mask_field,true)
++$(call soong_config_set,android_hardware_audio,skip_speaker_layout_channel_mask_field,true)
 +
  ifeq ($(TARGET_USES_DOLBY),true)
  PRODUCT_COPY_FILES += \
