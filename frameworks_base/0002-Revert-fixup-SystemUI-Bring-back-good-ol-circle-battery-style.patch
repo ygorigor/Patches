@@ -1,0 +1,13 @@
+diff --git a/packages/SystemUI/src/com/android/systemui/battery/BatteryMeterView.java b/packages/SystemUI/src/com/android/systemui/battery/BatteryMeterView.java
+index f127c4c0a789..b88aa801c59e 100644
+--- a/packages/SystemUI/src/com/android/systemui/battery/BatteryMeterView.java
++++ b/packages/SystemUI/src/com/android/systemui/battery/BatteryMeterView.java
+@@ -654,7 +654,7 @@ public class BatteryMeterView extends LinearLayout implements DarkReceiver {
+ 
+         mBatteryStateAlert = isAlert;
+         if (!newStatusBarIcons()) {
+-            mAccessorizedDrawable.setAlertEnabled(isAlert);
++            mDrawable.setAlertEnabled(isAlert);
+         }
+     }
+ 
