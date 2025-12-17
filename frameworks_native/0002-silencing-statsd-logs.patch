@@ -1,0 +1,32 @@
+From adde9a6c149f984d2dcabe36e53d06d159a6f805 Mon Sep 17 00:00:00 2001
+From: rmp22 <195054967+rmp22@users.noreply.github.com>
+Date: Fri, 24 Oct 2025 15:55:12 +0800
+Subject: [PATCH] silencing statsd logs
+
+Change-Id: Ibd26e301366f8693a8f775f7ab55bf37159e7f09
+---
+ libs/binder/IServiceManager.cpp | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/libs/binder/IServiceManager.cpp b/libs/binder/IServiceManager.cpp
+index c9ca646472..edfcd5f11b 100644
+--- a/libs/binder/IServiceManager.cpp
++++ b/libs/binder/IServiceManager.cpp
+@@ -724,9 +724,11 @@ sp<IBinder> CppBackendShim::waitForService(const String16& name16) {
+         }
+ 
+         sp<ProcessState> self = ProcessState::selfOrNull();
+-        ALOGW("Waited one second for %s (is service started? Number of threads started in the "
+-              "threadpool: %zu. Are binder threads started and available?)",
+-              name.c_str(), self ? self->getThreadPoolMaxTotalThreadCount() : 0);
++        if (name != "stats") {
++            ALOGW("Waited one second for %s (is service started? Number of threads started in the "
++                  "threadpool: %zu. Are binder threads started and available?)",
++                  name.c_str(), self ? self->getThreadPoolMaxTotalThreadCount() : 0);
++        }
+ 
+         // Handle race condition for lazy services. Here is what can happen:
+         // - the service dies (not processed by init yet).
+-- 
+2.50.1.windows.1
+
