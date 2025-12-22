@@ -1,0 +1,27 @@
+From c52322c4053ac267dff478ff186611812b9d9c39 Mon Sep 17 00:00:00 2001
+From: Igor <sorocean.igor@gmail.com>
+Date: Mon, 22 Dec 2025 12:38:19 +0200
+Subject: [PATCH] Remove policy which violates neverallow rule New neverallow
+ rule added in BP3A:
+
+(neverallow system_server self (capability (sys_module)))
+---
+ basic/non_plat/system_server.te | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/basic/non_plat/system_server.te b/basic/non_plat/system_server.te
+index c5aa222..4564b1c 100644
+--- a/basic/non_plat/system_server.te
++++ b/basic/non_plat/system_server.te
+@@ -179,7 +179,7 @@ allow system_server sysfs_boot_mode:file r_file_perms;
+ 
+ # Date : 2019/10/22
+ # Operation : Q Migration
+-allow system_server self:capability sys_module;
++#allow system_server self:capability sys_module;
+ 
+ # Date : 2019/10/22
+ # Operation : Q Migration
+-- 
+2.43.0
+
