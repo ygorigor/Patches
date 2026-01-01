@@ -154,8 +154,8 @@ index 5cc7c98..659f88f 100644
 +++ b/fonts/etc/fonts_customization.xml
 @@ -32,4 +32,15 @@
      </family>
-     <alias name="rubik-medium" to="rubik" weight="500" />
-     <alias name="rubik-bold" to="rubik" weight="700" />
+     <alias name="rubik-medium" to="rubik" weight="500"/>
+     <alias name="rubik-bold" to="rubik" weight="700"/>
 +
 +    <family customizationType="new-named-family" name="vazirmatn">
 +        <font weight="400" style="normal">Vazirmatn-Regular.ttf</font>
