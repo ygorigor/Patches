@@ -1,0 +1,23 @@
+From 27bd2e74e1598db14a7aefadac0b1adc2240b90a Mon Sep 17 00:00:00 2001
+From: ygorigor <sorocean.igor@gmail.com>
+Date: Mon, 5 Jan 2026 07:43:09 +0200
+Subject: [PATCH] dynamically allocate zram
+
+* 50% of Total RAM
+---
+ rootdir/etc/fstab.zram | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/rootdir/etc/fstab.zram b/rootdir/etc/fstab.zram
+index fa7067a41..420d3066d 100644
+--- a/rootdir/etc/fstab.zram
++++ b/rootdir/etc/fstab.zram
+@@ -1,4 +1,4 @@
+ # Android fstab file.
+ 
+ #<src>                                                  <mnt_point>            <type>  <mnt_flags and options>                              <fs_mgr_flags>
+-/dev/block/zram0                                        none                   swap    defaults                                             zramsize=2147483648,zram_backingdev_size=512M
++/dev/block/zram0                                        none                   swap    defaults                                             zramsize=50%,zram_backingdev_size=512M
+-- 
+2.50.1.windows.1
+
