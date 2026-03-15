@@ -1,4 +1,4 @@
-From b38e019248e98450378b6cf228de268c987b9d94 Mon Sep 17 00:00:00 2001
+From eb1efa0f9e0e23c9e3d382e2cf53715ca644b008 Mon Sep 17 00:00:00 2001
 From: Thecrazyskull <anaskarbila@gmail.com>
 Date: Fri, 10 Feb 2017 09:38:50 -0500
 Subject: [PATCH] Launcher3: Double tap on home screen to turn off screen
@@ -39,13 +39,13 @@ index a83dbe9be0..5b1b63eb04 100644
      <uses-permission android:name="android.permission.SET_WALLPAPER_HINTS" />
      <uses-permission android:name="android.permission.BIND_APPWIDGET" />
 diff --git a/res/values/lineage_strings.xml b/res/values/lineage_strings.xml
-index eda1bc7206..37a33ccc49 100644
+index 595d61b571..32dc98004d 100644
 --- a/res/values/lineage_strings.xml
 +++ b/res/values/lineage_strings.xml
-@@ -60,4 +60,8 @@
-     <!-- App suggestions -->
-     <string name="pref_suggestions_title">Suggestions</string>
-     <string name="pref_suggestions_summary">For app drawer &amp; home screen suggestions</string>
+@@ -69,4 +69,8 @@
+     <string name="tapered_rect_shape_title">Tapered rect</string>
+     <string name="teardrop_shape_title">Teardrop</string>
+     <string name="rounded_rect_shape_title">Rounded rect</string>
 +
 +    <!-- DT2S -->
 +    <string name="pref_sleep_gesture_title">Tap to sleep</string>
