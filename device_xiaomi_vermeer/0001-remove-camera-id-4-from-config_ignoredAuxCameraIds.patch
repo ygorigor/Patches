@@ -1,0 +1,24 @@
+From becfa64e61e64d71117716f71c2dde8ddbe0d7ac Mon Sep 17 00:00:00 2001
+From: ygorigor <sorocean.igor@gmail.com>
+Date: Wed, 18 Mar 2026 14:28:37 +0200
+Subject: [PATCH] remove camera id 4 from config_ignoredAuxCameraIds
+
+---
+ overlay/ApertureResVermeer/res/values/config.xml | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/overlay/ApertureResVermeer/res/values/config.xml b/overlay/ApertureResVermeer/res/values/config.xml
+index f32be24..63d8323 100644
+--- a/overlay/ApertureResVermeer/res/values/config.xml
++++ b/overlay/ApertureResVermeer/res/values/config.xml
+@@ -11,7 +11,6 @@
+     <string-array name="config_ignoredAuxCameraIds">
+         <item>2</item>
+         <item>3</item>
+-        <item>4</item>
+         <item>5</item>
+         <item>6</item>
+         <item>7</item>
+-- 
+2.50.1.windows.1
+
