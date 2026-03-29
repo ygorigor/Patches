@@ -1,0 +1,26 @@
+From 86194f9005724952115c98fdce3850a0166719d9 Mon Sep 17 00:00:00 2001
+From: Igor <sorocean.igor@gmail.com>
+Date: Sun, 29 Mar 2026 14:09:48 +0300
+Subject: [PATCH] Enable proximity check on wake
+
+---
+ overlay/LineageResXiaomi/res/values/config.xml | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/overlay/LineageResXiaomi/res/values/config.xml b/overlay/LineageResXiaomi/res/values/config.xml
+index 0eb2f42..71a5a32 100644
+--- a/overlay/LineageResXiaomi/res/values/config.xml
++++ b/overlay/LineageResXiaomi/res/values/config.xml
+@@ -14,4 +14,9 @@
+ 
+     <!-- Whether device has a screen with a higher aspect ratio -->
+     <bool name="config_haveHigherAspectRatioScreen">true</bool>
++
++    <!-- Default value for proximity check on screen wake
++     NOTE ! - Enable for devices that have a fast response proximity sensor (ideally < 300ms)-->
++    <bool name="config_proximityCheckOnWake">true</bool>
++    <bool name="config_proximityCheckOnWakeEnabledByDefault">true</bool>
+ </resources>
+-- 
+2.43.0
+
