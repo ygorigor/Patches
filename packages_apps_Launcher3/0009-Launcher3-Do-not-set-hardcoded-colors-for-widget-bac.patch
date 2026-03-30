@@ -1,0 +1,36 @@
+From 06ff775ea302e7374015cebf96eebd9ca7e55e82 Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Tue, 13 Sep 2022 12:55:53 +0530
+Subject: [PATCH] Launcher3: Do not set hardcoded colors for widget background
+
+Change-Id: I1bd401aa56730a2c2f0a6e4cae4c11e982eb761e
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ res/values/styles.xml | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/res/values/styles.xml b/res/values/styles.xml
+index 63094a242b..d0f2b18c74 100644
+--- a/res/values/styles.xml
++++ b/res/values/styles.xml
+@@ -216,8 +216,7 @@
+     </style>
+ 
+     <!-- Theme for the widget container. -->
+-    <style name="WidgetContainerTheme" parent="@android:style/Theme.DeviceDefault.Settings">
+-        <item name="android:colorPrimaryDark">#E8EAED</item>
++    <style name="WidgetContainerTheme" parent="AppTheme">
+         <item name="android:textColorSecondary">?android:attr/textColorPrimary</item>
+         <item name="android:colorEdgeEffect">?android:attr/textColorSecondary</item>
+         <item name="widgetPickerPrimarySurfaceColor">
+@@ -265,7 +264,6 @@
+     </style>
+     <style name="WidgetContainerTheme.Dark" parent="AppTheme.Dark">
+         <item name="android:colorEdgeEffect">?android:attr/textColorSecondary</item>
+-        <item name="android:colorPrimaryDark">#616161</item> <!-- Gray 700 -->
+         <item name="widgetPickerPrimarySurfaceColor">
+             @color/widget_picker_primary_surface_color_dark</item>
+         <item name="widgetPickerSecondarySurfaceColor">
+-- 
+2.50.1.windows.1
+

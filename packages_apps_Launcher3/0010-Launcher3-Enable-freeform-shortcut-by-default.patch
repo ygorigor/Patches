@@ -1,0 +1,28 @@
+From 66aae71f143050f273b8ff9d645c79caa956ce1f Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Thu, 15 Aug 2024 10:49:49 +0530
+Subject: [PATCH] Launcher3: Enable freeform shortcut by default
+
+* This is set true by default in fwb
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ quickstep/src/com/android/quickstep/TaskShortcutFactory.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/quickstep/src/com/android/quickstep/TaskShortcutFactory.java b/quickstep/src/com/android/quickstep/TaskShortcutFactory.java
+index 3c5633eaa1..8c4d5f79c2 100644
+--- a/quickstep/src/com/android/quickstep/TaskShortcutFactory.java
++++ b/quickstep/src/com/android/quickstep/TaskShortcutFactory.java
+@@ -400,7 +400,7 @@ public interface TaskShortcutFactory {
+         private boolean isAvailable(RecentsViewContainer container) {
+             return Settings.Global.getInt(
+                     container.asContext().getContentResolver(),
+-                    Settings.Global.DEVELOPMENT_ENABLE_FREEFORM_WINDOWS_SUPPORT, 0) != 0
++                    Settings.Global.DEVELOPMENT_ENABLE_FREEFORM_WINDOWS_SUPPORT, 1) != 0
+                     && !DesktopModeStatus.canEnterDesktopMode(container.asContext());
+         }
+     };
+-- 
+2.50.1.windows.1
+
