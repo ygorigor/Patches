@@ -1,0 +1,28 @@
+From 7f755f04e16f84cfca9669c642ca4c9745e3ed18 Mon Sep 17 00:00:00 2001
+From: Akash <akashniki@gmail.com>
+Date: Fri, 4 Apr 2025 22:59:39 +0800
+Subject: [PATCH] ui: Disable sandbox
+
+AOSP compiler seems to ignore it anyhow. Disabling it silences the following warning:
+
+**Build sandboxing disabled due to nsjail error.**
+---
+ ui/build/sandbox_linux.go | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ui/build/sandbox_linux.go b/ui/build/sandbox_linux.go
+index ca8e8c2b8..cb3daf404 100644
+--- a/ui/build/sandbox_linux.go
++++ b/ui/build/sandbox_linux.go
+@@ -34,7 +34,7 @@ type Sandbox struct {
+ var (
+ 	noSandbox    = Sandbox{}
+ 	basicSandbox = Sandbox{
+-		Enabled: true,
++		Enabled: false,
+ 	}
+ 
+ 	dumpvarsSandbox = basicSandbox
+-- 
+2.50.1.windows.1
+

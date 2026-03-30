@@ -1,0 +1,80 @@
+From 070f89cb5098da92d2205483d5550f56e2c18d67 Mon Sep 17 00:00:00 2001
+From: someone5678 <someone5678@users.noreply.github.com>
+Date: Mon, 2 Sep 2024 16:01:37 +0900
+Subject: [PATCH] soong: Increase heap size to 8GB for R8 and D8
+
+Log:
+Error: java.lang.OutOfMemoryError: Java heap space
+Exception in thread "main" com.android.tools.r8.CompilationFailedException: Compilation failed to complete
+	at Version.fakeStackEntry(Version_8.4.16-dev.java:0)
+	at com.android.tools.r8.Q.a(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:5)
+	at com.android.tools.r8.internal.Ao.a(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:82)
+	at com.android.tools.r8.internal.Ao.a(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:32)
+	at com.android.tools.r8.internal.Ao.a(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:31)
+	at com.android.tools.r8.R8.a(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:79)
+	at com.android.tools.r8.R8.run(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:3)
+	at com.android.tools.r8wrappers.R8Wrapper.main(R8Wrapper.java:115)
+Caused by: java.lang.OutOfMemoryError: Java heap space
+	at java.base/java.util.IdentityHashMap.init(IdentityHashMap.java:259)
+	at java.base/java.util.IdentityHashMap.<init>(IdentityHashMap.java:215)
+	at com.android.tools.r8.internal.sb0.c(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:1)
+	at com.android.tools.r8.shaking.f1.<init>(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:4)
+	at com.android.tools.r8.shaking.c1.<init>(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:3)
+	at com.android.tools.r8.shaking.d1.a(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:5)
+	at com.android.tools.r8.shaking.g1.a(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:2)
+	at com.android.tools.r8.shaking.g1$$Lambda$288/0x0000000800d660e8.apply(Unknown Source)
+	at com.android.tools.r8.graph.k1.a(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:11)
+	at com.android.tools.r8.shaking.g1.a(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:7)
+	at com.android.tools.r8.shaking.T1.b(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:1)
+	at com.android.tools.r8.shaking.T1$$Lambda$286/0x0000000800d65810.get(Unknown Source)
+	at com.android.tools.r8.internal.UM.a(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:10)
+	at com.android.tools.r8.internal.UM$$Lambda$284/0x0000000800d65398.apply(Unknown Source)
+	at java.base/java.util.Map.computeIfAbsent(Map.java:1054)
+	at com.android.tools.r8.shaking.T1.a(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:19)
+	at com.android.tools.r8.shaking.T1.a(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:25)
+	at com.android.tools.r8.shaking.T1$$Lambda$800/0x0000000800e83878.accept(Unknown Source)
+	at java.base/java.util.IdentityHashMap.forEach(IdentityHashMap.java:1354)
+	at com.android.tools.r8.shaking.T1.a(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:24)
+	at com.android.tools.r8.shaking.C.a(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:60)
+	at com.android.tools.r8.shaking.C$$Lambda$1141/0x0000000800f0c800.accept(Unknown Source)
+	at java.base/java.util.concurrent.ConcurrentHashMap.forEach(ConcurrentHashMap.java:1603)
+	at com.android.tools.r8.shaking.C.a(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:55)
+	at com.android.tools.r8.shaking.d4.a(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:74)
+	at com.android.tools.r8.graph.w.a(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:1)
+	at com.android.tools.r8.internal.Tg0.b(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:1)
+	at com.android.tools.r8.internal.Ug0.a(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:1)
+	at com.android.tools.r8.internal.Ug0$$Lambda$1134/0x0000000800f0d000.b(Unknown Source)
+	at com.android.tools.r8.internal.Ig0.a(R8_8.4.16-dev_813738e5beb7a3aeb926f700acf29c0edf5ff3aab384e93d0a54c4c327932594:9)
+	at com.android.tools.r8.internal.Ig0$$Lambda$146/0x0000000800cf7db8.call(Unknown Source)
+	at java.base/java.util.concurrent.ForkJoinTask$AdaptedCallable.exec(ForkJoinTask.java:1428)
+
+Change-Id: I56a72160a160b02f418cfe15d36dcce667128cca
+---
+ java/config/config.go | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/java/config/config.go b/java/config/config.go
+index 2b539abd7..8d03fe9ef 100644
+--- a/java/config/config.go
++++ b/java/config/config.go
+@@ -87,7 +87,7 @@ func init() {
+ 	// D8 invocations are shorter lived, so we restrict their JIT tiering relative to R8.
+ 	// Note that the `-JXX` prefix syntax is specific to the R8/D8 invocation wrappers.
+ 	pctx.StaticVariable("D8Flags", strings.Join(append([]string{
+-		"-JXmx4096M",
++		"-JXmx8192M",
+ 		"-JXX:+TieredCompilation",
+ 		"-JXX:TieredStopAtLevel=1",
+ 		"-JDcom.android.tools.r8.emitRecordAnnotationsInDex",
+@@ -96,7 +96,7 @@ func init() {
+ 
+ 	pctx.VariableFunc("R8Flags", func(ctx android.PackageVarContext) string {
+ 		r8flags := append([]string{
+-			"-JXmx4096M",
++			"-JXmx8192M",
+ 			"-JDcom.android.tools.r8.emitRecordAnnotationsInDex",
+ 			"-JDcom.android.tools.r8.emitPermittedSubclassesAnnotationsInDex",
+ 		}, dexerJavaVmFlagsList...)
+-- 
+2.50.1.windows.1
+

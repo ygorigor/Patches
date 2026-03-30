@@ -1,0 +1,32 @@
+From 7cc970736b9635fe9adac6809a2e0eb36f5bfe8a Mon Sep 17 00:00:00 2001
+From: Andrzej Perczak <linux@andrzejperczak.com>
+Date: Thu, 23 Jun 2022 17:23:43 +0200
+Subject: [PATCH] cc: Enable global O3
+
+At level 3 optimization loop vectorization gets enabled which can lead
+to significant speedups when processing big chunks of data. Rather than
+enabling O3 one by one let's enable it globally as this flag is
+completely safe nowadays.
+
+Signed-off-by: Andrzej Perczak <linux@andrzejperczak.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ cc/config/global.go | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cc/config/global.go b/cc/config/global.go
+index 4d7bd3c92..cc3aa2c7f 100644
+--- a/cc/config/global.go
++++ b/cc/config/global.go
+@@ -31,7 +31,7 @@ var (
+ 	// will save bytes in build.ninja so they aren't repeated for every file
+ 	commonGlobalCflags = []string{
+ 		// Enable some optimization by default.
+-		"-O2",
++		"-O3",
+ 
+ 		// Warnings enabled by default. Reference:
+ 		// https://clang.llvm.org/docs/DiagnosticsReference.html
+-- 
+2.50.1.windows.1
+
