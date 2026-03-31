@@ -1,0 +1,41 @@
+From ddcf218f8c507ce7ba7a5053fe335b54ecb21327 Mon Sep 17 00:00:00 2001
+From: Mohammed Irfan <mohammedirfan1992@hotmail.com>
+Date: Thu, 30 May 2024 19:09:42 +0800
+Subject: [PATCH 6/6] Camera: Guard in short-circuit evaluations for
+ stringSplit methods
+
+* splitRange function should also check if string is empty instead of
+  just checking for null, as a faulty camera can return
+  an empty RangeLength string.
+* See (stripped) logcat: http://pastebin.com/kVV3ZJhz
+
+Change-Id: Icbb8f12d1c2511366856889edc9b2060b764f2d0
+---
+ core/java/android/hardware/Camera.java | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/core/java/android/hardware/Camera.java b/core/java/android/hardware/Camera.java
+index 45ea07d872cd..bd6b18fe5c5a 100644
+--- a/core/java/android/hardware/Camera.java
++++ b/core/java/android/hardware/Camera.java
+@@ -4690,7 +4690,7 @@ public class Camera {
+         // Example string: "(10000,26623),(10000,30000)". Return null if the
+         // passing string is null or the size is 0.
+         private ArrayList<int[]> splitRange(String str) {
+-            if (str == null || str.charAt(0) != '('
++            if (str == null || str.isEmpty() || str.charAt(0) != '('
+                     || str.charAt(str.length() - 1) != ')') {
+                 Log.e(TAG, "Invalid range list string=" + str);
+                 return null;
+@@ -4716,7 +4716,7 @@ public class Camera {
+         // the passing string is null or the size is 0 or (0,0,0,0,0).
+         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
+         private ArrayList<Area> splitArea(String str) {
+-            if (str == null || str.charAt(0) != '('
++            if (str == null || str.isEmpty() || str.charAt(0) != '('
+                     || str.charAt(str.length() - 1) != ')') {
+                 Log.e(TAG, "Invalid area string=" + str);
+                 return null;
+-- 
+2.43.0
+
