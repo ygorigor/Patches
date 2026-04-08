@@ -91,7 +91,7 @@ index 111c99b53a..c5338aa37c 100644
 -                            scrollDiff,
 -                            anim,
 -                            splitTimings);
-+                if (scrollDiff != 0) {=
++                if (scrollDiff != 0) {
 +                    if (!isExpressiveDismiss) {
 +                        if (!mEnableOverlap) { 
 +                            translateTaskWhenDismissed(
