@@ -1,0 +1,26 @@
+From 1287f805fcb98ade649954ccf53cccf162dfcb0e Mon Sep 17 00:00:00 2001
+From: ygorigor <sorocean.igor@gmail.com>
+Date: Fri, 10 Apr 2026 11:10:34 +0300
+Subject: [PATCH] remove dtw
+
+---
+ overlay/FrameworkResOverlayCommon/res/values/config.xml | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/overlay/FrameworkResOverlayCommon/res/values/config.xml b/overlay/FrameworkResOverlayCommon/res/values/config.xml
+index 8ce0138..4433996 100644
+--- a/overlay/FrameworkResOverlayCommon/res/values/config.xml
++++ b/overlay/FrameworkResOverlayCommon/res/values/config.xml
+@@ -234,9 +234,6 @@
+     -->
+     <bool name="config_enableWifiDisplay">true</bool>
+ 
+-    <!-- Whether device supports double tap to wake -->
+-    <bool name="config_supportDoubleTapWake">true</bool>
+-
+     <!-- Doze: should the TYPE_PICK_UP_GESTURE sensor be used as a pulse signal. -->
+     <bool name="config_dozePulsePickup">true</bool>
+ 
+-- 
+2.50.1.windows.1
+
