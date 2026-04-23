@@ -1,0 +1,28 @@
+From 20ed2175e448dc4db913a43254655b39c495355b Mon Sep 17 00:00:00 2001
+From: "Lunark :3" <jvillaltamatos3007@gmail.com>
+Date: Sun, 28 Dec 2025 23:30:56 -0500
+Subject: [PATCH] vermeer: Add Miuicamera if exist
+
+Change-Id: I6cc0c8276caeb9ec2ea8eb5d6435209ac3e6a44a
+Signed-off-by: Lunark :3 <jvillaltamatos3007@gmail.com>
+---
+ device.mk | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/device.mk b/device.mk
+index 2740c5e..b0c64fa 100644
+--- a/device.mk
++++ b/device.mk
+@@ -19,6 +19,9 @@ PRODUCT_COPY_FILES += \
+     $(LOCAL_PATH)/configs/audio/mixer_paths_kalama_mtp.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio/sku_kalama/mixer_paths_kalama_mtp.xml \
+     $(LOCAL_PATH)/configs/audio/resourcemanager_kalama_mtp.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio/sku_kalama/resourcemanager_kalama_mtp.xml
+ 
++# Camera
++$(call inherit-product-if-exists, vendor/xiaomi/vermeer-camera/miuicamera.mk)
++
+ # Init
+ PRODUCT_COPY_FILES += \
+     $(LOCAL_PATH)/init/init.vermeer.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/init.vermeer.rc
+-- 
+2.50.1.windows.1
+
