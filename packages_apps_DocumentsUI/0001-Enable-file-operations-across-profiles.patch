@@ -1,0 +1,273 @@
+From be9043844c7a236aefb616065d4ea69c91873b9a Mon Sep 17 00:00:00 2001
+From: Oliver Scott <olivercscott@gmail.com>
+Date: Tue, 24 Sep 2024 16:38:54 -0400
+Subject: [PATCH] Enable file operations across profiles
+
+* Enable copy, move, compress and delete file operations across profiles
+* Files can only be copied/moved to the foreground profile from the background profile
+
+Test:
+1. Open Files in the source profile
+2. Create a new folder in Downloads
+3. Download an APK in the source profile into the folder created in 1 (move the file into the folder if necessary)
+4. Download an image, video, music and document into the source profile
+5. Open Files in the destination profile
+6. Compress the folder created in 2
+7. Delete the compressed file created in 6
+8. Copy/move the folder created in 2 anywhere in the destination profile
+9. Copy/move the files created in 4 from their respective folder (Images, Videos, Audio, Documents) to any path in the destination profile
+
+Co-authored-by: Tommy Webb <tommy@calyxinstitute.org>
+Original-Change-Id: I852b7443fb332370a70f3014bb021d89490ffb72
+Change-Id: Ia279a7d2ee694f0f5eb292e4dff4bf9aed9a78cc
+---
+ .../android/documentsui/UserIdManager.java    | 54 ++++++++-----------
+ .../android/documentsui/UserManagerState.java |  3 +-
+ .../documentsui/files/FilesActivity.java      | 19 ++++++-
+ .../documentsui/files/MenuManager.java        |  8 ++-
+ .../android/documentsui/services/CopyJob.java | 11 ++--
+ .../documentsui/services/FileOperations.java  | 20 ++++++-
+ 6 files changed, 72 insertions(+), 43 deletions(-)
+
+diff --git a/src/com/android/documentsui/UserIdManager.java b/src/com/android/documentsui/UserIdManager.java
+index dbe4e92b4..9c1aff573 100644
+--- a/src/com/android/documentsui/UserIdManager.java
++++ b/src/com/android/documentsui/UserIdManager.java
+@@ -41,6 +41,7 @@ import com.android.documentsui.util.VersionUtils;
+ 
+ import java.util.ArrayList;
+ import java.util.List;
++import java.util.stream.Collectors;
+ 
+ /**
+  * Interface to query user ids.
+@@ -177,44 +178,35 @@ public interface UserIdManager {
+                 return result;
+             }
+ 
+-            UserId systemUser = null;
+-            UserId managedUser = null;
+-
+-            for (UserHandle userHandle : userProfiles) {
+-                if (userHandle.isSystem()) {
+-                    systemUser = UserId.of(userHandle);
+-                    continue;
+-                }
+-                if (managedUser == null
+-                        && userManager.isManagedProfile(userHandle.getIdentifier())) {
+-                    managedUser = UserId.of(userHandle);
+-                }
+-            }
+-
+-            if (mCurrentUser.isSystem()) {
+-                // 1. If the current user is system (personal), add the managed user.
+-                if (managedUser != null) {
+-                    result.add(managedUser);
+-                }
+-            } else if (mCurrentUser.isManagedProfile(userManager)) {
+-                // 2. If the current user is a managed user, add the personal user.
+-                // Since we don't have MANAGED_USERS permission to get the parent user, we will
+-                // treat the system as personal although the system can theoretically in the profile
+-                // group but not being the parent user(personal) of the managed user.
+-                if (systemUser != null) {
+-                    result.add(0, systemUser);
++            final UserHandle currentUser = UserHandle.of(mCurrentUser.getIdentifier());
++            final UserHandle profileParent = userManager.getProfileParent(currentUser);
++            if (mCurrentUser.isManagedProfile(userManager)) {
++                // 1. If the current user is a managed user, add the parent user.
++                if (profileParent == null) {
++                    Log.e(TAG, "managed user has no parent!");
++                } else {
++                    result.add(0, UserId.of(profileParent));
+                 }
++            } else if (profileParent == null) {
++                // 2. We are the parent. getProfileParent() is designed to return null for the
++                // parent of the group, or for something that is not a profile. If we were not
++                // either a profile or the parent, we would not be included in userProfiles,
++                // unless userProfiles only had a single element, in which case we would have
++                // returned earlier. We must be the parent, then, so we add any managed profiles.
++                result.addAll(userProfiles.stream()
++                        .map(UserId::of)
++                        .filter(userId ->
++                                !mCurrentUser.equals(userId) && userId.isManagedProfile(userManager)
++                        ).collect(Collectors.toList()));
+             } else {
+                 // 3. If we cannot resolve the users properly, we will disable the cross-profile
+                 // feature by returning just the current user.
+                 if (DEBUG) {
+-                    Log.w(TAG, "The current user " + UserId.CURRENT_USER
+-                            + " is neither system nor managed user. has system user: "
+-                            + (systemUser != null));
++                    Log.w(TAG, "The current user " + mCurrentUser.getIdentifier()
++                            + " is neither full nor managed user.");
+                 }
+             }
+-            mSystemUser = systemUser;
+-            mManagedUser = managedUser;
++
+             return result;
+         }
+ 
+diff --git a/src/com/android/documentsui/UserManagerState.java b/src/com/android/documentsui/UserManagerState.java
+index 550de6a69..7ce0f0b72 100644
+--- a/src/com/android/documentsui/UserManagerState.java
++++ b/src/com/android/documentsui/UserManagerState.java
+@@ -918,8 +918,7 @@ public interface UserManagerState {
+                 return false;
+             }
+ 
+-            return userProperties.getCrossProfileContentSharingStrategy()
+-                    == UserProperties.CROSS_PROFILE_CONTENT_SHARING_DELEGATE_FROM_PARENT;
++            return true;
+         }
+ 
+         private static boolean isDeviceSupported(Context context) {
+diff --git a/src/com/android/documentsui/files/FilesActivity.java b/src/com/android/documentsui/files/FilesActivity.java
+index 5abafa4b4..50f3de227 100644
+--- a/src/com/android/documentsui/files/FilesActivity.java
++++ b/src/com/android/documentsui/files/FilesActivity.java
+@@ -80,6 +80,8 @@ import com.android.documentsui.services.FileOperationService;
+ import com.android.documentsui.sidebar.RootsFragment;
+ import com.android.documentsui.ui.DialogController;
+ import com.android.documentsui.ui.MessageBuilder;
++import com.android.documentsui.util.CrossProfileUtils;
++import com.android.modules.utils.build.SdkLevel;
+ 
+ import java.util.ArrayList;
+ import java.util.List;
+@@ -253,8 +255,22 @@ public class FilesActivity extends BaseActivity implements AbstractActionHandler
+                         mDrawer,
+                         mInjector.searchManager::onSearchBarClicked);
+ 
++        final Intent moreApps = new Intent(getIntent());
++        moreApps.setComponent(null);
++        moreApps.setPackage(null);
++        if (mState.supportsCrossProfile) {
++            if (mConfigStore.isPrivateSpaceInDocsUIEnabled() && SdkLevel.isAtLeastS()) {
++                mState.canForwardToProfileIdMap = mUserManagerState.getCanForwardToProfileIdMap(
++                        moreApps);
++            } else if (CrossProfileUtils.getCrossProfileResolveInfo(UserId.CURRENT_USER,
++                    getPackageManager(), moreApps, getApplicationContext(),
++                    mConfigStore.isPrivateSpaceInDocsUIEnabled()) != null) {
++                mState.canShareAcrossProfile = true;
++            }
++        }
++
+         RootsFragment.show(getSupportFragmentManager(), /* includeApps= */ false,
+-                /* intent= */ null);
++                /* intent= */ moreApps);
+         if (isUseMaterial3FlagEnabled()) {
+             View navRailRoots = findViewById(getRes(R.id.nav_rail_container_roots));
+             if (navRailRoots != null) {
+@@ -363,6 +379,7 @@ public class FilesActivity extends BaseActivity implements AbstractActionHandler
+         state.initAcceptMimes(intent, "*/*");
+         state.action = State.ACTION_BROWSE;
+         state.allowMultiple = true;
++        state.supportsCrossProfile = true;
+ 
+         // Options specific to the DocumentsActivity.
+         assert (!intent.hasExtra(Intent.EXTRA_LOCAL_ONLY));
+diff --git a/src/com/android/documentsui/files/MenuManager.java b/src/com/android/documentsui/files/MenuManager.java
+index 1ed749bdf..10419b17f 100644
+--- a/src/com/android/documentsui/files/MenuManager.java
++++ b/src/com/android/documentsui/files/MenuManager.java
+@@ -332,12 +332,16 @@ public final class MenuManager extends com.android.documentsui.MenuManager {
+     @Override
+     protected void updateInspect(MenuItem inspect) {
+         boolean visible = mFeatures.isInspectorEnabled();
+-        Menus.setEnabledAndVisible(inspect, visible && mDirDetails.canInspectDirectory());
++        Menus.setEnabledAndVisible(inspect,
++                visible && mDirDetails.canInspectDirectory() && (mState.stack.getRoot() == null
++                        || UserId.CURRENT_USER.equals(mState.stack.getRoot().userId)));
+     }
+ 
+     @Override
+     protected void updateInspect(MenuItem inspect, SelectionDetails selectionDetails) {
+-        boolean visible = mFeatures.isInspectorEnabled() && selectionDetails.size() <= 1;
++        boolean visible = mFeatures.isInspectorEnabled() && selectionDetails.size() <= 1
++                && (mState.stack.getRoot() == null || UserId.CURRENT_USER.equals(
++                mState.stack.getRoot().userId));
+         Menus.setEnabledAndVisible(inspect, visible);
+     }
+ 
+diff --git a/src/com/android/documentsui/services/CopyJob.java b/src/com/android/documentsui/services/CopyJob.java
+index bfec3af01..c3e3862a5 100644
+--- a/src/com/android/documentsui/services/CopyJob.java
++++ b/src/com/android/documentsui/services/CopyJob.java
+@@ -469,9 +469,9 @@ class CopyJob extends ResolvedResourcesJob {
+         // contents (bytes or children).
+         Uri dstUri = null;
+         try {
+-            dstUri = DocumentsContract.createDocument(
+-                    wrap(getClient(dest)), dest.derivedUri, dstMimeType, dstDisplayName);
+-        } catch (FileNotFoundException | RemoteException | RuntimeException e) {
++            dstUri = DocumentsContract.createDocument(dest.userId.getContentResolver(service),
++                    dest.derivedUri, dstMimeType, dstDisplayName);
++        } catch (FileNotFoundException | RuntimeException e) {
+             if (e instanceof DeadObjectException) {
+                 releaseClient(dest);
+             }
+@@ -633,8 +633,9 @@ class CopyJob extends ResolvedResourcesJob {
+             }
+ 
+             try {
+-                dstFile = getClient(dest).openFile(dest.derivedUri, "w", mSignal);
+-            } catch (FileNotFoundException | RemoteException | RuntimeException e) {
++                dstFile = dest.userId.getContentResolver(service)
++                        .openFile(dest.derivedUri, "w", mSignal);
++            } catch (FileNotFoundException | RuntimeException e) {
+                 if (e instanceof DeadObjectException) {
+                     releaseClient(dest);
+                 }
+diff --git a/src/com/android/documentsui/services/FileOperations.java b/src/com/android/documentsui/services/FileOperations.java
+index e4ff6e020..9f3968376 100644
+--- a/src/com/android/documentsui/services/FileOperations.java
++++ b/src/com/android/documentsui/services/FileOperations.java
+@@ -25,10 +25,12 @@ import static com.android.documentsui.services.FileOperationService.EXTRA_OPERAT
+ 
+ import android.content.Context;
+ import android.content.Intent;
++import android.os.UserHandle;
+ import android.util.Log;
+ 
+ import androidx.annotation.IntDef;
+ 
++import com.android.documentsui.BaseActivity;
+ import com.android.documentsui.services.FileOperationService.OpType;
+ 
+ import java.lang.annotation.Retention;
+@@ -69,7 +71,14 @@ public final class FileOperations {
+                     operation.getSrc().getItemCount());
+         }
+ 
+-        context.startService(intent);
++        if (context instanceof BaseActivity) {
++            BaseActivity baseActivity = (BaseActivity) context;
++            final Context userContext = context.createContextAsUser(UserHandle.of(
++                    baseActivity.getCurrentRoot().userId.getIdentifier()), 0 /* flags */);
++            userContext.startForegroundService(intent);
++        } else {
++            context.startService(intent);
++        }
+ 
+         return newJobId;
+     }
+@@ -88,7 +97,14 @@ public final class FileOperations {
+         intent.putExtra(EXTRA_CANCEL, true);
+         intent.putExtra(EXTRA_JOB_ID, jobId);
+ 
+-        context.startService(intent);
++        if (context instanceof BaseActivity) {
++            BaseActivity baseActivity = (BaseActivity) context;
++            final Context userContext = context.createContextAsUser(UserHandle.of(
++                    baseActivity.getCurrentRoot().userId.getIdentifier()), 0 /* flags */);
++            userContext.startForegroundService(intent);
++        } else {
++            context.startService(intent);
++        }
+     }
+ 
+     /**
+-- 
+2.50.1.windows.1
+
