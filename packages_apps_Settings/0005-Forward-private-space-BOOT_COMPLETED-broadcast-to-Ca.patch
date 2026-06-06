@@ -1,0 +1,33 @@
+From 39f362e0691eee0a6dae164c4067ed1d700913b6 Mon Sep 17 00:00:00 2001
+From: Oliver Scott <olivercscott@gmail.com>
+Date: Wed, 19 Mar 2025 02:54:26 -0400
+Subject: [PATCH] Forward private space BOOT_COMPLETED broadcast to CalyxOS
+ Android Auto support package
+
+Issue: calyxos#3032
+Issue: calyxos#3054
+Issue: calyxos#3078
+Change-Id: I378e94fbfdbaf8f83b57e2cbfd465d79b68115f6
+---
+ .../settings/privatespace/PrivateSpaceBroadcastReceiver.java | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/com/android/settings/privatespace/PrivateSpaceBroadcastReceiver.java b/src/com/android/settings/privatespace/PrivateSpaceBroadcastReceiver.java
+index 15bd34b5c55..9c141bafadd 100644
+--- a/src/com/android/settings/privatespace/PrivateSpaceBroadcastReceiver.java
++++ b/src/com/android/settings/privatespace/PrivateSpaceBroadcastReceiver.java
+@@ -49,6 +49,11 @@ public class PrivateSpaceBroadcastReceiver extends BroadcastReceiver {
+                     privateSpaceAuth,
+                     enableState,
+                     PackageManager.DONT_KILL_APP);
++            if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())
++                    && context.getSystemService(UserManager.class).isPrivateProfile()) {
++                context.sendBroadcast(intent.setPackage("org.calyxos.gearheadsupport")
++                        .setComponent(null));
++            }
+         }
+     }
+ }
+-- 
+2.54.0
+
