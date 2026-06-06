@@ -1,0 +1,36 @@
+From 538a316923479676e2007c00a738c9376cc6467c Mon Sep 17 00:00:00 2001
+From: Chirayu Desai <chirayudesai1@gmail.com>
+Date: Tue, 7 Jan 2025 19:05:55 +0530
+Subject: [PATCH 1/2] Install F-Droid in private space by default
+
+Only installs if present in parent user
+
+Issue: calyxos#2933
+Change-Id: I3d83f74a055835e65dd8180a21ba41e0969607f5
+---
+ .../settings/privatespace/PrivateSpaceMaintainer.java    | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/src/com/android/settings/privatespace/PrivateSpaceMaintainer.java b/src/com/android/settings/privatespace/PrivateSpaceMaintainer.java
+index e7b1c3f89b4..bd6beb5a8cc 100644
+--- a/src/com/android/settings/privatespace/PrivateSpaceMaintainer.java
++++ b/src/com/android/settings/privatespace/PrivateSpaceMaintainer.java
+@@ -381,6 +381,15 @@ public class PrivateSpaceMaintainer {
+                 1, mUserHandle.getIdentifier());
+     }
+ 
++    private void installAppStore() {
++        Context privateSpaceUserContext = mContext.createContextAsUser(mUserHandle, /* flags */ 0);
++        PackageManager packageManager = privateSpaceUserContext.getPackageManager();
++
++        Log.d(TAG, "Installing app store for " + mUserHandle);
++        packageManager.getPackageInstaller().installExistingPackage("org.fdroid.fdroid",
++                PackageManager.INSTALL_REASON_USER, null);
++    }
++
+     /**
+      * {@link BroadcastReceiver} which handles the private profile's availability and deletion
+      * related broadcasts.
+-- 
+2.54.0
+

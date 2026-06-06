@@ -1,0 +1,98 @@
+From c0ffe5910bcc7e20379e6a9867da37ddd4d82cc9 Mon Sep 17 00:00:00 2001
+From: Oliver Scott <olivercscott@gmail.com>
+Date: Mon, 10 May 2021 16:35:53 -0400
+Subject: [PATCH] Support "App & Content access" for work profiles
+
+* Used by Bellis
+
+Change-Id: I258e26dbb432e35c61ffaf9dea6f77ad5d103747
+---
+ .../settings/users/AppRestrictionsFragment.java    | 12 ++++++++++++
+ .../settings/users/UserDetailsSettings.java        | 14 ++++++++++++--
+ src/com/android/settings/users/UserSettings.java   |  8 ++++++++
+ 3 files changed, 32 insertions(+), 2 deletions(-)
+
+diff --git a/src/com/android/settings/users/AppRestrictionsFragment.java b/src/com/android/settings/users/AppRestrictionsFragment.java
+index f416c617e2c..6ff0b083ee7 100644
+--- a/src/com/android/settings/users/AppRestrictionsFragment.java
++++ b/src/com/android/settings/users/AppRestrictionsFragment.java
+@@ -108,6 +108,13 @@ public class AppRestrictionsFragment extends SettingsPreferenceFragment implemen
+     public static final String SETTINGS_SYSTEM_ENTITY =
+             "com.android.settings";
+ 
++    private static final String MICROG_PACKAGE = "com.google.android.gms";
++    private static final String[] MICROG_PACKAGES = new String[]{
++            "com.google.android.gms",
++            "com.google.android.gsf",
++            "com.android.vending"
++    };
++
+     private boolean mFirstTime = true;
+     private boolean mNewUser;
+     private boolean mAppListChanged;
+@@ -527,6 +534,11 @@ public class AppRestrictionsFragment extends SettingsPreferenceFragment implemen
+                 // If it's not a restricted profile, apply the changes immediately
+                 if (!mRestrictedProfile) {
+                     mHelper.applyUserAppState(packageName, pref.isChecked(), this);
++                    if (packageName.equals(MICROG_PACKAGE)) {
++                        for (String microgPackage : MICROG_PACKAGES) {
++                            mHelper.applyUserAppState(microgPackage, pref.isChecked(), this);
++                        }
++                    }
+                 }
+                 updateAllEntries(pref.getKey(), pref.isChecked());
+             }
+diff --git a/src/com/android/settings/users/UserDetailsSettings.java b/src/com/android/settings/users/UserDetailsSettings.java
+index 14fb6f353d0..077a7a68c08 100644
+--- a/src/com/android/settings/users/UserDetailsSettings.java
++++ b/src/com/android/settings/users/UserDetailsSettings.java
+@@ -409,7 +409,17 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+             }
+         }
+ 
+-        if (mUserManager.isAdminUser() || canRemoveSelf()) {
++        final boolean isAdminUser = mUserManager.isAdminUser();
++        final boolean isFullUser = isAdminUser
++                || mUserManager.isUserOfType(UserManager.USER_TYPE_FULL_SECONDARY)
++                || mUserManager.isUserOfType(UserManager.USER_TYPE_FULL_SYSTEM);
++        if (isFullUser && mUserInfo.isManagedProfile()) {
++            removePreference(KEY_ENABLE_TELEPHONY_CALLING);
++            removePreference(KEY_SWITCH_USER);
++            openAppAndContentAccessScreen(false);
++            finishFragment();
++        }
++        if (isAdminUser || canRemoveSelf()) {
+             if (mUserInfo.isGuest()) {
+                 mRemoveUserPref.setTitle(
+                         mGuestUserAutoCreated
+@@ -426,7 +436,7 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+             removePreference(KEY_REMOVE_USER);
+         }
+ 
+-        if (!mUserManager.isAdminUser()) { // not allow calls for non admin users.
++        if (!isAdminUser) { // not allow calls for non admin users.
+             removePreference(KEY_ENABLE_TELEPHONY_CALLING);
+             removePreference(KEY_APP_AND_CONTENT_ACCESS);
+             removePreference(KEY_APP_COPYING);
+diff --git a/src/com/android/settings/users/UserSettings.java b/src/com/android/settings/users/UserSettings.java
+index d1186a52244..154e305de32 100644
+--- a/src/com/android/settings/users/UserSettings.java
++++ b/src/com/android/settings/users/UserSettings.java
+@@ -431,6 +431,14 @@ public class UserSettings extends SettingsPreferenceFragment
+ 
+         updateUI();
+         mShouldUpdateUserList = false;
++
++        UserHandle userHandle = getIntent().getParcelableExtra(Intent.EXTRA_USER, UserHandle.class);
++        if (userHandle != null) {
++            int userId = userHandle.getIdentifier();
++            if (mUserManager.isManagedProfile(userId)) {
++                openUserDetails(mUserManager.getUserInfo(userId), true);
++            }
++        }
+     }
+ 
+     @Override
+-- 
+2.54.0
+

@@ -1,0 +1,29 @@
+From 2c5386958ea89cc3223b9c79d60c5e35a86009f2 Mon Sep 17 00:00:00 2001
+From: Oliver Scott <olivercscott@gmail.com>
+Date: Wed, 9 Apr 2025 15:27:27 -0400
+Subject: [PATCH 2/2] Install Aurora Store in private space by default
+
+Only installs if present in parent user
+
+Issue: calyxos#2933
+Change-Id: Iadc12788d23d6ed9639185c8e3cab4c2310c4c31
+---
+ .../android/settings/privatespace/PrivateSpaceMaintainer.java   | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/com/android/settings/privatespace/PrivateSpaceMaintainer.java b/src/com/android/settings/privatespace/PrivateSpaceMaintainer.java
+index bd6beb5a8cc..74a898867d1 100644
+--- a/src/com/android/settings/privatespace/PrivateSpaceMaintainer.java
++++ b/src/com/android/settings/privatespace/PrivateSpaceMaintainer.java
+@@ -388,6 +388,8 @@ public class PrivateSpaceMaintainer {
+         Log.d(TAG, "Installing app store for " + mUserHandle);
+         packageManager.getPackageInstaller().installExistingPackage("org.fdroid.fdroid",
+                 PackageManager.INSTALL_REASON_USER, null);
++        packageManager.getPackageInstaller().installExistingPackage("com.aurora.store",
++                PackageManager.INSTALL_REASON_USER, null);
+     }
+ 
+     /**
+-- 
+2.54.0
+
