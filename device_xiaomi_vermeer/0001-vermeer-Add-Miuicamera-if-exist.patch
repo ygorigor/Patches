@@ -18,7 +18,7 @@ index 2740c5e..b0c64fa 100644
      $(LOCAL_PATH)/configs/audio/resourcemanager_kalama_mtp.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio/sku_kalama/resourcemanager_kalama_mtp.xml
  
 +# Camera
-+$(call inherit-product-if-exists, vendor/xiaomi/vermeer-camera/miuicamera.mk)
++$(call inherit-product-if-exists, vendor/xiaomi/vermeer-camera/vermeer-miuicamera-vendor.mk)
 +
  # Init
  PRODUCT_COPY_FILES += \
