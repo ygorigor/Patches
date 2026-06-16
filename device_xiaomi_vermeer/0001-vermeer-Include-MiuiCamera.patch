@@ -1,0 +1,36 @@
+From 108cf0672a3eb3e6430c8e64fd3d5a6d950e070d Mon Sep 17 00:00:00 2001
+From: AdarshGrewal <adarshgrewal@gmail.com>
+Date: Sun, 3 Apr 2022 19:18:28 +0530
+Subject: [PATCH] vermeer: Include MiuiCamera
+
+Change-Id: I03fe0f13775e74301ca0d3aaca81f0509a5a8cbb
+---
+ BoardConfig.mk | 3 +++
+ device.mk      | 3 +++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/BoardConfig.mk b/BoardConfig.mk
+index c2cb37b..7cdbf13 100644
+--- a/BoardConfig.mk
++++ b/BoardConfig.mk
+@@ -40,3 +40,6 @@ TARGET_VENDOR_PROP += $(DEVICE_PATH)/properties/vendor.prop
+ 
+ # Sepolicy
+ BOARD_VENDOR_SEPOLICY_DIRS += $(DEVICE_PATH)/sepolicy/vendor
++
++# Vendor MiuiCamera
++-include device/xiaomi/vermeer-miuicamera/BoardConfig.mk
+diff --git a/device.mk b/device.mk
+index 2740c5e..357b651 100644
+--- a/device.mk
++++ b/device.mk
+@@ -49,3 +49,6 @@ PRODUCT_COPY_FILES += \
+ PRODUCT_COPY_FILES += \
+     $(LOCAL_PATH)/properties/build_CN.prop:$(TARGET_COPY_OUT_RECOVERY)/root/vendor/odm/etc/build_CN.prop \
+     $(LOCAL_PATH)/properties/build_GL.prop:$(TARGET_COPY_OUT_RECOVERY)/root/vendor/odm/etc/build_GL.prop
++
++# Vendor MiuiCamera
++$(call inherit-product-if-exists, device/xiaomi/vermeer-miuicamera/device.mk)
+-- 
+2.50.1.windows.1
+
