@@ -1,0 +1,77 @@
+From 4fcfe7fc359a54315d2372d043a3db6e0dc8d6b5 Mon Sep 17 00:00:00 2001
+From: ByteWave1014 <jvillaltamatos3007@gmail.com>
+Date: Fri, 2 May 2025 12:22:48 -0500
+Subject: [PATCH] sm8550-common: sepolicy: Initial sepolicy for miuicamera
+
+Change-Id: I84ec88b652c06bf339dc7bac4c0f3efe350a6453
+Signed-off-by: Lunark :3 <jvillaltamatos3007@gmail.com>
+---
+ sepolicy/private/property_contexts | 21 +++++++++++++++++++++
+ sepolicy/vendor/platform_app.te    | 11 +++++++++++
+ sepolicy/vendor/property_contexts  |  5 +++++
+ 3 files changed, 37 insertions(+)
+ create mode 100644 sepolicy/private/property_contexts
+ create mode 100644 sepolicy/vendor/platform_app.te
+
+diff --git a/sepolicy/private/property_contexts b/sepolicy/private/property_contexts
+new file mode 100644
+index 0000000..c36dd32
+--- /dev/null
++++ b/sepolicy/private/property_contexts
+@@ -0,0 +1,21 @@
++# Camera
++persist.camera.                     u:object_r:vendor_camera_prop:s0
++ro.camera.                          u:object_r:vendor_camera_prop:s0
++ 
++# Miui
++ro.miui.build.region                u:object_r:exported_system_prop:s0
++ro.camera.req.fmq.                  u:object_r:exported_default_prop:s0
++ro.camera.res.fmq.                  u:object_r:exported_default_prop:s0
++ro.boot.factorybuild                u:object_r:exported_default_prop:s0
++ro.boot.hwversion                   u:object_r:exported_default_prop:s0
++ro.fota.oem                         u:object_r:exported_system_prop:s0
++ro.miui.cust_variant                u:object_r:exported_default_prop:s0
++ro.miui.                            u:object_r:exported_system_prop:s0
++ro.product.mod_device               u:object_r:exported_default_prop:s0
++ro.product.marketname               u:object_r:build_prop:s0
++ro.miui.region			    u:object_r:exported_system_prop:s0
++ro.vendor.audio.zoom.type	    u:object_r:exported_default_prop:s0
++ro.max.fling_velocity               u:object_r:exported_system_prop:s0
++ro.min.fling_velocity               u:object_r:exported_system_prop:s0
++system.algo.aivs.debug		    u:object_r:exported_default_prop:s0
++vendor.panel.display                u:object_r:exported_system_prop:s0
+diff --git a/sepolicy/vendor/platform_app.te b/sepolicy/vendor/platform_app.te
+new file mode 100644
+index 0000000..85b3059
+--- /dev/null
++++ b/sepolicy/vendor/platform_app.te
+@@ -0,0 +1,11 @@
++# Camera
++allow platform_app app_data_file:file execute;
++allow platform_app vendor_audio_prop:file { open read getattr };
++binder_call(platform_app, hal_camera_default)
++get_prop(platform_app, qemu_hw_prop)
++get_prop(platform_app, vendor_fp_prop)
++get_prop(platform_app, vendor_panel_info_prop)
++get_prop(platform_app, vendor_camera_sensor_prop)
++get_prop(platform_app, vendor_camera_p3enable_prop)
++get_prop(platform_app, vendor_camera_prop)
++get_prop(platform_app, vendor_display_prop)
+diff --git a/sepolicy/vendor/property_contexts b/sepolicy/vendor/property_contexts
+index 736173e..d88e7b0 100644
+--- a/sepolicy/vendor/property_contexts
++++ b/sepolicy/vendor/property_contexts
+@@ -1,5 +1,10 @@
+ # Camera
+ persist.vendor.EnableP3ColorSpace               u:object_r:vendor_camera_p3enable_prop:s0
++persist.vendor.low.cutoff                       u:object_r:vendor_camera_prop:s0
++persist.vendor.algo.aivs.debug                  u:object_r:vendor_camera_prop:s0
++ro.vendor.audio.us.proximity                    u:object_r:vendor_camera_prop:s0
++ro.vendor.gfx.opencl.enable_buffer_to_image     u:object_r:vendor_camera_prop:s0
++vendor.camera.sensor.logsystem                  u:object_r:vendor_camera_prop:s0
+ vendor.camera.sensor.                           u:object_r:vendor_camera_sensor_prop:s0
+ 
+ # Fingerprint
+-- 
+2.50.1.windows.1
+
