@@ -1,4 +1,4 @@
-From be9043844c7a236aefb616065d4ea69c91873b9a Mon Sep 17 00:00:00 2001
+From 903dea98e969d8f3cb6b5607781834ddf4775b21 Mon Sep 17 00:00:00 2001
 From: Oliver Scott <olivercscott@gmail.com>
 Date: Tue, 24 Sep 2024 16:38:54 -0400
 Subject: [PATCH] Enable file operations across profiles
@@ -24,10 +24,10 @@ Change-Id: Ia279a7d2ee694f0f5eb292e4dff4bf9aed9a78cc
  .../android/documentsui/UserIdManager.java    | 54 ++++++++-----------
  .../android/documentsui/UserManagerState.java |  3 +-
  .../documentsui/files/FilesActivity.java      | 19 ++++++-
- .../documentsui/files/MenuManager.java        |  8 ++-
+ .../documentsui/files/MenuManager.java        |  4 +-
  .../android/documentsui/services/CopyJob.java | 11 ++--
  .../documentsui/services/FileOperations.java  | 20 ++++++-
- 6 files changed, 72 insertions(+), 43 deletions(-)
+ 6 files changed, 69 insertions(+), 42 deletions(-)
 
 diff --git a/src/com/android/documentsui/UserIdManager.java b/src/com/android/documentsui/UserIdManager.java
 index dbe4e92b4..9c1aff573 100644
@@ -109,10 +109,10 @@ index dbe4e92b4..9c1aff573 100644
          }
  
 diff --git a/src/com/android/documentsui/UserManagerState.java b/src/com/android/documentsui/UserManagerState.java
-index 550de6a69..7ce0f0b72 100644
+index b08a94e15..132d3bd3e 100644
 --- a/src/com/android/documentsui/UserManagerState.java
 +++ b/src/com/android/documentsui/UserManagerState.java
-@@ -918,8 +918,7 @@ public interface UserManagerState {
+@@ -922,8 +922,7 @@ public interface UserManagerState {
                  return false;
              }
  
@@ -123,21 +123,22 @@ index 550de6a69..7ce0f0b72 100644
  
          private static boolean isDeviceSupported(Context context) {
 diff --git a/src/com/android/documentsui/files/FilesActivity.java b/src/com/android/documentsui/files/FilesActivity.java
-index 5abafa4b4..50f3de227 100644
+index 07cc2065d..61ba1ede2 100644
 --- a/src/com/android/documentsui/files/FilesActivity.java
 +++ b/src/com/android/documentsui/files/FilesActivity.java
-@@ -80,6 +80,8 @@ import com.android.documentsui.services.FileOperationService;
+@@ -85,7 +85,9 @@ import com.android.documentsui.services.FileOperationService;
  import com.android.documentsui.sidebar.RootsFragment;
  import com.android.documentsui.ui.DialogController;
  import com.android.documentsui.ui.MessageBuilder;
 +import com.android.documentsui.util.CrossProfileUtils;
+ import com.android.documentsui.util.VersionUtils;
 +import com.android.modules.utils.build.SdkLevel;
  
- import java.util.ArrayList;
- import java.util.List;
-@@ -253,8 +255,22 @@ public class FilesActivity extends BaseActivity implements AbstractActionHandler
+ import kotlinx.coroutines.Dispatchers;
+ 
+@@ -276,8 +278,22 @@ public class FilesActivity extends BaseActivity implements AbstractActionHandler
                          mDrawer,
-                         mInjector.searchManager::onSearchBarClicked);
+                         this::onSearchKeyboardShortcut);
  
 +        final Intent moreApps = new Intent(getIntent());
 +        moreApps.setComponent(null);
@@ -159,7 +160,7 @@ index 5abafa4b4..50f3de227 100644
          if (isUseMaterial3FlagEnabled()) {
              View navRailRoots = findViewById(getRes(R.id.nav_rail_container_roots));
              if (navRailRoots != null) {
-@@ -363,6 +379,7 @@ public class FilesActivity extends BaseActivity implements AbstractActionHandler
+@@ -386,6 +402,7 @@ public class FilesActivity extends BaseActivity implements AbstractActionHandler
          state.initAcceptMimes(intent, "*/*");
          state.action = State.ACTION_BROWSE;
          state.allowMultiple = true;
@@ -168,33 +169,25 @@ index 5abafa4b4..50f3de227 100644
          // Options specific to the DocumentsActivity.
          assert (!intent.hasExtra(Intent.EXTRA_LOCAL_ONLY));
 diff --git a/src/com/android/documentsui/files/MenuManager.java b/src/com/android/documentsui/files/MenuManager.java
-index 1ed749bdf..10419b17f 100644
+index 2615110a1..34cf3e10f 100644
 --- a/src/com/android/documentsui/files/MenuManager.java
 +++ b/src/com/android/documentsui/files/MenuManager.java
-@@ -332,12 +332,16 @@ public final class MenuManager extends com.android.documentsui.MenuManager {
+@@ -330,7 +330,9 @@ public final class MenuManager extends com.android.documentsui.MenuManager {
+      */
      @Override
-     protected void updateInspect(MenuItem inspect) {
-         boolean visible = mFeatures.isInspectorEnabled();
--        Menus.setEnabledAndVisible(inspect, visible && mDirDetails.canInspectDirectory());
-+        Menus.setEnabledAndVisible(inspect,
-+                visible && mDirDetails.canInspectDirectory() && (mState.stack.getRoot() == null
-+                        || UserId.CURRENT_USER.equals(mState.stack.getRoot().userId)));
+     protected void updateInspect(MenuItem inspect, SidebarEntryItemInfo itemInfo) {
+-        Menus.setEnabledAndVisible(inspect, itemInfo.supportsInspect());
++        Menus.setEnabledAndVisible(inspect, itemInfo.supportsInspect() &&
++                (mState.stack.getRoot() == null ||
++                UserId.CURRENT_USER.equals(mState.stack.getRoot().userId)));
      }
  
      @Override
-     protected void updateInspect(MenuItem inspect, SelectionDetails selectionDetails) {
--        boolean visible = mFeatures.isInspectorEnabled() && selectionDetails.size() <= 1;
-+        boolean visible = mFeatures.isInspectorEnabled() && selectionDetails.size() <= 1
-+                && (mState.stack.getRoot() == null || UserId.CURRENT_USER.equals(
-+                mState.stack.getRoot().userId));
-         Menus.setEnabledAndVisible(inspect, visible);
-     }
- 
 diff --git a/src/com/android/documentsui/services/CopyJob.java b/src/com/android/documentsui/services/CopyJob.java
-index bfec3af01..c3e3862a5 100644
+index d282a33bd..f471ae108 100644
 --- a/src/com/android/documentsui/services/CopyJob.java
 +++ b/src/com/android/documentsui/services/CopyJob.java
-@@ -469,9 +469,9 @@ class CopyJob extends ResolvedResourcesJob {
+@@ -474,9 +474,9 @@ class CopyJob extends ResolvedResourcesJob {
          // contents (bytes or children).
          Uri dstUri = null;
          try {
@@ -207,7 +200,7 @@ index bfec3af01..c3e3862a5 100644
              if (e instanceof DeadObjectException) {
                  releaseClient(dest);
              }
-@@ -633,8 +633,9 @@ class CopyJob extends ResolvedResourcesJob {
+@@ -638,8 +638,9 @@ class CopyJob extends ResolvedResourcesJob {
              }
  
              try {
@@ -220,7 +213,7 @@ index bfec3af01..c3e3862a5 100644
                      releaseClient(dest);
                  }
 diff --git a/src/com/android/documentsui/services/FileOperations.java b/src/com/android/documentsui/services/FileOperations.java
-index e4ff6e020..9f3968376 100644
+index 2d83428f1..fb64c5044 100644
 --- a/src/com/android/documentsui/services/FileOperations.java
 +++ b/src/com/android/documentsui/services/FileOperations.java
 @@ -25,10 +25,12 @@ import static com.android.documentsui.services.FileOperationService.EXTRA_OPERAT
@@ -269,5 +262,5 @@ index e4ff6e020..9f3968376 100644
  
      /**
 -- 
-2.50.1.windows.1
+2.55.0
 
