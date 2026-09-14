@@ -1,0 +1,30 @@
+From 1a715974ab9ff85b4a91fd909ad24842d56c85d4 Mon Sep 17 00:00:00 2001
+From: Torsten Grote <torsten@calyx.org>
+Date: Mon, 20 Apr 2026 15:29:34 -0300
+Subject: [PATCH] Support logging out secondary users
+
+Show an "End session" button in the power menu for secondary users.
+An "End session" button also appears on the lockscreen.
+
+Issue: calyxos#3343
+Change-Id: I327b32892b0049a32e96ad190ea46db964870fe2
+---
+ .../android/systemui/user/data/repository/UserRepositoryImpl.kt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/packages/SystemUI/src/com/android/systemui/user/data/repository/UserRepositoryImpl.kt b/packages/SystemUI/src/com/android/systemui/user/data/repository/UserRepositoryImpl.kt
+index da753622be4d..12c1ca63be1f 100644
+--- a/packages/SystemUI/src/com/android/systemui/user/data/repository/UserRepositoryImpl.kt
++++ b/packages/SystemUI/src/com/android/systemui/user/data/repository/UserRepositoryImpl.kt
+@@ -225,7 +225,7 @@ constructor(
+                 when {
+                     !resources.getBoolean(
+                         com.android.internal.R.bool.config_userSwitchingMustGoThroughLoginScreen
+-                    ) -> false
++                    ) -> selectedUser.userInfo.id != UserHandle.USER_SYSTEM
+ 
+                     selectedUser.selectionStatus != SelectionStatus.SELECTION_COMPLETE -> false
+ 
+-- 
+2.55.0
+
