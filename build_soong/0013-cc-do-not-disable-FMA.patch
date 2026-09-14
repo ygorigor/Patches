@@ -1,0 +1,29 @@
+From 47d9f350d0bc22a15ed620dbed8b36d9d6bc21db Mon Sep 17 00:00:00 2001
+From: John Galt <johngaltfirstrun@gmail.com>
+Date: Sun, 17 Dec 2023 19:37:35 -0500
+Subject: [PATCH] cc: do not disable FMA
+
+Unsafe FMA is entirely contained to fast, not default on
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ cc/config/global.go | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/cc/config/global.go b/cc/config/global.go
+index 218868760..5d73b4e1b 100644
+--- a/cc/config/global.go
++++ b/cc/config/global.go
+@@ -135,9 +135,6 @@ var (
+ 		// color codes if it is not running in a terminal.
+ 		"-fcolor-diagnostics",
+ 
+-		// Turn off FMA which got enabled by default in clang-r445002 (http://b/218805949)
+-		"-ffp-contract=off",
+-
+ 		// Google C++ style does not allow exceptions, turn them off by default.
+ 		"-fno-exceptions",
+ 
+-- 
+2.55.0
+

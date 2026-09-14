@@ -1,0 +1,26 @@
+From e51be310992223ab9518762d1fc2bb5681654eb1 Mon Sep 17 00:00:00 2001
+From: John Galt <johngaltfirstrun@gmail.com>
+Date: Tue, 30 Apr 2024 10:32:19 -0400
+Subject: [PATCH] cc/lto: instr limit of 40 for explicit LTO modules
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ cc/lto.go | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cc/lto.go b/cc/lto.go
+index 6bf1dc90e..3f6fc34b8 100644
+--- a/cc/lto.go
++++ b/cc/lto.go
+@@ -149,7 +149,7 @@ func (lto *lto) flags(ctx ModuleContext, flags Flags) Flags {
+ 		// Reduce the inlining threshold for a better balance of binary size and
+ 		// performance.
+ 		if !ctx.Darwin() {
+-			if ctx.isAfdoCompile(ctx) {
++			if ctx.isAfdoCompile(ctx) || lto.ThinLTO() {
+ 				ltoLdFlags = append(ltoLdFlags, "-Wl,-plugin-opt,-import-instr-limit=40")
+ 			} else {
+ 				ltoLdFlags = append(ltoLdFlags, "-Wl,-plugin-opt,-import-instr-limit=5")
+-- 
+2.55.0
+

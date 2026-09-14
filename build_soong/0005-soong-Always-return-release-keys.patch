@@ -1,0 +1,33 @@
+From 60944aae79b0ab62b40dff9c2ed95a61224fcb5e Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Thu, 19 Sep 2024 20:25:31 +0530
+Subject: [PATCH] soong: Always return release-keys
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ android/config.go | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
+
+diff --git a/android/config.go b/android/config.go
+index 1cef8c9e1..c893e73ef 100644
+--- a/android/config.go
++++ b/android/config.go
+@@ -1521,14 +1521,7 @@ func (c *config) ExtraOtaRecoveryKeys() []string {
+ }
+ 
+ func (c *config) BuildKeys() string {
+-	defaultCert := String(c.productVariables.DefaultAppCertificate)
+-	if defaultCert == "" || defaultCert == filepath.Join(testKeyDir, "testkey") {
+-		return "test-keys"
+-	}
+-	if strings.HasPrefix(defaultCert, "vendor/lineage-priv/") {
+-		return "release-keys"
+-	}
+-	return "dev-keys"
++	return "release-keys"
+ }
+ 
+ func (c *config) ApexKeyDir(ctx ModuleContext) SourcePath {
+-- 
+2.55.0
+

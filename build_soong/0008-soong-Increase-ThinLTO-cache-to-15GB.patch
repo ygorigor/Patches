@@ -1,0 +1,35 @@
+From 01bc961019ce2bb9dc26968e9c365e24138246f5 Mon Sep 17 00:00:00 2001
+From: Quince <quinceroms@gmail.com>
+Date: Tue, 3 Mar 2026 18:18:31 +0100
+Subject: [PATCH] soong: Increase ThinLTO cache to 15GB
+
+Increase the ThinLTO cache limit to 15GB to prevent it from emptying prematurely.
+
+LLVM ERROR: Failed to rename temporary file out/soong/thinlto-cache/Thin-d6dd2b.tmp.o
+to out/soong/thinlto-cache/llvmcache-80A2C642488B764B54107C1A69424152F1D3AD01: No such file or directory
+
+Signed-off-by: Quince <quinceroms@gmail.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ cc/lto.go | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/cc/lto.go b/cc/lto.go
+index 27bcc6bd1..6bf1dc90e 100644
+--- a/cc/lto.go
++++ b/cc/lto.go
+@@ -140,9 +140,9 @@ func (lto *lto) flags(ctx ModuleContext, flags Flags) Flags {
+ 			ltoLdFlags = append(ltoLdFlags, cacheDirFormat+cacheDir)
+ 
+ 			// Limit the size of the ThinLTO cache to the lesser of 10% of available
+-			// disk space and 10GB.
++			// disk space and 15GB.
+ 			cachePolicyFormat := "-Wl,--thinlto-cache-policy="
+-			policy := "cache_size=10%:cache_size_bytes=10g"
++			policy := "cache_size=10%:cache_size_bytes=15g"
+ 			ltoLdFlags = append(ltoLdFlags, cachePolicyFormat+policy)
+ 		}
+ 
+-- 
+2.55.0
+
