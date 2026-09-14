@@ -1,0 +1,267 @@
+From c0f9de379e5fd0520aa6aaa1dc586483b9ed0981 Mon Sep 17 00:00:00 2001
+From: DenlNister <dcnnn950711@gmail.com>
+Date: Tue, 4 Aug 2026 20:32:40 +0800
+Subject: [PATCH] sm8550-common: LEAudio
+
+Signed-off-by: DenlNister <dcnnn950711@gmail.com>
+---
+ .../sku_kalama/audio_policy_configuration.xml | 58 +++++++++++++++----
+ configs/properties/odm.prop                   |  2 +-
+ configs/properties/system_ext.prop            | 15 ++++-
+ configs/properties/vendor.prop                | 43 +++++++++-----
+ 4 files changed, 92 insertions(+), 26 deletions(-)
+
+diff --git a/configs/audio/sku_kalama/audio_policy_configuration.xml b/configs/audio/sku_kalama/audio_policy_configuration.xml
+index 030845c..877126e 100644
+--- a/configs/audio/sku_kalama/audio_policy_configuration.xml
++++ b/configs/audio/sku_kalama/audio_policy_configuration.xml
+@@ -67,6 +67,10 @@
+                     <profile name="" format="AUDIO_FORMAT_PCM_24_BIT_PACKED"
+                              samplingRates="48000" channelMasks="AUDIO_CHANNEL_OUT_STEREO"/>
+                 </mixPort>
++                <mixPort name="haptics output" role="source">
++                    <profile name="" format="AUDIO_FORMAT_PCM_16_BIT"
++                             samplingRates="48000" channelMasks="AUDIO_CHANNEL_OUT_STEREO_HAPTIC_A"/>
++                </mixPort>
+                 <mixPort name="deep_buffer" role="source"
+                         flags="AUDIO_OUTPUT_FLAG_DEEP_BUFFER">
+                     <profile name="" format="AUDIO_FORMAT_PCM_24_BIT_PACKED"
+@@ -256,20 +260,37 @@
+                              samplingRates="48000" channelMasks="AUDIO_CHANNEL_OUT_MONO AUDIO_CHANNEL_OUT_STEREO"/>
+                 </devicePort>
+                 <devicePort tagName="BT A2DP Out" type="AUDIO_DEVICE_OUT_BLUETOOTH_A2DP" role="sink"
+-                            encodedFormats="AUDIO_FORMAT_SBC AUDIO_FORMAT_AAC AUDIO_FORMAT_APTX AUDIO_FORMAT_APTX_HD AUDIO_FORMAT_LDAC AUDIO_FORMAT_CELT AUDIO_FORMAT_APTX_ADAPTIVE AUDIO_FORMAT_APTX_TWSP AUDIO_FORMAT_LHDC">
++                            encodedFormats="AUDIO_FORMAT_SBC AUDIO_FORMAT_AAC AUDIO_FORMAT_APTX AUDIO_FORMAT_APTX_HD AUDIO_FORMAT_LDAC AUDIO_FORMAT_CELT AUDIO_FORMAT_APTX_ADAPTIVE AUDIO_FORMAT_APTX_TWSP AUDIO_FORMAT_LHDC AUDIO_FORMAT_LC3">
+                     <profile name="" format="AUDIO_FORMAT_PCM_16_BIT"
+                              samplingRates="48000" channelMasks="AUDIO_CHANNEL_OUT_STEREO"/>
+                 </devicePort>
+                 <devicePort tagName="BT A2DP Headphones" type="AUDIO_DEVICE_OUT_BLUETOOTH_A2DP_HEADPHONES" role="sink"
+-                            encodedFormats="AUDIO_FORMAT_SBC AUDIO_FORMAT_AAC AUDIO_FORMAT_APTX AUDIO_FORMAT_APTX_HD AUDIO_FORMAT_LDAC AUDIO_FORMAT_CELT AUDIO_FORMAT_APTX_ADAPTIVE AUDIO_FORMAT_APTX_TWSP AUDIO_FORMAT_LHDC">
++                            encodedFormats="AUDIO_FORMAT_SBC AUDIO_FORMAT_AAC AUDIO_FORMAT_APTX AUDIO_FORMAT_APTX_HD AUDIO_FORMAT_LDAC AUDIO_FORMAT_CELT AUDIO_FORMAT_APTX_ADAPTIVE AUDIO_FORMAT_APTX_TWSP AUDIO_FORMAT_LHDC AUDIO_FORMAT_LC3">
+                     <profile name="" format="AUDIO_FORMAT_PCM_16_BIT"
+                              samplingRates="48000" channelMasks="AUDIO_CHANNEL_OUT_STEREO"/>
+                 </devicePort>
+                 <devicePort tagName="BT A2DP Speaker" type="AUDIO_DEVICE_OUT_BLUETOOTH_A2DP_SPEAKER" role="sink"
+-                            encodedFormats="AUDIO_FORMAT_SBC AUDIO_FORMAT_AAC AUDIO_FORMAT_APTX AUDIO_FORMAT_APTX_HD AUDIO_FORMAT_LDAC AUDIO_FORMAT_CELT AUDIO_FORMAT_APTX_ADAPTIVE AUDIO_FORMAT_APTX_TWSP AUDIO_FORMAT_LHDC">
++                            encodedFormats="AUDIO_FORMAT_SBC AUDIO_FORMAT_AAC AUDIO_FORMAT_APTX AUDIO_FORMAT_APTX_HD AUDIO_FORMAT_LDAC AUDIO_FORMAT_CELT AUDIO_FORMAT_APTX_ADAPTIVE AUDIO_FORMAT_APTX_TWSP AUDIO_FORMAT_LHDC AUDIO_FORMAT_LC3">
+                     <profile name="" format="AUDIO_FORMAT_PCM_16_BIT"
+                              samplingRates="48000" channelMasks="AUDIO_CHANNEL_OUT_STEREO"/>
+                 </devicePort>
++                <!-- Dumb Xiaomi -->
++                <devicePort tagName="BT BLE Out" type="AUDIO_DEVICE_OUT_BLE_HEADSET" role="sink"
++                            encodedFormats="AUDIO_FORMAT_LC3 VX_AUDIO_FORMAT_APTX_ADAPTIVE_QLEA">
++                    <profile name="" format="AUDIO_FORMAT_PCM_16_BIT"
++                             samplingRates="8000 16000 32000 48000" channelMasks="AUDIO_CHANNEL_OUT_MONO AUDIO_CHANNEL_OUT_STEREO"/>
++                </devicePort>
++                <devicePort tagName="BT BLE Speaker" type="AUDIO_DEVICE_OUT_BLE_SPEAKER" role="sink"
++                            encodedFormats="AUDIO_FORMAT_LC3 VX_AUDIO_FORMAT_APTX_ADAPTIVE_QLEA">
++                    <profile name="" format="AUDIO_FORMAT_PCM_16_BIT"
++                             samplingRates="8000 16000 32000 48000" channelMasks="AUDIO_CHANNEL_OUT_MONO AUDIO_CHANNEL_OUT_STEREO"/>
++                </devicePort>
++                <devicePort tagName="BT BLE Broadcast" type="AUDIO_DEVICE_OUT_BLE_BROADCAST" role="sink"
++                            encodedFormats="AUDIO_FORMAT_LC3">
++                    <profile name="" format="AUDIO_FORMAT_PCM_16_BIT"
++                             samplingRates="8000 16000 32000 48000" channelMasks="AUDIO_CHANNEL_OUT_MONO AUDIO_CHANNEL_OUT_STEREO"/>
++                </devicePort>
++                <!-- Dumb Xiaomi -->
+                 <devicePort tagName="USB Device Out" type="AUDIO_DEVICE_OUT_USB_DEVICE" role="sink">
+                     <profile name="" format="AUDIO_FORMAT_PCM_16_BIT"
+                              samplingRates="44100 48000 64000 88200 96000 128000 176400 192000"/>
+@@ -317,19 +338,26 @@
+                    <profile name="" format="AUDIO_FORMAT_PCM_16_BIT"
+                             samplingRates="44100 48000" channelMasks="AUDIO_CHANNEL_IN_MONO AUDIO_CHANNEL_IN_STEREO"/>
+                 </devicePort>
++                <!-- Dumb Xiaomi -->
++                <devicePort tagName="BLE In" type="AUDIO_DEVICE_IN_BLE_HEADSET" role="source"
++                            encodedFormats="AUDIO_FORMAT_LC3">
++                    <profile name="" format="AUDIO_FORMAT_PCM_16_BIT"
++                             samplingRates="8000 16000 24000 44100 48000" channelMasks="AUDIO_CHANNEL_IN_MONO AUDIO_CHANNEL_IN_STEREO"/>
++                </devicePort>
++                <!-- Dumb Xiaomi -->
+             </devicePorts>
+             <!-- route declaration, i.e. list all available sources for a given sink -->
+             <routes>
+                 <route type="mix" sink="Earpiece"
+-                       sources="primary output,deep_buffer,direct_pcm,compressed_offload,voip_rx,mmap_no_irq_out"/>
++                       sources="primary output,deep_buffer,direct_pcm,compressed_offload,voip_rx,mmap_no_irq_out,haptics output"/>
+                 <route type="mix" sink="Speaker"
+-                       sources="primary output,deep_buffer,direct_pcm,compressed_offload,voip_rx,mmap_no_irq_out"/>
++                       sources="primary output,deep_buffer,direct_pcm,compressed_offload,voip_rx,mmap_no_irq_out,haptics output"/>
+                 <route type="mix" sink="Wired Headset"
+-                       sources="primary output,deep_buffer,direct_pcm,compressed_offload,voip_rx,mmap_no_irq_out"/>
++                       sources="primary output,deep_buffer,direct_pcm,compressed_offload,voip_rx,mmap_no_irq_out,haptics output"/>
+                 <route type="mix" sink="Wired Headphones"
+-                       sources="primary output,deep_buffer,direct_pcm,compressed_offload,voip_rx,mmap_no_irq_out"/>
++                       sources="primary output,deep_buffer,direct_pcm,compressed_offload,voip_rx,mmap_no_irq_out,haptics output"/>
+                 <route type="mix" sink="Line"
+-                       sources="primary output,deep_buffer,direct_pcm,compressed_offload,voip_rx,mmap_no_irq_out"/>
++                       sources="primary output,deep_buffer,direct_pcm,compressed_offload,voip_rx,mmap_no_irq_out,haptics output"/>
+                 <route type="mix" sink="HDMI"
+                        sources="primary output,deep_buffer,direct_pcm,compressed_offload,compress_passthrough,voip_rx"/>
+                 <route type="mix" sink="Proxy"
+@@ -351,7 +379,7 @@
+                 <route type="mix" sink="voice_rx"
+                        sources="Telephony Rx"/>
+                 <route type="mix" sink="primary input"
+-                       sources="Built-In Mic,Built-In Back Mic,Wired Headset Mic,BT SCO Headset Mic,FM Tuner,Telephony Rx,A2DP In"/>
++                       sources="Built-In Mic,Built-In Back Mic,Wired Headset Mic,BT SCO Headset Mic,FM Tuner,Telephony Rx,A2DP In,BLE In"/>
+                 <route type="mix" sink="usb_surround_sound"
+                        sources="USB Device In,USB Headset In"/>
+                 <route type="mix" sink="fast input"
+@@ -359,9 +387,9 @@
+                 <route type="mix" sink="quad mic"
+                        sources="Built-In Mic,Built-In Back Mic,BT SCO Headset Mic,USB Device In,USB Headset In,Wired Headset Mic"/>
+                 <route type="mix" sink="voip_tx"
+-                       sources="Built-In Mic,Built-In Back Mic,BT SCO Headset Mic,USB Device In,USB Headset In,Wired Headset Mic"/>
++                       sources="Built-In Mic,Built-In Back Mic,BT SCO Headset Mic,USB Device In,USB Headset In,Wired Headset Mic,BLE In"/>
+                 <route type="mix" sink="record_24"
+-                       sources="Built-In Mic,Built-In Back Mic,Wired Headset Mic,A2DP In"/>
++                       sources="Built-In Mic,Built-In Back Mic,Wired Headset Mic,A2DP In,BLE In"/>
+                 <route type="mix" sink="mmap_no_irq_in"
+                        sources="Built-In Mic,Built-In Back Mic,Wired Headset Mic,USB Device In,USB Headset In"/>
+                 <route type="mix" sink="BT A2DP Out"
+@@ -370,6 +398,14 @@
+                        sources="primary output,deep_buffer,direct_pcm,compressed_offload,voip_rx"/>
+                 <route type="mix" sink="BT A2DP Speaker"
+                        sources="primary output,deep_buffer,direct_pcm,compressed_offload,voip_rx"/>
++                <!-- Dumb Xiaomi -->
++                <route type="mix" sink="BT BLE Out"
++                       sources="primary output,deep_buffer,direct_pcm,compressed_offload,voip_rx"/>
++                <route type="mix" sink="BT BLE Speaker"
++                       sources="primary output,deep_buffer,direct_pcm,compressed_offload,voip_rx"/>
++                <route type="mix" sink="BT BLE Broadcast"
++                       sources="primary output,deep_buffer,direct_pcm,compressed_offload"/>
++                <!-- Dumb Xiaomi -->
+                 <route type="mix" sink="hifi_input" sources="USB Device In,USB Headset In" />
+             </routes>
+ 
+diff --git a/configs/properties/odm.prop b/configs/properties/odm.prop
+index f339c21..0d22288 100644
+--- a/configs/properties/odm.prop
++++ b/configs/properties/odm.prop
+@@ -31,7 +31,7 @@ persist.vendor.dc_backlight.enable=false
+ persist.vendor.dc_backlight.threshold=0
+ ro.vendor.all_modes.colorpick_adjust=true
+ ro.vendor.bcbc.enable=true
+-ro.vendor.cabc.enable=fasle
++ro.vendor.cabc.enable=false
+ ro.vendor.colorpick_adjust=true
+ ro.vendor.dfps.enable=false
+ ro.vendor.display.ai_disp.enable=true
+diff --git a/configs/properties/system_ext.prop b/configs/properties/system_ext.prop
+index 50c4ddb..c062dfc 100644
+--- a/configs/properties/system_ext.prop
++++ b/configs/properties/system_ext.prop
+@@ -6,7 +6,20 @@ bluetooth.profile.pan.nap.enabled=true
+ bluetooth.profile.pan.panu.enabled=true
+ bluetooth.profile.pbap.sim.enabled=true
+ bluetooth.profile.sap.server.enabled=true
+-persist.bluetooth.leaudio.allow.multiple.context=false
++
++# LE Audio profiles
++bluetooth.profile.bap.unicast.client.enabled=true
++bluetooth.profile.bap.broadcast.assist.enabled=true
++bluetooth.profile.bap.broadcast.source.enabled=true
++bluetooth.profile.csip.set_coordinator.enabled=true
++bluetooth.profile.hap.client.enabled=true
++bluetooth.profile.vcp.controller.enabled=true
++bluetooth.profile.ccp.server.enabled=true
++bluetooth.profile.tbs.server.enabled=true
++bluetooth.profile.mcp.server.enabled=true
++
++# LE Audio flags
++persist.bluetooth.leaudio.allow.multiple.context=true
+ persist.bluetooth.leaudio.bypass_allow_list=true
+ persist.bluetooth.leaudio.notify.idle.during.call=true
+ persist.bluetooth.leaudio_offload.disabled=false
+diff --git a/configs/properties/vendor.prop b/configs/properties/vendor.prop
+index 86cac08..73c1ba8 100644
+--- a/configs/properties/vendor.prop
++++ b/configs/properties/vendor.prop
+@@ -15,6 +15,7 @@ ro.audio.monitorRotation=true
+ ro.vendor.audio.feature.spatial=7
+ ro.vendor.audio.gain.support=true
+ ro.vendor.audio.support.sound.id=true
++ro.vendor.audio.feature.fade=true
+ vendor.audio.adm.buffering.ms=2
+ vendor.audio.c2.preferred=true
+ vendor.audio.compress_capture.aac=true
+@@ -37,6 +38,32 @@ vendor.audio.feature.usb_offload_burst_mode.enable=true
+ vendor.audio.feature.usb_offload_sidetone_volume.enable=false
+ vendor.audio.feature.vbat.enable=true
+ vendor.audio.feature.wsa.enable=false
++vendor.audio.feature.anc_headset.enable=false
++vendor.audio.feature.audiozoom.enable=false
++vendor.audio.feature.compr_cap.enable=false
++vendor.audio.feature.compr_voip.enable=false
++vendor.audio.feature.compress_in.enable=true
++vendor.audio.feature.compress_meta_data.enable=true
++vendor.audio.feature.concurrent_capture.enable=true
++vendor.audio.feature.custom_stereo.enable=true
++vendor.audio.feature.deepbuffer_as_primary.enable=false
++vendor.audio.feature.display_port.enable=true
++vendor.audio.feature.dsm_feedback.enable=false
++vendor.audio.feature.dynamic_ecns.enable=true
++vendor.audio.feature.ext_hw_plugin.enable=false
++vendor.audio.feature.external_dsp.enable=false
++vendor.audio.feature.external_speaker.enable=false
++vendor.audio.feature.external_speaker_tfa.enable=false
++vendor.audio.feature.fluence.enable=true
++vendor.audio.feature.fm.enable=true
++vendor.audio.feature.hdmi_edid.enable=true
++vendor.audio.feature.hdmi_passthrough.enable=true
++vendor.audio.feature.hifi_audio.enable=false
++vendor.audio.feature.hwdep_cal.enable=false
++vendor.audio.feature.incall_music.enable=true
++vendor.audio.feature.keep_alive.enable=true
++vendor.audio.feature.maxx_audio.enable=false
++vendor.audio.feature.multi_voice_session.enable=true
+ vendor.audio.hal.boot.timeout.ms=20000
+ vendor.audio.hdr.record.enable=false
+ vendor.audio.hw.aac.encoder=false
+@@ -56,31 +83,21 @@ vendor.qc2audio.suspend.enabled=true
+ bluetooth.auto_connect_profiles.enabled=true
+ bluetooth.profile.a2dp.source.enabled=true
+ bluetooth.profile.avrcp.target.enabled=true
+-bluetooth.profile.bap.broadcast.assist.enabled=true
+-bluetooth.profile.bap.broadcast.source.enabled=false
+-bluetooth.profile.bap.unicast.server.enabled=true
+ bluetooth.profile.bas.client.enabled=true
+-bluetooth.profile.ccp.server.enabled=true
+-bluetooth.profile.csip.set_coordinator.enabled=true
+ bluetooth.profile.gatt.enabled=true
+-bluetooth.profile.hap.client.enabled=true
+ bluetooth.profile.hfp.ag.enabled=true
+ bluetooth.profile.hid.device.enabled=false
+ bluetooth.profile.hid.host.enabled=true
+ bluetooth.profile.map.server.enabled=true
+-bluetooth.profile.mcp.server.enabled=true
+ bluetooth.profile.opp.enabled=true
+ bluetooth.profile.pbap.server.enabled=true
+-bluetooth.profile.tbs.server.enabled=true
+-bluetooth.profile.vc.server.enabled=true
+-bluetooth.profile.vcp.controller.enabled=false
+ persist.bluetooth.a2dp_offload.disabled=false
+ persist.sys.fflag.override.settings_bluetooth_hearing_aid=true
+-persist.vendor.bt.a2dp_offload_cap=sbc-aptx-aptxtws-aptxhd-aac-ldac-lhdc
++persist.vendor.bt.a2dp_offload_cap=sbc-aptx-aptxtws-aptxhd-aac-ldac-lhdc-aptxadaptiver2
+ persist.vendor.bt.aac_frm_ctl.enabled=true
+ persist.vendor.bt.aac_vbr_frm_ctl.enabled=true
+ persist.vendor.qcom.bluetooth.a2dp_mcast_test.enabled=false
+-persist.vendor.qcom.bluetooth.a2dp_offload_cap=sbc-aptx-aptxtws-aptxhd-aac-ldac-aptxadaptiver2
++persist.vendor.qcom.bluetooth.a2dp_offload_cap=sbc-aptx-aptxtws-aptxhd-aac-ldac-lhdc-aptxadaptiver2
+ persist.vendor.qcom.bluetooth.aac_frm_ctl.enabled=true
+ persist.vendor.qcom.bluetooth.aac_vbr_ctl.enabled=true
+ persist.vendor.qcom.bluetooth.aptxadaptiver2_1_support=true
+@@ -159,7 +176,7 @@ debug.sf.predict_hwc_composition_strategy=0
+ debug.sf.treat_170m_as_sRGB=1
+ debug.sf.use_phase_offsets_as_durations=0
+ graphics.gpu.profiler.support=true
+-persist.sys.sf.color_mode=1
++persist.sys.sf.color_mode=0
+ persist.sys.sf.color_saturation=1.0
+ ro.gfx.driver.1=com.qualcomm.qti.gpudrivers.kalama.api33
+ ro.hardware.egl=adreno
+-- 
+2.55.0
+
