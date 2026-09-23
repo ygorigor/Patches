@@ -1,0 +1,48 @@
+From 9377bf44156092777770677beb83a6e0e2961ec3 Mon Sep 17 00:00:00 2001
+From: Dhina17 <dhinalogu@gmail.com>
+Date: Thu, 25 Apr 2024 17:37:41 +0000
+Subject: [PATCH] Launcher3: Update the work FAB after attaching it
+
+When single work profile is available, the 'Pause work apps'
+fab isn't working after first click.
+Because the mWorkModeSwitch will become null after detaching it.
+(Paused state).
+
+When it tries to setup click listener for the mWorkModeSwitch on
+updateCurrentState(enabled), mWorkModeSwitch will be null at that time.
+So nothing will happen when we click the fab after that.
+To make the fab work again, have to re-open the 'work' space once.
+
+To avoid this, update work FAB (where it sets click listener)
+after attaching. so mWorkModeSwitch won't be null at that time.
+
+Change-Id: Iafb3cd0adb24f0d5f6fa003a42c69a61eccd5450
+---
+ src/com/android/launcher3/allapps/WorkProfileManager.java | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/com/android/launcher3/allapps/WorkProfileManager.java b/src/com/android/launcher3/allapps/WorkProfileManager.java
+index 387f543ab88..42158278000 100644
+--- a/src/com/android/launcher3/allapps/WorkProfileManager.java
++++ b/src/com/android/launcher3/allapps/WorkProfileManager.java
+@@ -116,14 +116,14 @@ public class WorkProfileManager extends UserProfileManager
+         if (getAH() != null) {
+             getAH().mAppsList.updateAdapterItems();
+         }
+-        if (mWorkUtilityView != null) {
+-            updateWorkUtilityViews(mAllApps.getCurrentPage());
+-        }
+         if (getCurrentState() == STATE_ENABLED) {
+             attachWorkUtilityViews();
+         } else if (getCurrentState() == STATE_DISABLED) {
+             detachWorkUtilityViews();
+         }
++        if (mWorkUtilityView != null) {
++            updateWorkUtilityViews(mAllApps.getCurrentPage());
++        }
+     }
+ 
+     /**
+-- 
+2.50.1.windows.1
+

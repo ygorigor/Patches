@@ -1,0 +1,36 @@
+From 7de606efd5c70d8bfde91004a95f55a0a134b570 Mon Sep 17 00:00:00 2001
+From: Oliver Scott <olivercscott@gmail.com>
+Date: Mon, 13 Jan 2025 14:47:37 -0500
+Subject: [PATCH] Only fail loading apps if the current user's activity list is
+ empty
+
+* Fixes app icons failing to cache and load properly for some users on rare occasions (mostly when there are multiple profiles on a device and inaccessible).
+* If you've ever tapped an app icon on a profile or secondary user and get a "App not found" toast, this is one of the potential reasons
+
+Change-Id: I6ba08e3a0eb598fcc3563f304faebb3bac31d21f
+---
+ src/com/android/launcher3/model/LoaderTask.java | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/src/com/android/launcher3/model/LoaderTask.java b/src/com/android/launcher3/model/LoaderTask.java
+index f5dddb74a03..859eb0663cb 100644
+--- a/src/com/android/launcher3/model/LoaderTask.java
++++ b/src/com/android/launcher3/model/LoaderTask.java
+@@ -651,9 +651,12 @@ public class LoaderTask implements Runnable {
+             // Query for the set of apps
+             final List<LauncherActivityInfo> apps = mLauncherApps.getActivityList(null, user);
+             // Fail if we don't have any apps
+-            // TODO: Fix this. Only fail for the current user.
+             if (apps == null || apps.isEmpty()) {
+-                return allActivityList;
++                if (Process.myUserHandle().equals(user)) {
++                    return allActivityList;
++                } else {
++                    continue;
++                }
+             }
+             boolean quietMode = cachedUserInfo.isQuietModeEnabled();
+ 
+-- 
+2.50.1.windows.1
+

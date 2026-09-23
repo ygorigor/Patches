@@ -1,0 +1,57 @@
+From ae96fed6bd047fbf5fa375df8793fb876f4d16a3 Mon Sep 17 00:00:00 2001
+From: Michael Bestas <mkbestas@gmail.com>
+Date: Mon, 6 Apr 2026 19:40:27 +0300
+Subject: [PATCH] Hide education badge if work profile is provisioned through
+ Bellis
+
+Issue: calyxos#1934
+Change-Id: I602949c09a7d000e5aaad7ba6f4e3539b2863ce7
+---
+ .../launcher3/allapps/WorkProfileManager.java | 22 +++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+diff --git a/src/com/android/launcher3/allapps/WorkProfileManager.java b/src/com/android/launcher3/allapps/WorkProfileManager.java
+index 387f543ab88..896a2b176e4 100644
+--- a/src/com/android/launcher3/allapps/WorkProfileManager.java
++++ b/src/com/android/launcher3/allapps/WorkProfileManager.java
+@@ -29,7 +29,11 @@ import static com.android.launcher3.model.data.AppsListData.FLAG_QUIET_MODE_CHAN
+ import static com.android.launcher3.model.data.AppsListData.FLAG_QUIET_MODE_ENABLED;
+ import static com.android.launcher3.model.data.AppsListData.FLAG_WORK_PROFILE_QUIET_MODE_ENABLED;
+ 
++import android.app.admin.DevicePolicyManager;
++import android.content.ComponentName;
++import android.content.Context;
+ import android.os.UserHandle;
++import android.os.UserManager;
+ import android.util.Log;
+ import android.view.View;
+ 
+@@ -194,7 +198,25 @@ public class WorkProfileManager extends UserProfileManager
+         return adapterItems.size();
+     }
+ 
++    private boolean isProvisionedBy(Context context, String targetPackage) {
++        DevicePolicyManager dpm = context.getSystemService(DevicePolicyManager.class);
++        UserManager um = context.getSystemService(UserManager.class);
++
++        for (UserHandle user : um.getUserProfiles()) {
++            if (um.isManagedProfile(user.getIdentifier())) {
++                ComponentName admin = dpm.getProfileOwnerAsUser(user);
++                if (admin != null && targetPackage.equals(admin.getPackageName())) {
++                    return true;
++                }
++            }
++        }
++        return false;
++    }
++
+     private boolean isEduSeen() {
++        if (isProvisionedBy(mAllApps.getContext(), "org.calyxos.bellis")) {
++            return true;
++        }
+         return LauncherPrefs.get(mAllApps.getContext()).get(WORK_EDU_STEP) != 0;
+     }
+ 
+-- 
+2.50.1.windows.1
+
