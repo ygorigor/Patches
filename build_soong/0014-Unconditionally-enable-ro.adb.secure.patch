@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Andrew Gunnerson <accounts+github@chiller3.com>
+Date: Wed, 22 Jan 2025 23:39:22 -0500
+Subject: [PATCH 1/2] Unconditionally enable ro.adb.secure=1
+
+---
+ scripts/gen_build_prop.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/scripts/gen_build_prop.py b/scripts/gen_build_prop.py
+index 446fe4878..b53885fc8 100644
+--- a/scripts/gen_build_prop.py
++++ b/scripts/gen_build_prop.py
+@@ -332,9 +332,9 @@ def append_additional_system_props(args):
+     props.append("ro.secure=1")
+     props.append("security.perf_harden=1")
+ 
++    props.append("ro.adb.secure=1")
+     if config["BuildVariant"] == "user":
+       # Disable debugging in plain user builds.
+-      props.append("ro.adb.secure=1")
+       enable_target_debugging = False
+       enable_dalvik_lock_contention_logging = False
+     else:
+-- 
+2.55.0
+
