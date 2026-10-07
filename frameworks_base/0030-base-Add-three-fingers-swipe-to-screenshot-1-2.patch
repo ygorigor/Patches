@@ -1,4 +1,4 @@
-From dfcd04e2cd734e04699f42ee8da3f76e9a7765d3 Mon Sep 17 00:00:00 2001
+From 589969cd806e00df9546037e517a5c60e617ba49 Mon Sep 17 00:00:00 2001
 From: ghbhaha <ghbhaha@gmail.com>
 Date: Sun, 9 Aug 2015 01:23:33 +0800
 Subject: [PATCH] base: Add three-fingers-swipe to screenshot [1/2]
@@ -27,12 +27,12 @@ Co-Authored-By: Tobias Merkel <stylogey@gmail.com>
 Signed-off-by: Omkar Chandorkar <gotenksIN@aospa.co>
 ---
  core/java/android/app/IActivityManager.aidl   |   5 +
- core/java/android/provider/Settings.java      |  14 ++
+ core/java/android/provider/Settings.java      |   6 +
  core/java/android/view/ViewRootImpl.java      |  15 ++
  .../server/am/ActivityManagerService.java     |  40 +++++
  .../server/policy/PhoneWindowManager.java     |  24 +++
  .../policy/SwipeToScreenshotListener.java     | 148 ++++++++++++++++++
- 6 files changed, 246 insertions(+)
+ 6 files changed, 238 insertions(+)
  create mode 100644 services/core/java/com/android/server/policy/SwipeToScreenshotListener.java
 
 diff --git a/core/java/android/app/IActivityManager.aidl b/core/java/android/app/IActivityManager.aidl
@@ -52,21 +52,13 @@ index 8703ccbea576..a8d4820ec73f 100644
       * Notify AMS about binder transactions to frozen apps.
       *
 diff --git a/core/java/android/provider/Settings.java b/core/java/android/provider/Settings.java
-index 090c41d92bc7..3e1a90327193 100644
+index 090c41d92bc7..e07e8a9ec0c8 100644
 --- a/core/java/android/provider/Settings.java
 +++ b/core/java/android/provider/Settings.java
-@@ -6887,6 +6887,20 @@ public final class Settings {
+@@ -6887,6 +6887,12 @@ public final class Settings {
          @Readable
          public static final String VOLUME_KEY_CURSOR_CONTROL = "volume_key_cursor_control";
  
-+        /**
-+         * Whether to play notification sound and vibration if screen is ON
-+         * 0 - never
-+         * 1 - always
-+         * @hide
-+         */
-+        public static final String NOTIFICATION_SOUND_VIB_SCREEN_ON = "notification_sound_vib_screen_on";
-+
 +        /**
 +         * Three Finger Gesture from Oppo
 +         * @hide
