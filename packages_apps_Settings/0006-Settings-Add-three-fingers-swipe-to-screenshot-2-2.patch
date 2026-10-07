@@ -1,0 +1,218 @@
+From a9d3772c6b958b889bea34102d69cf4f91b3220e Mon Sep 17 00:00:00 2001
+From: ghbhaha <ghbhaha@gmail.com>
+Date: Thu, 7 Nov 2019 19:06:00 +0100
+Subject: [PATCH] Settings: Add three-fingers-swipe to screenshot [2/2]
+
+This is a squash of the following commits:
+
+  Co-authored-by: ghbhaha <ghbhaha@gmail.com>
+  Date: 2019-11-07 19:06:00 +0100
+
+      Settings: Add three-fingers-swipe to screenshot [2/2]
+
+      * Thanks Sahul Krishan for the beautiful animation
+
+      Signed-off-by: ghbhaha <ghbhaha@gmail.com>
+      Change-Id: I8d5671870830a561311aa4c6f2d0d2fb14e382d6
+      Signed-off-by: Omkar Chandorkar <gotenksIN@aospa.co>
+
+  Co-authored-by: Mesquita <mesquita@aospa.co>
+  Date: 2021-10-20 20:12:43 -0300
+
+      Settings: Update Swipe to Screenshot preference
+
+      * Thanks to Andrew Fluck for the animation
+
+      Signed-off-by: Mesquita <mesquita@aospa.co>
+      Change-Id: I4d3cd44c65f4b8262e9b521c87f7df1ed831a750
+
+  Co-Authored-By: Akash Srivastava <akashniki@gmail.com>
+  Date: 2021-10-09 20:13:29 +0000
+
+      Settings: Use new material-you illustration for 3-finger screenshot
+
+      * Switch to new Android 12 animation. Huge thanks to @Aryanata for the animation
+
+      Co-authored-by: Aryanata Andipradana <a.ryan.ata.ap@gmail.com>
+      Change-Id: I71e4d51a59756dff846b42dee35dabc052c6e590
+
+idoybh (YAAP):
+Pull the switch out. We don't like a full page for one toggle here.
+Kill the animations and the rest as well.
+Also make it a SwitchPreferenceCompat so it follows A14/QPR2 style
+
+Co-authored-by: Ido Ben-Hur <idoybh2@gmail.com>
+
+Change-Id: I8d5671870830a561311aa4c6f2d0d2fb14e382d6
+---
+ res/values-ro/custom_strings.xml              | 22 ++++++
+ res/values/custom_strings.xml                 | 22 ++++++
+ res/xml/gestures.xml                          |  7 ++
+ .../GesturesSettingPreferenceController.java  |  1 +
+ ...SwipeToScreenshotPreferenceController.java | 68 +++++++++++++++++++
+ 5 files changed, 120 insertions(+)
+ create mode 100644 res/values-ro/custom_strings.xml
+ create mode 100644 res/values/custom_strings.xml
+ create mode 100644 src/com/android/settings/gestures/SwipeToScreenshotPreferenceController.java
+
+diff --git a/res/values-ro/custom_strings.xml b/res/values-ro/custom_strings.xml
+new file mode 100644
+index 00000000000..25984f8657a
+--- /dev/null
++++ b/res/values-ro/custom_strings.xml
+@@ -0,0 +1,22 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2020 YAAP
++
++Licensed under the Apache License, Version 2.0 (the "License");
++you may not use this file except in compliance with the License.
++You may obtain a copy of the License at
++
++http://www.apache.org/licenses/LICENSE-2.0
++
++Unless required by applicable law or agreed to in writing, software
++distributed under the License is distributed on an "AS IS" BASIS,
++WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++See the License for the specific language governing permissions and
++limitations under the License.
++-->
++<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
++
++  <!-- Three-fingers-swipe to screenshot -->
++  <string name="three_finger_gesture">Glisare pentru screenshot</string>
++  <string name="three_finger_gesture_summary">Glisează în jos cu trei degete pentru a face o captură de ecran.</string>
++
++</resources>
+diff --git a/res/values/custom_strings.xml b/res/values/custom_strings.xml
+new file mode 100644
+index 00000000000..364d5bdf4d2
+--- /dev/null
++++ b/res/values/custom_strings.xml
+@@ -0,0 +1,22 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2020 YAAP
++
++Licensed under the Apache License, Version 2.0 (the "License");
++you may not use this file except in compliance with the License.
++You may obtain a copy of the License at
++
++http://www.apache.org/licenses/LICENSE-2.0
++
++Unless required by applicable law or agreed to in writing, software
++distributed under the License is distributed on an "AS IS" BASIS,
++WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++See the License for the specific language governing permissions and
++limitations under the License.
++-->
++<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
++
++  <!-- Three-fingers-swipe to screenshot -->
++  <string name="three_finger_gesture">Swipe to screenshot</string>
++  <string name="three_finger_gesture_summary">Swipe down with three fingers to take a screenshot</string>
++
++</resources>
+diff --git a/res/xml/gestures.xml b/res/xml/gestures.xml
+index 2b18c0cf06e..80cac41f867 100644
+--- a/res/xml/gestures.xml
++++ b/res/xml/gestures.xml
+@@ -87,4 +87,11 @@
+         android:title="@string/gesture_prevent_ringing_screen_title"
+         android:fragment="com.android.settings.gestures.PreventRingingGestureSettings"
+         settings:controller="com.android.settings.gestures.PreventRingingParentPreferenceController" />
++
++    <SwitchPreferenceCompat
++        android:key="swipe_to_screenshot"
++        android:title="@string/three_finger_gesture"
++        android:summary="@string/three_finger_gesture_summary"
++        settings:keywords="@string/keywords_gesture"
++        settings:controller="com.android.settings.gestures.SwipeToScreenshotPreferenceController" />
+ </PreferenceScreen>
+diff --git a/src/com/android/settings/gestures/GesturesSettingPreferenceController.java b/src/com/android/settings/gestures/GesturesSettingPreferenceController.java
+index 944c5df9885..984ceffb948 100644
+--- a/src/com/android/settings/gestures/GesturesSettingPreferenceController.java
++++ b/src/com/android/settings/gestures/GesturesSettingPreferenceController.java
+@@ -85,6 +85,7 @@ public class GesturesSettingPreferenceController extends BasePreferenceControlle
+         controllers.add(new DoubleTapScreenPreferenceController(context, FAKE_PREF_KEY)
+                 .setConfig(ambientDisplayConfiguration));
+         controllers.add(new PreventRingingParentPreferenceController(context, FAKE_PREF_KEY));
++        controllers.add(new SwipeToScreenshotPreferenceController(context, FAKE_PREF_KEY));
+         return controllers;
+     }
+ }
+diff --git a/src/com/android/settings/gestures/SwipeToScreenshotPreferenceController.java b/src/com/android/settings/gestures/SwipeToScreenshotPreferenceController.java
+new file mode 100644
+index 00000000000..1b8ce87b57d
+--- /dev/null
++++ b/src/com/android/settings/gestures/SwipeToScreenshotPreferenceController.java
+@@ -0,0 +1,68 @@
++/*
++ * Copyright (C) 2019 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.settings.gestures;
++
++import static android.provider.Settings.System.THREE_FINGER_GESTURE;
++
++import android.content.Context;
++import android.content.SharedPreferences;
++import android.provider.Settings;
++import android.text.TextUtils;
++
++import com.android.settings.R;
++import com.android.settings.core.TogglePreferenceController;
++
++public class SwipeToScreenshotPreferenceController extends TogglePreferenceController {
++
++    private final int ON = 1;
++    private final int OFF = 0;
++
++    public SwipeToScreenshotPreferenceController(Context context, String key) {
++        super(context, key);
++    }
++
++    @Override
++    public int getAvailabilityStatus() {
++        return AVAILABLE;
++    }
++
++    @Override
++    public boolean isSliceable() {
++        return TextUtils.equals(getPreferenceKey(), "swipe_to_screenshot");
++    }
++
++    @Override
++    public boolean isPublicSlice() {
++        return true;
++    }
++
++    @Override
++    public boolean setChecked(boolean isChecked) {
++        return Settings.System.putInt(mContext.getContentResolver(), THREE_FINGER_GESTURE,
++                isChecked ? ON : OFF);
++    }
++
++    @Override
++    public boolean isChecked() {
++        return Settings.System.getInt(mContext.getContentResolver(), THREE_FINGER_GESTURE, 0) != 0;
++    }
++
++    @Override
++    public int getSliceHighlightMenuRes() {
++        return R.string.menu_key_system;
++    }
++}
+-- 
+2.56.0
+
