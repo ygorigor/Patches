@@ -1,0 +1,244 @@
+From 5b0f41e114140e7207cc423439c7cc078578fb5c Mon Sep 17 00:00:00 2001
+From: ygorigor <sorocean.igor@gmail.com>
+Date: Thu, 8 Oct 2026 17:49:53 +0300
+Subject: [PATCH] Settings: Backport app icon from CP31.260618.005
+
+Change-Id: If4118ee1678ce4cf79517019648b316ec4b03075
+---
+ AndroidManifest.xml                           |  2 +-
+ res/drawable/ic_launcher_background.xml       | 18 --------
+ res/drawable/ic_launcher_foreground.xml       | 36 ----------------
+ res/drawable/ic_launcher_monochrome.xml       | 15 -------
+ res/drawable/ic_launcher_settings.xml         | 42 ++++++++++++++-----
+ res/drawable/themed_icon_settings.xml         | 25 +++++++++++
+ res/mipmap/ic_launcher_settings.xml           |  6 +++
+ res/values/colors.xml                         |  2 +-
+ .../CreateShortcutPreferenceController.java   |  2 +-
+ 9 files changed, 66 insertions(+), 82 deletions(-)
+ delete mode 100644 res/drawable/ic_launcher_background.xml
+ delete mode 100644 res/drawable/ic_launcher_foreground.xml
+ delete mode 100644 res/drawable/ic_launcher_monochrome.xml
+ rewrite res/drawable/ic_launcher_settings.xml (91%)
+ create mode 100644 res/drawable/themed_icon_settings.xml
+ create mode 100644 res/mipmap/ic_launcher_settings.xml
+
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index 2523082b311..0ace0a98d40 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -156,7 +156,7 @@
+     <application
+             android:name=".SettingsApplication"
+             android:label="@string/settings_label"
+-            android:icon="@drawable/ic_launcher_settings"
++            android:icon="@mipmap/ic_launcher_settings"
+             android:theme="@style/Theme.Settings"
+             android:hardwareAccelerated="true"
+             android:requiredForAllUsers="true"
+diff --git a/res/drawable/ic_launcher_background.xml b/res/drawable/ic_launcher_background.xml
+deleted file mode 100644
+index 8c651550f93..00000000000
+--- a/res/drawable/ic_launcher_background.xml
++++ /dev/null
+@@ -1,18 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<!--
+-     SPDX-FileCopyrightText: 2022 The LineageOS Project
+-     SPDX-License-Identifier: Apache-2.0
+--->
+-<vector xmlns:android="http://schemas.android.com/apk/res/android"
+-    android:width="108dp"
+-    android:height="108dp"
+-    android:viewportWidth="108"
+-    android:viewportHeight="108">
+-  <path
+-      android:pathData="M0,0h108v108h-108z"
+-      android:fillColor="#ffffff"/>
+-  <path
+-      android:pathData="M58.148,28C59.193,28 60.062,28.805 60.142,29.847L60.254,31.303C60.431,33.606 62.018,35.527 64.017,36.685C66.016,37.844 68.441,38.236 70.525,37.237L71.846,36.604C72.789,36.153 73.92,36.503 74.443,37.408L78.59,44.592C79.113,45.497 78.851,46.652 77.988,47.243L76.782,48.068C74.876,49.374 74,51.689 74,54C74,56.311 74.876,58.626 76.782,59.932L77.988,60.757C78.851,61.348 79.113,62.503 78.59,63.408L74.443,70.592C73.92,71.497 72.789,71.847 71.846,71.396L70.525,70.763C68.441,69.764 66.016,70.156 64.017,71.315C62.018,72.473 60.431,74.394 60.254,76.697L60.142,78.153C60.062,79.195 59.193,80 58.148,80H49.852C48.807,80 47.938,79.195 47.858,78.153L47.746,76.697C47.569,74.394 45.981,72.473 43.983,71.315C41.984,70.156 39.558,69.764 37.475,70.763L36.153,71.396C35.211,71.847 34.08,71.497 33.557,70.592L29.409,63.408C28.887,62.503 29.149,61.348 30.011,60.757L31.218,59.931C33.124,58.626 34,56.311 34,54C34,51.689 33.124,49.374 31.218,48.068L30.011,47.242C29.149,46.652 28.887,45.497 29.409,44.592L33.557,37.408C34.08,36.503 35.211,36.153 36.153,36.604L37.475,37.237C39.558,38.236 41.984,37.844 43.983,36.685C45.982,35.527 47.569,33.606 47.746,31.303L47.858,29.847C47.938,28.805 48.807,28 49.852,28H58.148ZM54,66C60.627,66 66,60.627 66,54C66,47.373 60.627,42 54,42C47.373,42 42,47.373 42,54C42,60.627 47.373,66 54,66Z"
+-      android:fillColor="#167C80"
+-      android:fillType="evenOdd"/>
+-</vector>
+diff --git a/res/drawable/ic_launcher_foreground.xml b/res/drawable/ic_launcher_foreground.xml
+deleted file mode 100644
+index 4d28d393e2b..00000000000
+--- a/res/drawable/ic_launcher_foreground.xml
++++ /dev/null
+@@ -1,36 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<!--
+-     SPDX-FileCopyrightText: 2022 The LineageOS Project
+-     SPDX-License-Identifier: Apache-2.0
+--->
+-<vector xmlns:android="http://schemas.android.com/apk/res/android"
+-    xmlns:aapt="http://schemas.android.com/aapt"
+-    android:width="108dp"
+-    android:height="108dp"
+-    android:viewportWidth="108"
+-    android:viewportHeight="108">
+-  <group>
+-    <clip-path
+-        android:pathData="M0,0h108v108h-108z"/>
+-    <path
+-        android:pathData="M54,54m-18,0a18,18 0,1 1,36 0a18,18 0,1 1,-36 0"
+-        android:fillColor="#CAE1E2"/>
+-    <path
+-        android:pathData="M51.058,56.942L46.634,54.976C45.789,54.6 45.789,53.4 46.634,53.024L51.058,51.058L53.024,46.634C53.4,45.789 54.6,45.789 54.976,46.634L56.942,51.058L61.366,53.024C62.211,53.4 62.211,54.6 61.366,54.976L56.942,56.942L54.976,61.366C54.6,62.211 53.4,62.211 53.024,61.366L51.058,56.942Z"
+-        android:fillColor="#2A3232"/>
+-    <path
+-        android:pathData="M28.54,28.54m-72,0a72,72 0,1 1,144 0a72,72 0,1 1,-144 0"
+-        android:fillAlpha="0.6">
+-      <aapt:attr name="android:fillColor">
+-        <gradient
+-            android:gradientRadius="72"
+-            android:centerX="28.54"
+-            android:centerY="28.54"
+-            android:type="radial">
+-          <item android:offset="0" android:color="#19FFFFFF"/>
+-          <item android:offset="1" android:color="#00FFFFFF"/>
+-        </gradient>
+-      </aapt:attr>
+-    </path>
+-  </group>
+-</vector>
+diff --git a/res/drawable/ic_launcher_monochrome.xml b/res/drawable/ic_launcher_monochrome.xml
+deleted file mode 100644
+index 087d83f82b3..00000000000
+--- a/res/drawable/ic_launcher_monochrome.xml
++++ /dev/null
+@@ -1,15 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<!--
+-     SPDX-FileCopyrightText: 2022 The LineageOS Project
+-     SPDX-License-Identifier: Apache-2.0
+--->
+-<vector xmlns:android="http://schemas.android.com/apk/res/android"
+-    android:width="108dp"
+-    android:height="108dp"
+-    android:viewportWidth="108"
+-    android:viewportHeight="108">
+-  <path
+-      android:pathData="M59.23,33.567C59.162,32.683 58.424,32 57.538,32H50.527C49.64,32 48.903,32.683 48.835,33.567L48.74,34.795C48.59,36.744 47.247,38.369 45.556,39.349C43.865,40.33 41.812,40.661 40.049,39.816L38.936,39.283C38.136,38.899 37.175,39.196 36.732,39.965L33.228,46.034C32.784,46.803 33.007,47.784 33.739,48.286L34.755,48.981C36.368,50.086 37.109,52.045 37.109,54C37.109,55.955 36.368,57.914 34.755,59.019L33.739,59.714C33.007,60.216 32.784,61.197 33.228,61.966L36.732,68.035C37.175,68.803 38.136,69.101 38.936,68.717L40.049,68.184C41.812,67.339 43.865,67.67 45.556,68.651C47.247,69.631 48.59,71.257 48.74,73.205L48.835,74.433C48.903,75.317 49.64,76 50.527,76H57.538C58.424,76 59.162,75.317 59.23,74.433L59.324,73.205C59.474,71.257 60.817,69.631 62.508,68.651C64.199,67.67 66.252,67.339 68.015,68.184L69.128,68.717C69.928,69.101 70.889,68.803 71.332,68.035L74.837,61.966C75.28,61.197 75.058,60.216 74.325,59.714L73.31,59.019C71.696,57.915 70.955,55.955 70.955,54C70.955,52.045 71.696,50.085 73.31,48.981L74.325,48.285C75.058,47.784 75.28,46.803 74.837,46.034L71.332,39.965C70.889,39.196 69.928,38.899 69.128,39.283L68.015,39.816C66.252,40.661 64.199,40.33 62.508,39.349C60.817,38.369 59.474,36.744 59.324,34.795L59.23,33.567ZM68,54C68,61.732 61.732,68 54,68C46.268,68 40,61.732 40,54C40,46.268 46.268,40 54,40C61.732,40 68,46.268 68,54ZM47.799,54.826L51.543,56.489L53.207,60.233C53.525,60.948 54.54,60.948 54.858,60.233L56.522,56.489L60.265,54.826C60.98,54.508 60.98,53.492 60.265,53.174L56.522,51.511L54.858,47.767C54.54,47.052 53.525,47.052 53.207,47.767L51.543,51.511L47.799,53.174C47.084,53.492 47.084,54.508 47.799,54.826Z"
+-      android:fillColor="#ffffffff"
+-      android:fillType="evenOdd"/>
+-</vector>
+diff --git a/res/drawable/ic_launcher_settings.xml b/res/drawable/ic_launcher_settings.xml
+dissimilarity index 91%
+index b58c81ff94f..c75230cad0e 100644
+--- a/res/drawable/ic_launcher_settings.xml
++++ b/res/drawable/ic_launcher_settings.xml
+@@ -1,10 +1,32 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<!--
+-     SPDX-FileCopyrightText: 2022 The LineageOS Project
+-     SPDX-License-Identifier: Apache-2.0
+--->
+-<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+-    <background android:drawable="@drawable/ic_launcher_background"/>
+-    <foreground android:drawable="@drawable/ic_launcher_foreground"/>
+-    <monochrome android:drawable="@drawable/ic_launcher_monochrome"/>
+-</adaptive-icon>
++<?xml version="1.0" encoding="utf-8"?>
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:aapt="http://schemas.android.com/aapt"
++    android:width="108dp"
++    android:height="108dp"
++    android:viewportWidth="108"
++    android:viewportHeight="108">
++    <path
++        android:fillColor="#3186ff"
++        android:pathData="M54,28c1.33,0,2.63.1,3.91.29,1.49.22,2.69,1.29,3.26,2.68l.99,2.4c.92,2.24,3.23,3.57,5.63,3.25l2.57-.35c1.49-.2,3.01.3,3.95,1.48,1.63,2.03,2.95,4.31,3.92,6.77.55,1.4.22,2.97-.7,4.16l-1.59,2.06c-1.48,1.91-1.48,4.59,0,6.5l1.59,2.06c.92,1.19,1.24,2.76.7,4.16-.96,2.46-2.29,4.74-3.92,6.77-.94,1.17-2.46,1.68-3.95,1.48l-2.57-.35c-2.4-.32-4.71,1.01-5.63,3.25l-.99,2.4c-.57,1.39-1.77,2.46-3.26,2.68-1.27.19-2.58.29-3.91.29s-2.63-.1-3.91-.29c-1.49-.22-2.69-1.29-3.26-2.68l-.99-2.4c-.92-2.24-3.23-3.57-5.63-3.25l-2.57.35c-1.49.2-3.01-.3-3.95-1.48-1.63-2.03-2.95-4.31-3.92-6.77-.55-1.4-.22-2.97.7-4.16l1.59-2.06c1.48-1.91,1.48-4.59,0-6.5l-1.59-2.06c-.92-1.19-1.24-2.76-.7-4.16.96-2.46,2.29-4.74,3.92-6.77.94-1.17,2.46-1.68,3.95-1.48l2.57.35c2.4.32,4.71-1.01,5.63-3.25l.99-2.4c.57-1.39,1.77-2.46,3.26-2.68,1.27-.19,2.58-.29,3.91-.29Z" />
++    <path
++        android:pathData="M54,28c1.33,0,2.63.1,3.91.29,1.49.22,2.69,1.29,3.26,2.68l.99,2.4c.92,2.24,3.23,3.57,5.63,3.25l2.57-.35c1.49-.2,3.01.3,3.95,1.48,1.63,2.03,2.95,4.31,3.92,6.77.55,1.4.22,2.97-.7,4.16l-1.59,2.06c-1.48,1.91-1.48,4.59,0,6.5l1.59,2.06c.92,1.19,1.24,2.76.7,4.16-.96,2.46-2.29,4.74-3.92,6.77-.94,1.17-2.46,1.68-3.95,1.48l-2.57-.35c-2.4-.32-4.71,1.01-5.63,3.25l-.99,2.4c-.57,1.39-1.77,2.46-3.26,2.68-1.27.19-2.58.29-3.91.29s-2.63-.1-3.91-.29c-1.49-.22-2.69-1.29-3.26-2.68l-.99-2.4c-.92-2.24-3.23-3.57-5.63-3.25l-2.57.35c-1.49.2-3.01-.3-3.95-1.48-1.63-2.03-2.95-4.31-3.92-6.77-.55-1.4-.22-2.97.7-4.16l1.59-2.06c1.48-1.91,1.48-4.59,0-6.5l-1.59-2.06c-.92-1.19-1.24-2.76-.7-4.16.96-2.46,2.29-4.74,3.92-6.77.94-1.17,2.46-1.68,3.95-1.48l2.57.35c2.4.32,4.71-1.01,5.63-3.25l.99-2.4c.57-1.39,1.77-2.46,3.26-2.68,1.27-.19,2.58-.29,3.91-.29Z">
++      <aapt:attr name="android:fillColor">
++        <gradient
++            android:startX="54"
++            android:startY="-11.71"
++            android:endX="54"
++            android:endY="82.36"
++            android:type="linear">
++          <item android:offset="0.5" android:color="#003a4bdf" />
++          <item android:offset="1" android:color="#7473fe" />
++        </gradient>
++      </aapt:attr>
++    </path>
++    <path
++        android:fillColor="#9dd2ff"
++        android:fillAlpha="0.85"
++        android:pathData="M 54 54 m -14.18, 0 a 14.18,14.18 0 1,1 28.36,0 a 14.18,14.18 0 1,1 -28.36,0" />
++    <path
++        android:fillColor="#2c3796"
++        android:pathData="M 54 54 m -7.09, 0 a 7.09,7.09 0 1,1 14.18,0 a 7.09,7.09 0 1,1 -14.18,0" />
++</vector>
+diff --git a/res/drawable/themed_icon_settings.xml b/res/drawable/themed_icon_settings.xml
+new file mode 100644
+index 00000000000..3353bf6eab9
+--- /dev/null
++++ b/res/drawable/themed_icon_settings.xml
+@@ -0,0 +1,25 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++  Copyright (C) 2025 The Android Open Source Project
++
++  Licensed under the Apache License, Version 2.0 (the "License");
++  you may not use this file except in compliance with the License.
++  You may obtain a copy of the License at
++
++       http://www.apache.org/licenses/LICENSE-2.0
++
++  Unless required by applicable law or agreed to in writing, software
++  distributed under the License is distributed on an "AS IS" BASIS,
++  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++  See the License for the specific language governing permissions and
++  limitations under the License.
++  -->
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="@dimen/theme_icon_size"
++    android:height="@dimen/theme_icon_size"
++    android:viewportWidth="108"
++    android:viewportHeight="108">
++    <path
++        android:fillColor="@android:color/white"
++        android:pathData="M75.94,57.25 C74.46,55.34 74.46,52.66 75.94,50.75 L77.53,48.69 C78.45,47.5 78.77,45.93 78.23,44.53 C77.27,42.07 75.94,39.79 74.31,37.76 C73.37,36.59 71.85,36.08 70.36,36.28 L67.79,36.63 C65.39,36.95 63.08,35.62 62.16,33.38 L61.17,30.98 C60.6,29.59 59.4,28.52 57.91,28.3 C56.64,28.11 55.33,28.01 54,28.01 S51.37,28.11 50.09,28.3 C48.6,28.52 47.4,29.59 46.83,30.98 L45.84,33.38 C44.92,35.62 42.61,36.95 40.21,36.63 L37.64,36.28 C36.15,36.08 34.63,36.58 33.69,37.76 C32.06,39.79 30.74,42.07 29.77,44.53 C29.22,45.93 29.55,47.5 30.47,48.69 L32.06,50.75 C33.54,52.66 33.54,55.34 32.06,57.25 L30.47,59.31 C29.55,60.5 29.23,62.07 29.77,63.47 C30.73,65.93 32.06,68.21 33.69,70.24 C34.63,71.41 36.15,71.92 37.64,71.72 L40.21,71.37 C42.61,71.05 44.92,72.38 45.84,74.62 L46.83,77.02 C47.4,78.41 48.6,79.48 50.09,79.7 C51.36,79.89 52.67,79.99 54,79.99 S56.63,79.89 57.91,79.7 C59.4,79.48 60.6,78.41 61.17,77.02 L62.16,74.62 C63.08,72.38 65.39,71.05 67.79,71.37 L70.36,71.72 C71.85,71.92 73.37,71.42 74.31,70.24 C75.94,68.21 77.26,65.93 78.23,63.47 C78.78,62.07 78.45,60.5 77.53,59.31 L75.94,57.25 Z M54,68.18 C46.17,68.18 39.82,61.83 39.82,54 S46.17,39.82 54,39.82 S68.18,46.17 68.18,54 S61.83,68.18 54,68.18 Z M54,46.91 C50.08,46.91 46.91,50.08 46.91,54 S50.08,61.09 54,61.09 S61.09,57.92 61.09,54 S57.92,46.91 54,46.91 Z" />
++</vector>
+diff --git a/res/mipmap/ic_launcher_settings.xml b/res/mipmap/ic_launcher_settings.xml
+new file mode 100644
+index 00000000000..6cda3359098
+--- /dev/null
++++ b/res/mipmap/ic_launcher_settings.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
++    <background android:drawable="@color/icon_launcher_setting_color"/>
++    <foreground android:drawable="@drawable/ic_launcher_settings"/>
++    <monochrome android:drawable="@drawable/themed_icon_settings"/>
++</adaptive-icon>
+diff --git a/res/values/colors.xml b/res/values/colors.xml
+index 4d076e2b82d..b0131ab45b0 100644
+--- a/res/values/colors.xml
++++ b/res/values/colors.xml
+@@ -144,7 +144,7 @@
+     <color name="notification_importance_button_unselected">#DADCE0</color>
+ 
+     <!-- launcher icon color -->
+-    <color name="icon_launcher_setting_color">@*android:color/accent_device_default_light</color>
++    <color name="icon_launcher_setting_color">@android:color/white</color>
+ 
+     <color name="face_enroll_icon_color">#42a5f5</color> <!-- Blue 400 -->
+ 
+diff --git a/src/com/android/settings/shortcut/CreateShortcutPreferenceController.java b/src/com/android/settings/shortcut/CreateShortcutPreferenceController.java
+index 3a7bb95af35..5915151bee6 100644
+--- a/src/com/android/settings/shortcut/CreateShortcutPreferenceController.java
++++ b/src/com/android/settings/shortcut/CreateShortcutPreferenceController.java
+@@ -142,7 +142,7 @@ public class CreateShortcutPreferenceController extends BasePreferenceController
+             intent = new Intent();
+         }
+         intent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE,
+-                Intent.ShortcutIconResource.fromContext(mContext, R.drawable.ic_launcher_settings))
++                Intent.ShortcutIconResource.fromContext(mContext, R.mipmap.ic_launcher_settings))
+                 .putExtra(Intent.EXTRA_SHORTCUT_INTENT, info.getIntent())
+                 .putExtra(Intent.EXTRA_SHORTCUT_NAME, info.getShortLabel());
+ 
+-- 
+2.55.0.windows.5
+
