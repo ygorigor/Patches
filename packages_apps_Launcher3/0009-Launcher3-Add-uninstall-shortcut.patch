@@ -1,0 +1,217 @@
+From 232ba54615dada9da97ce408297c71c60c39c1d6 Mon Sep 17 00:00:00 2001
+From: ygorigor <sorocean.igor@gmail.com>
+Date: Fri, 9 Oct 2026 14:57:31 +0300
+Subject: [PATCH] Launcher3: Add uninstall shortcut
+
+Change-Id: I8d30b17904c0ef701f0b0e34f11175a5785a7e08
+---
+ .../uioverrides/QuickstepLauncher.java        |  4 +-
+ src/com/android/launcher3/Launcher.java       |  9 +++--
+ .../launcher3/SecondaryDropTarget.java        | 13 ++++---
+ .../launcher3/popup/SystemShortcut.java       | 28 +++++--------
+ .../launcher3/popup/SystemShortcutTest.java   | 39 ++++++++++++-------
+ 5 files changed, 48 insertions(+), 45 deletions(-)
+
+diff --git a/quickstep/src/com/android/launcher3/uioverrides/QuickstepLauncher.java b/quickstep/src/com/android/launcher3/uioverrides/QuickstepLauncher.java
+index ea1949b625f..0c9be43d540 100644
+--- a/quickstep/src/com/android/launcher3/uioverrides/QuickstepLauncher.java
++++ b/quickstep/src/com/android/launcher3/uioverrides/QuickstepLauncher.java
+@@ -552,11 +552,9 @@ public class QuickstepLauncher extends Launcher implements RecentsViewContainer,
+                 || container == CONTAINER_ALL_APPS_PREDICTION)) {
+             shortcuts.add(ADD_TO_HOME_SCREEN);
+         }
++        shortcuts.add(UNINSTALL_APP);
+         shortcuts.add(DONT_SUGGEST_APP);
+         shortcuts.add(PRIVATE_PROFILE_INSTALL);
+-        if (Flags.enablePrivateSpace()) {
+-            shortcuts.add(UNINSTALL_APP);
+-        }
+         if (mBubbleFeatureConfig.areAppBubblesSupported()) {
+             shortcuts.add(BUBBLE_SHORTCUT);
+         }
+diff --git a/src/com/android/launcher3/Launcher.java b/src/com/android/launcher3/Launcher.java
+index 9d3341aa308..62e422bfbbb 100644
+--- a/src/com/android/launcher3/Launcher.java
++++ b/src/com/android/launcher3/Launcher.java
+@@ -92,6 +92,7 @@ import static com.android.launcher3.popup.SystemShortcut.ADD_TO_HOME_SCREEN;
+ import static com.android.launcher3.popup.SystemShortcut.APP_INFO;
+ import static com.android.launcher3.popup.SystemShortcut.INSTALL;
+ import static com.android.launcher3.popup.SystemShortcut.REMOVE;
++import static com.android.launcher3.popup.SystemShortcut.UNINSTALL_APP;
+ import static com.android.launcher3.popup.SystemShortcut.WIDGETS;
+ import static com.android.launcher3.states.RotationHelper.REQUEST_LOCK;
+ import static com.android.launcher3.states.RotationHelper.REQUEST_NONE;
+@@ -2805,18 +2806,18 @@ public class Launcher extends StatefulActivity<LauncherState>
+     public Stream<SystemShortcut.Factory> getSupportedShortcuts(ItemInfo itemInfo) {
+         int container = itemInfo.container;
+         if (container == CONTAINER_DESKTOP || container == CONTAINER_HOTSEAT) {
+-            return Stream.of(APP_INFO, WIDGETS, INSTALL, REMOVE);
++            return Stream.of(APP_INFO, WIDGETS, INSTALL, REMOVE, UNINSTALL_APP);
+         } else if (container == CONTAINER_ALL_APPS || container == CONTAINER_ALL_APPS_PREDICTION) {
+             // TODO(b/444744861): Update private space apps to have its own container.
+             boolean isPinnable = itemInfo instanceof ItemInfoWithIcon info
+                     && (info.runtimeStatusFlags & FLAG_NOT_PINNABLE) == 0;
+             if (isPinnable) {
+-                return Stream.of(APP_INFO, WIDGETS, INSTALL, ADD_TO_HOME_SCREEN);
++                return Stream.of(APP_INFO, WIDGETS, INSTALL, ADD_TO_HOME_SCREEN, UNINSTALL_APP);
+             } else {
+-                return Stream.of(APP_INFO, WIDGETS, INSTALL);
++                return Stream.of(APP_INFO, WIDGETS, INSTALL, UNINSTALL_APP);
+             }
+         }
+-        return Stream.of(APP_INFO, WIDGETS, INSTALL);
++        return Stream.of(APP_INFO, WIDGETS, INSTALL, UNINSTALL_APP);
+     }
+ 
+     /**
+diff --git a/src/com/android/launcher3/SecondaryDropTarget.java b/src/com/android/launcher3/SecondaryDropTarget.java
+index cd20acb3d53..8b48a67d978 100644
+--- a/src/com/android/launcher3/SecondaryDropTarget.java
++++ b/src/com/android/launcher3/SecondaryDropTarget.java
+@@ -161,11 +161,7 @@ public class SecondaryDropTarget extends ButtonDropTarget implements OnAlarmList
+ 
+         Boolean uninstallDisabled = mUninstallDisabledCache.get(info.user);
+         if (uninstallDisabled == null) {
+-            UserManager userManager =
+-                    (UserManager) getContext().getSystemService(Context.USER_SERVICE);
+-            Bundle restrictions = userManager.getUserRestrictions(info.user);
+-            uninstallDisabled = restrictions.getBoolean(UserManager.DISALLOW_APPS_CONTROL, false)
+-                    || restrictions.getBoolean(UserManager.DISALLOW_UNINSTALL_APPS, false);
++            uninstallDisabled = isUninstallDisabled(getContext(), info.user);
+             mUninstallDisabledCache.put(info.user, uninstallDisabled);
+         }
+         // Cancel any pending alarm and set cache expiry after some time
+@@ -192,6 +188,13 @@ public class SecondaryDropTarget extends ButtonDropTarget implements OnAlarmList
+         return UNINSTALL;
+     }
+ 
++    public static boolean isUninstallDisabled(Context context, UserHandle user) {
++        Bundle restrictions =
++                context.getSystemService(UserManager.class).getUserRestrictions(user);
++        return restrictions.getBoolean(UserManager.DISALLOW_APPS_CONTROL, false)
++                || restrictions.getBoolean(UserManager.DISALLOW_UNINSTALL_APPS, false);
++    }
++
+     /**
+      * @return the component name that should be uninstalled or null.
+      */
+diff --git a/src/com/android/launcher3/popup/SystemShortcut.java b/src/com/android/launcher3/popup/SystemShortcut.java
+index 2bfa140d89f..010e0ccf9f1 100644
+--- a/src/com/android/launcher3/popup/SystemShortcut.java
++++ b/src/com/android/launcher3/popup/SystemShortcut.java
+@@ -458,38 +458,28 @@ public abstract class SystemShortcut<T extends ActivityContext> extends ItemInfo
+ 
+     public static final Factory<ActivityContext> UNINSTALL_APP =
+             (activityContext, itemInfo, originalView) -> {
+-                if (originalView == null) {
+-                    return null;
+-                }
+-                if (!Flags.enablePrivateSpace()) {
+-                    return null;
+-                }
+-                if (!UserCache.INSTANCE.get(originalView.getContext()).getUserInfo(
+-                        itemInfo.user).isPrivate()) {
+-                    // If app is not Private Space app.
++                if (itemInfo == null || originalView == null) {
+                     return null;
+                 }
+-                ComponentName cn = SecondaryDropTarget.getUninstallTarget(originalView.getContext(),
+-                        itemInfo);
+-                if (cn == null) {
+-                    // If component name is null, don't show uninstall shortcut.
+-                    // System apps will have component name as null.
++                Context context = originalView.getContext();
++                if (SecondaryDropTarget.isUninstallDisabled(context, itemInfo.user)) {
+                     return null;
+                 }
+-                return new UninstallApp(activityContext, itemInfo, originalView, cn);
++                ComponentName cn = SecondaryDropTarget.getUninstallTarget(context, itemInfo);
++                return cn == null ? null
++                        : new UninstallApp<>(activityContext, itemInfo, originalView, cn);
+             };
+ 
+     private static class UninstallApp<T extends ActivityContext> extends SystemShortcut<T> {
+         @NonNull
+-        ComponentName mComponentName;
++        private final ComponentName mComponentName;
+ 
+         UninstallApp(T target, ItemInfo itemInfo, @NonNull View originalView,
+                 @NonNull ComponentName cn) {
+             super(R.drawable.ic_uninstall_no_shadow,
+-                    R.string.uninstall_private_system_shortcut_label, target,
+-                    itemInfo, originalView);
++                    R.string.uninstall_drop_target_label, target,
++                    itemInfo, originalView, false);
+             mComponentName = cn;
+-
+         }
+ 
+         @Override
+diff --git a/tests/multivalentTests/src/com/android/launcher3/popup/SystemShortcutTest.java b/tests/multivalentTests/src/com/android/launcher3/popup/SystemShortcutTest.java
+index 9636d4052b6..3c738c951fb 100644
+--- a/tests/multivalentTests/src/com/android/launcher3/popup/SystemShortcutTest.java
++++ b/tests/multivalentTests/src/com/android/launcher3/popup/SystemShortcutTest.java
+@@ -355,28 +355,17 @@ public class SystemShortcutTest {
+ 
+ 
+     @Test
+-    @DisableFlags(FLAG_ENABLE_PRIVATE_SPACE)
+-    public void testUninstallGetShortcutWithPrivateSpaceOff() {
++    public void testUninstallGetShortcutWithNullItemInfo() {
+         SystemShortcut systemShortcut = SystemShortcut.UNINSTALL_APP.getShortcut(
+                 mTestContext, null, mView);
+         Assert.assertNull(systemShortcut);
+     }
+ 
+     @Test
+-    @EnableFlags(FLAG_ENABLE_PRIVATE_SPACE)
+-    public void testUninstallGetShortcutWithNonPrivateItemInfo() {
+-        mAppInfo = new AppInfo();
+-        Assert.assertNull(SystemShortcut.UNINSTALL_APP.getShortcut(
+-                mTestContext, mAppInfo, mView));
+-    }
+-
+-    @Test
+-    @EnableFlags(FLAG_ENABLE_PRIVATE_SPACE)
+-    @MockUser(userType = UserType.MAIN)
+-    @MockUser(userType = UserType.PRIVATE)
++    @MockUser(userType = UserIconInfo.TYPE_MAIN)
+     public void testUninstallGetShortcutWithSystemItemInfo() {
+         mAppInfo = new AppInfo();
+-        mAppInfo.user = mMockUsers.findUser(UserIconInfo::isPrivate);
++        mAppInfo.user = mMockUsers.findUser(UserIconInfo::isMain);
+         mAppInfo.itemType = ITEM_TYPE_APPLICATION;
+         mAppInfo.intent = mIntent;
+         mAppInfo.componentName = new ComponentName(mTestContext, getClass());
+@@ -390,6 +379,28 @@ public class SystemShortcutTest {
+         Assert.assertNull(systemShortcut);
+     }
+ 
++    @Test
++    @MockUser(userType = UserIconInfo.TYPE_MAIN)
++    public void testUninstallGetShortcutWithNonSystemItemInfo() {
++        mAppInfo = new AppInfo();
++        mAppInfo.user = mMockUsers.findUser(UserIconInfo::isMain);
++        mAppInfo.itemType = ITEM_TYPE_APPLICATION;
++        mAppInfo.intent = mIntent;
++        mAppInfo.componentName = new ComponentName(mTestContext, getClass());
++        when(mLauncherActivityInfo.getComponentName()).thenReturn(mAppInfo.componentName);
++        // 3rd party app, not system app.
++        mApplicationInfo.flags = 0;
++
++        SystemShortcut systemShortcut = SystemShortcut.UNINSTALL_APP.getShortcut(
++                mTestContext, mAppInfo, mView);
++
++        verify(mLauncherActivityInfo).getComponentName();
++        Assert.assertNotNull(systemShortcut);
++
++        systemShortcut.onClick(mView);
++        verify(mSandboxContext).startActivity(any());
++    }
++
+     @Test
+     @EnableFlags(FLAG_ENABLE_PRIVATE_SPACE)
+     @MockUser(userType = UserType.MAIN)
+-- 
+2.50.1.windows.1
+
