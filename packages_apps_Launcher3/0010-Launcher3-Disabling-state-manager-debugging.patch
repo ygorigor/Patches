@@ -1,0 +1,99 @@
+From 1918f182a868fa38338d5243f18698016fd6ce61 Mon Sep 17 00:00:00 2001
+From: rmp22 <195054967+rmp22@users.noreply.github.com>
+Date: Wed, 3 Jun 2026 16:08:38 +0800
+Subject: [PATCH] Launcher3: Disabling state manager debugging
+
+Change-Id: I3a515201a78b4f4cdb9c2f52c7232f78cb69ebe4
+Signed-off-by: Ghosuto <clash.raja10@gmail.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../util/StateManagerProtoLogProxy.java       | 10 +++++++++-
+ .../launcher3/statemanager/StateManager.java  | 20 ++++++++++++-------
+ .../util/StateManagerProtoLogProxy.java       |  4 ++++
+ 3 files changed, 26 insertions(+), 8 deletions(-)
+
+diff --git a/quickstep/src_protolog/com/android/launcher3/util/StateManagerProtoLogProxy.java b/quickstep/src_protolog/com/android/launcher3/util/StateManagerProtoLogProxy.java
+index 914228ffdd..19edd4fbff 100644
+--- a/quickstep/src_protolog/com/android/launcher3/util/StateManagerProtoLogProxy.java
++++ b/quickstep/src_protolog/com/android/launcher3/util/StateManagerProtoLogProxy.java
+@@ -41,8 +41,16 @@ public class StateManagerProtoLogProxy {
+         return IS_STATE_MANAGER_PROTOLOG_ENABLED && isProtoLogInitialized();
+     }
+ 
++    public static boolean isEnabled() {
++        return willProtoLog() || isLoggingToLogcat();
++    }
++
++    public static boolean isLoggingToLogcat() {
++        return IS_STATE_MANAGER_PROTOLOG_ENABLED && PROTO_LOG_GROUP.isLogToLogcat();
++    }
++
+     private static void logToLogcatIfNeeded(String message, Object... args) {
+-        if (!willProtoLog() || !PROTO_LOG_GROUP.isLogToLogcat()) {
++        if (!willProtoLog() && isLoggingToLogcat()) {
+             Log.d(PROTO_LOG_GROUP.getTag(), String.format(message, args));
+         }
+     }
+diff --git a/src/com/android/launcher3/statemanager/StateManager.java b/src/com/android/launcher3/statemanager/StateManager.java
+index 18ed8ade29..aa8d31455c 100644
+--- a/src/com/android/launcher3/statemanager/StateManager.java
++++ b/src/com/android/launcher3/statemanager/StateManager.java
+@@ -257,8 +257,10 @@ public class StateManager<S extends BaseState<S>, T extends StatefulContainer<S>
+ 
+     private void goToState(
+             S state, boolean animated, long delay, AnimatorListener listener) {
+-        StateManagerProtoLogProxy.logGoToState(
+-                mState, state, getTrimmedStackTrace("StateManager.goToState"));
++        if (StateManagerProtoLogProxy.isEnabled()) {
++            StateManagerProtoLogProxy.logGoToState(
++                    mState, state, getTrimmedStackTrace("StateManager.goToState"));
++        }
+ 
+         animated &= areAnimatorsEnabled();
+         if (getState() == state) {
+@@ -345,8 +347,10 @@ public class StateManager<S extends BaseState<S>, T extends StatefulContainer<S>
+      */
+     public AnimatorSet createAtomicAnimation(
+             S fromState, S toState, StateAnimationConfig config) {
+-        StateManagerProtoLogProxy.logCreateAtomicAnimation(
+-                mState, toState, getTrimmedStackTrace("StateManager.createAtomicAnimation"));
++        if (StateManagerProtoLogProxy.isEnabled()) {
++            StateManagerProtoLogProxy.logCreateAtomicAnimation(
++                    mState, toState, getTrimmedStackTrace("StateManager.createAtomicAnimation"));
++        }
+ 
+         PendingAnimation builder = new PendingAnimation(config.duration);
+         prepareForAtomicAnimation(fromState, toState, config);
+@@ -484,9 +488,11 @@ public class StateManager<S extends BaseState<S>, T extends StatefulContainer<S>
+      * Cancels the current animation.
+      */
+     public void cancelAnimation() {
+-        StateManagerProtoLogProxy.logCancelAnimation(
+-                mConfig.currentAnimation != null,
+-                getTrimmedStackTrace("StateManager.cancelAnimation"));
++        if (StateManagerProtoLogProxy.isEnabled()) {
++            StateManagerProtoLogProxy.logCancelAnimation(
++                    mConfig.currentAnimation != null,
++                    getTrimmedStackTrace("StateManager.cancelAnimation"));
++        }
+         mConfig.reset();
+         // It could happen that a new animation is set as a result of an endListener on the
+         // existing animation.
+diff --git a/src_no_quickstep/com/android/launcher3/util/StateManagerProtoLogProxy.java b/src_no_quickstep/com/android/launcher3/util/StateManagerProtoLogProxy.java
+index 56dc703e37..d199410cf1 100644
+--- a/src_no_quickstep/com/android/launcher3/util/StateManagerProtoLogProxy.java
++++ b/src_no_quickstep/com/android/launcher3/util/StateManagerProtoLogProxy.java
+@@ -21,6 +21,10 @@ package com.android.launcher3.util;
+  */
+ public class StateManagerProtoLogProxy {
+ 
++    public static boolean isEnabled() {
++        return false;
++    }
++
+     public static boolean isLoggingToLogcat() {
+         return false;
+     }
+-- 
+2.55.0.windows.5
+
