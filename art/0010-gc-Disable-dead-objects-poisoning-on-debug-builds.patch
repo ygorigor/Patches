@@ -1,0 +1,26 @@
+From 1bdea8ff83f18aa98beb42f5af85364893460c8c Mon Sep 17 00:00:00 2001
+From: rmp22 <195054967+rmp22@users.noreply.github.com>
+Date: Sat, 8 Feb 2025 14:08:55 +0800
+Subject: [PATCH] gc: Disable dead objects poisoning on debug builds
+
+Change-Id: I9584de37342b3f191cf134bfc55b1b6a43371f3b
+---
+ runtime/gc/space/region_space.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/runtime/gc/space/region_space.cc b/runtime/gc/space/region_space.cc
+index 2aed181d71..41f0cf4e84 100644
+--- a/runtime/gc/space/region_space.cc
++++ b/runtime/gc/space/region_space.cc
+@@ -36,7 +36,7 @@ static constexpr uint kEvacuateLivePercentThreshold = 75U;
+ static constexpr bool kProtectClearedRegions = kIsDebugBuild;
+ 
+ // Wether we poison memory areas occupied by dead objects in unevacuated regions.
+-static constexpr bool kPoisonDeadObjectsInUnevacuatedRegions = kIsDebugBuild;
++static constexpr bool kPoisonDeadObjectsInUnevacuatedRegions = false;
+ 
+ // Special 32-bit value used to poison memory areas occupied by dead
+ // objects in unevacuated regions. Dereferencing this value is expected
+-- 
+2.50.1.windows.1
+

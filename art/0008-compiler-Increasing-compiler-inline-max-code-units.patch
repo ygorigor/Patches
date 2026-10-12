@@ -1,0 +1,26 @@
+From f5b59c911b233a0e9121e45a3f329d7109d6c180 Mon Sep 17 00:00:00 2001
+From: rmp22 <195054967+rmp22@users.noreply.github.com>
+Date: Fri, 12 Jun 2026 20:31:26 +0800
+Subject: [PATCH] compiler: Increasing compiler inline max code units
+
+Change-Id: I2125997f2e1de1dbd2db2ec053674c80dd1fccf3
+---
+ compiler/driver/compiler_options.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/compiler/driver/compiler_options.h b/compiler/driver/compiler_options.h
+index c40722e4e3..6a96341346 100644
+--- a/compiler/driver/compiler_options.h
++++ b/compiler/driver/compiler_options.h
+@@ -78,7 +78,7 @@ class CompilerOptions final {
+   static constexpr bool kDefaultGenerateDebugInfo = false;
+   static constexpr bool kDefaultGenerateMiniDebugInfo = true;
+   static constexpr size_t kDefaultHugeMethodThreshold = 10000;
+-  static constexpr size_t kDefaultInlineMaxCodeUnits = 32;
++  static constexpr size_t kDefaultInlineMaxCodeUnits = 64;
+   // Token to represent no value set for `inline_max_code_units_`.
+   static constexpr size_t kUnsetInlineMaxCodeUnits = -1;
+   // We set a lower inlining threshold for baseline to reduce code size and compilation time. This
+-- 
+2.50.1.windows.1
+
