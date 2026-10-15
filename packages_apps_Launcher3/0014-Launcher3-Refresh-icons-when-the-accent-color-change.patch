@@ -1,0 +1,46 @@
+From 49aa786ccb72c1e905fcdb0aab2959543d359243 Mon Sep 17 00:00:00 2001
+From: Jyotiraditya Panda <jyotiraditya@aospa.co>
+Date: Sun, 20 Sep 2026 12:24:20 +0000
+Subject: [PATCH 2/2] Launcher3: Refresh icons when the accent color changes
+
+Change-Id: I84eaaebcc793711c208c56c1822bc727ec46843e
+Signed-off-by: Jyotiraditya Panda <jyotiraditya@aospa.co>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ src/com/android/launcher3/graphics/ThemeManager.kt | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/src/com/android/launcher3/graphics/ThemeManager.kt b/src/com/android/launcher3/graphics/ThemeManager.kt
+index 5ed1a6315c5..048f10677e0 100644
+--- a/src/com/android/launcher3/graphics/ThemeManager.kt
++++ b/src/com/android/launcher3/graphics/ThemeManager.kt
+@@ -116,7 +116,9 @@ constructor(
+         val oldState = iconState
+         if (newState == oldState) return
+         val hasThemedChanged =
+-            newState.themeCode != oldState.themeCode || newState.isCircle != oldState.isCircle
++            newState.themeCode != oldState.themeCode ||
++                newState.isCircle != oldState.isCircle ||
++                newState.accentColor != oldState.accentColor
+         iconState = newState
+         if (hasThemedChanged) {
+             // trigger listeners only for theme change, not shape change
+@@ -201,6 +203,7 @@ constructor(
+             shapeRadius = shapeModel?.shapeRadius ?: DEFAULT_ICON_RADIUS,
+             themeCode = themeCode,
+             fileShape = fileShape,
++            accentColor = context.resources.getColor(android.R.color.system_accent1_600, context.theme),
+         )
+     }
+ 
+@@ -215,6 +218,7 @@ constructor(
+         val folderShape: ShapeDelegate,
+         val shapeRadius: Float,
+         val fileShape: ShapeDelegate,
++        val accentColor: Int,
+     ) {
+         val iconShapeInfo = IconShapeInfo.fromPath(iconShape.getPath(), DEFAULT_PATH_SIZE_INT)
+     }
+-- 
+2.50.1.windows.1
+

@@ -1,7 +1,7 @@
-From 9bd8422c98f664f3316dea6e0b433b14e68111e0 Mon Sep 17 00:00:00 2001
+From 6fba15c6120e2c25efd4808281e9fd98a1baf813 Mon Sep 17 00:00:00 2001
 From: minaripenguin <minaripenguin@users.noreply.github.com>
 Date: Tue, 2 Jul 2024 17:50:55 +0800
-Subject: [PATCH 1/2] Launcher3: Update app drawer colors to match themed icons
+Subject: [PATCH] Launcher3: Update app drawer colors to match themed icons
  color palette
 
 * based from nothing os
@@ -13,7 +13,7 @@ Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
  1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/res/values/styles.xml b/res/values/styles.xml
-index 63094a242b..6272b8794f 100644
+index aaea321e1f7..540fcb8cd33 100644
 --- a/res/values/styles.xml
 +++ b/res/values/styles.xml
 @@ -38,12 +38,12 @@
@@ -32,7 +32,7 @@ index 63094a242b..6272b8794f 100644
          <item name="allAppsSurfaceLow">@color/materialColorSurfaceContainerLow</item>
          <item name="allAppsSurfaceHighest">@color/materialColorSurfaceContainerHighest</item>
          <item name="allAppsUnselectedTab">@color/materialColorSurfaceBright</item>
-@@ -120,15 +120,15 @@
+@@ -119,15 +119,15 @@
  
      <style name="LauncherTheme.Dark" parent="@style/LauncherTheme">
          <item name="android:textColorPrimary">@color/text_color_primary_dark</item>

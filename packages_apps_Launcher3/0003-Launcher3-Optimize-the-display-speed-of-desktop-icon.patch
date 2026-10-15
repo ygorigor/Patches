@@ -1,0 +1,235 @@
+From 8678c0ccb1878a4ec1d348fc578b8d8cfb74688c Mon Sep 17 00:00:00 2001
+From: zaixiang xu <zaixiang.xu@transsion.com>
+Date: Tue, 26 Aug 2025 08:44:42 -0700
+Subject: [PATCH 1/2] Launcher3: Optimize the display speed of desktop icons
+ when switching icon styles
+
+Change the icon from single-threaded serial loading to multi-threaded loading (put into task queue)
+
+Bug: 442273512
+Test: Test icon loading speed
+Change-Id: Ief1bba5394a6cd453ef7543cd5ee99f7265087af
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ src/com/android/launcher3/icons/IconCache.kt  |  51 ++++---
+ .../android/launcher3/util/TaskSchedule.java  | 128 ++++++++++++++++++
+ 2 files changed, 163 insertions(+), 16 deletions(-)
+ create mode 100644 src/com/android/launcher3/util/TaskSchedule.java
+
+diff --git a/src/com/android/launcher3/icons/IconCache.kt b/src/com/android/launcher3/icons/IconCache.kt
+index d867171847a..ee00d3c8cb3 100644
+--- a/src/com/android/launcher3/icons/IconCache.kt
++++ b/src/com/android/launcher3/icons/IconCache.kt
+@@ -74,7 +74,9 @@ import com.android.launcher3.util.Executors.MAIN_EXECUTOR
+ import com.android.launcher3.util.InstantAppResolver
+ import com.android.launcher3.util.LooperExecutor
+ import com.android.launcher3.util.PackageUserKey
++import com.android.launcher3.util.TaskSchedule
+ import com.android.launcher3.widget.WidgetSections
++import java.util.ArrayList
+ import java.util.concurrent.Executor
+ import java.util.function.Supplier
+ import javax.inject.Inject
+@@ -495,6 +497,7 @@ constructor(
+ 
+         Trace.beginSection("loadIconSubsectionWithFallback")
+ 
++        val tasksList = ArrayList<TaskSchedule.SafelyRunnable>()
+         // Fallback title and icon loading
+         duplicateIconRequestsMap.forEach { (cn, iconRequestInfos) ->
+             val iconRequestInfo = iconRequestInfos[0]
+@@ -518,24 +521,40 @@ constructor(
+                 entry.bitmap = icon
+                 entry.contentDescription = itemInfo.contentDescription ?: ""
+ 
+-                if (loadFallbackIcon) {
+-                    loadFallbackIcon(
+-                        lai,
+-                        entry,
+-                        LauncherActivityCachingLogic,
+-                        iconRequestInfo.lookupFlag.withUsePackageIcon(false),
+-                        usePackageTitle = loadFallbackTitle,
+-                        cn,
+-                        sectionKey.user,
+-                    )
+-                }
+-                if (loadFallbackTitle && TextUtils.isEmpty(entry.title) && lai != null) {
+-                    loadFallbackTitle(lai, entry, LauncherActivityCachingLogic, sectionKey.user)
+-                }
+-
+-                iconRequestInfos.forEach { applyCacheEntry(entry, it.itemInfo) }
++                tasksList.add(
++                    object : TaskSchedule.SafelyRunnable() {
++                        override fun onTaskRun() {
++                            if (loadFallbackIcon) {
++                                loadFallbackIcon(
++                                    lai,
++                                    entry,
++                                    LauncherActivityCachingLogic,
++                                    iconRequestInfo.lookupFlag.withUsePackageIcon(false),
++                                    usePackageTitle = loadFallbackTitle,
++                                    cn,
++                                    sectionKey.user,
++                                )
++                            }
++                            if (loadFallbackTitle && TextUtils.isEmpty(entry.title) && lai != null) {
++                                loadFallbackTitle(
++                                    lai,
++                                    entry,
++                                    LauncherActivityCachingLogic,
++                                    sectionKey.user,
++                                )
++                            }
++                            iconRequestInfos.forEach { applyCacheEntry(entry, it.itemInfo) }
++                        }
++                    }
++                )
+             }
+         }
++        TaskSchedule.runTasks(
++            tasksList,
++            Executors.THREAD_POOL_EXECUTOR,
++            Math.max(Runtime.getRuntime().availableProcessors() / 2, 2),
++            2000,
++        )
+         Trace.endSection()
+     }
+ 
+diff --git a/src/com/android/launcher3/util/TaskSchedule.java b/src/com/android/launcher3/util/TaskSchedule.java
+new file mode 100644
+index 00000000000..b0b6eb77a34
+--- /dev/null
++++ b/src/com/android/launcher3/util/TaskSchedule.java
+@@ -0,0 +1,128 @@
++/*
++ * Copyright (C) 2025 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.launcher3.util;
++
++import android.os.SystemClock;
++import android.util.Log;
++
++import java.util.ArrayList;
++import java.util.concurrent.Executor;
++
++public class TaskSchedule {
++
++    static final String TAG = "TaskSchedule";
++    public static void runAllTasksInExecutor(ArrayList<SafelyRunnable> runnableList, Executor executor, int parallelTasks) {
++        int taskSize = runnableList.size();
++        parallelTasks = Math.min(taskSize, parallelTasks);
++        Object LOCK = new Object();
++        for (int i = 0; i < parallelTasks; ++i) {
++            executor.execute(() -> {
++                while (true) {
++                    SafelyRunnable runnable = getTask(runnableList, LOCK);
++                    if (runnable == null) {
++                        break;
++                    }
++                    runnable.run();
++                }
++            });
++        }
++    }
++
++    public static void runTasks(ArrayList<SafelyRunnable> runnableList, Executor executor, int parallelTasks, long timeOut) {
++        int taskSize = runnableList.size();
++        parallelTasks = Math.min(taskSize - 1, parallelTasks);
++        Object LOCK = new Object();
++        final IntCounter intCounter = new IntCounter();
++        for (int i = 0; i < parallelTasks; ++i) {
++            executor.execute(() -> {
++                while (true) {
++                    SafelyRunnable runnable = getTask(runnableList, LOCK);
++                    if (runnable == null) {
++                        break;
++                    }
++                    runnable.run();
++                    synchronized (LOCK) {
++                        intCounter.add();
++                    }
++                }
++            });
++        }
++        long taskDoneTime = -1;
++        while (true) {
++            SafelyRunnable runnable = getTask(runnableList, LOCK);
++            if (runnable == null) {
++                if (intCounter.isEqual(taskSize)) {
++                    break;
++                }
++                if (taskDoneTime == -1) {
++                    taskDoneTime = SystemClock.uptimeMillis();
++                }
++                try {
++                    Thread.sleep(10);
++                } catch (InterruptedException e) {
++                    Log.e(TAG, "InterruptedException-e:" + e.getMessage());
++                }
++                long now = SystemClock.uptimeMillis();
++                if (now - taskDoneTime > timeOut) {
++                    Log.e(TAG, "runTasks>>>>>>>>>>>>>>>>>>>>>>>time out");
++                    break;
++                }
++                continue;
++            }
++            runnable.run();
++            synchronized (LOCK) {
++                intCounter.add();
++            }
++        }
++    }
++
++    static SafelyRunnable getTask(ArrayList<SafelyRunnable> runnableList, final Object LOCK) {
++        synchronized (LOCK) {
++            if (runnableList.isEmpty()) {
++                return null;
++            }
++            int size = runnableList.size();
++            return runnableList.remove(size - 1);
++        }
++    }
++
++    public static abstract class SafelyRunnable implements Runnable {
++
++        @Override
++        public final void run() {
++            try {
++                onTaskRun();
++            } catch (Throwable e) {
++                Log.e(TAG,"SafelyRunnable-Throwable:" + e.getMessage());
++            }
++        }
++
++        public abstract void onTaskRun();
++    }
++
++    public static class IntCounter {
++        public int mCounter = 0;
++
++        public void add() {
++            this.mCounter += 1;
++        }
++
++        public boolean isEqual(int value) {
++            return this.mCounter == value;
++        }
++    }
++}
+\ No newline at end of file
+-- 
+2.50.1.windows.1
+

@@ -1,0 +1,267 @@
+From 06b0e8f27be2892ba1284ba96b8789425e28ef33 Mon Sep 17 00:00:00 2001
+From: maxwen <max.weninger@gmail.com>
+Date: Sat, 27 Dec 2025 20:29:30 +0100
+Subject: [PATCH] Launcher3: Update icons on dynamic color changes
+
+a little bit brute force but the solution with minimal impact
+we must clear the icon cache on overlay changes so that icons
+that uses system colors gets updated
+
+wallpaper update is also just an overlay change event
+we migth not really need the ui mode trigger (light/dark)
+but its not hurting either
+
+Change-Id: I8e2533dfeff603a4aa924f10f7bf61fcc3faabd8
+
+Launcher3: Fixup! update icons on dynamic color changes
+
+since elgoog removed the iconDB clear from BaseIconCache
+(there is now only a clearMemoryCache) add it locally
+so we dont need to fork another repo framworks/libs/systemui
+Thankfully mIconDb is protected
+
+Change-Id: Iae8faefa44b8c3737c777410c4a0f803a4e4a158
+
+[micky387]
+Updated to Android-16
+
+Change-Id: Iadfb5f9e28211d880a80ba7cc5848643d408641b
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+[forward port to 15]
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+Signed-off-by: micky387 <mickaelsaibi@free.fr>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../model/QuickstepModelDelegate.java         | 32 +++++++++++++++++++
+ .../launcher3/display/DisplayController.kt    |  6 +++-
+ .../display/DisplayControllerImpl.kt          |  4 ++-
+ .../launcher3/display/DisplayInfoContainer.kt | 14 +++++---
+ .../launcher3/display/LauncherDisplayInfo.kt  |  8 ++++-
+ src/com/android/launcher3/icons/IconCache.kt  |  6 ++++
+ 6 files changed, 63 insertions(+), 7 deletions(-)
+
+diff --git a/quickstep/src/com/android/launcher3/model/QuickstepModelDelegate.java b/quickstep/src/com/android/launcher3/model/QuickstepModelDelegate.java
+index 3bbd5cb9fb9..2c5da19813d 100644
+--- a/quickstep/src/com/android/launcher3/model/QuickstepModelDelegate.java
++++ b/quickstep/src/com/android/launcher3/model/QuickstepModelDelegate.java
+@@ -23,8 +23,11 @@ import static com.android.launcher3.LauncherPrefs.nonRestorableItem;
+ import static com.android.launcher3.LauncherSettings.Favorites.CONTAINER_ALL_APPS_PREDICTION;
+ import static com.android.launcher3.LauncherSettings.Favorites.CONTAINER_HOTSEAT_PREDICTION;
+ import static com.android.launcher3.LauncherSettings.Favorites.DESKTOP_ICON_FLAG;
++import static com.android.launcher3.display.LauncherDisplayInfo.CHANGE_OVERLAYS;
++import static com.android.launcher3.display.LauncherDisplayInfo.CHANGE_UI_MODE;
+ import static com.android.launcher3.icons.cache.CacheLookupFlag.DEFAULT_LOOKUP_FLAG;
+ import static com.android.launcher3.model.PredictionHelper.getBundleForHotseatPredictions;
++import static com.android.launcher3.util.Executors.MAIN_EXECUTOR;
+ import static com.android.launcher3.util.Executors.MODEL_EXECUTOR;
+ 
+ import android.app.StatsManager;
+@@ -42,8 +45,11 @@ import androidx.annotation.WorkerThread;
+ 
+ import com.android.launcher3.ConstantItem;
+ import com.android.launcher3.InvariantDeviceProfile;
++import com.android.launcher3.LauncherAppState;
+ import com.android.launcher3.LauncherPrefs;
+ import com.android.launcher3.dagger.ApplicationContext;
++import com.android.launcher3.display.DisplayController;
++import com.android.launcher3.display.LauncherDisplayInfo;
+ import com.android.launcher3.logger.LauncherAtom;
+ import com.android.launcher3.logging.InstanceId;
+ import com.android.launcher3.logging.InstanceIdSequence;
+@@ -53,6 +59,8 @@ import com.android.launcher3.model.data.PredictedContainerInfo;
+ import com.android.launcher3.model.data.WorkspaceData;
+ import com.android.launcher3.pm.UserCache;
+ import com.android.launcher3.util.IntSparseArrayMap;
++import com.android.launcher3.util.ListenableDiffAwareRef;
++import com.android.launcher3.util.SafeCloseable;
+ import com.android.quickstep.logging.SettingsChangeLogger;
+ import com.android.quickstep.logging.StatsLogCompatManager;
+ import com.android.quickstep.util.ContextualSearchStateManager;
+@@ -86,6 +94,7 @@ public class QuickstepModelDelegate extends ModelDelegate {
+     private final StatsManager mStatsManager;
+ 
+     protected boolean mActive = true;
++    private SafeCloseable mDisplayChangeCloseable;
+ 
+     @Inject
+     public QuickstepModelDelegate(@ApplicationContext Context context,
+@@ -164,9 +173,28 @@ public class QuickstepModelDelegate extends ModelDelegate {
+             prefs.put(LAST_SNAPSHOT_TIME_MILLIS, now);
+         }
+ 
++        if (mDisplayChangeCloseable == null) {
++            ListenableDiffAwareRef<LauncherDisplayInfo, Integer> listenable =
++                    DisplayController.INSTANCE.get(mContext).getListenable();
++            if (listenable != null) {
++                mDisplayChangeCloseable = listenable.forEachChange(
++                        MAIN_EXECUTOR, this::onDisplayInfoChanged);
++            }
++        }
++
+         registerSnapshotLoggingCallback();
+     }
+ 
++    private void onDisplayInfoChanged(LauncherDisplayInfo info, int flags) {
++        if ((flags & CHANGE_UI_MODE) != 0 || (flags & CHANGE_OVERLAYS) != 0) {
++            Log.d(TAG, "onDisplayInfoChanged " + flags);
++            MODEL_EXECUTOR.execute(() -> {
++                LauncherAppState.getInstance(mContext).getIconCache().clearDb();
++                mModel.reloadIfActive("dynamic-color-change");
++            });
++        }
++    }
++
+     protected void additionalSnapshotEvents(InstanceId snapshotInstanceId){}
+ 
+     /**
+@@ -250,6 +278,10 @@ public class QuickstepModelDelegate extends ModelDelegate {
+                 Log.e(TAG, "Failed to unregister snapshot logging callback with StatsManager", e);
+             }
+         }
++        if (mDisplayChangeCloseable != null) {
++            mDisplayChangeCloseable.close();
++            mDisplayChangeCloseable = null;
++        }
+         destroyPredictors();
+     }
+ 
+diff --git a/src/com/android/launcher3/display/DisplayController.kt b/src/com/android/launcher3/display/DisplayController.kt
+index b81f3a83cb8..e0403911a98 100644
+--- a/src/com/android/launcher3/display/DisplayController.kt
++++ b/src/com/android/launcher3/display/DisplayController.kt
+@@ -44,7 +44,11 @@ interface DisplayController {
+         getPerDisplayInfoById(displayId)?.info?.value
+ 
+     @AnyThread
+-    fun notifyConfigChange(displayId: Int) = getPerDisplayInfoById(displayId)?.notifyConfigChange()
++    fun notifyConfigChange(displayId: Int) = notifyConfigChange(displayId, 0)
++
++    @AnyThread
++    fun notifyConfigChange(displayId: Int, extraFlags: Int) =
++        getPerDisplayInfoById(displayId)?.notifyConfigChange(extraFlags)
+ 
+     @AnyThread fun getPerDisplayInfoById(displayId: Int): DisplayInfoContainer?
+ 
+diff --git a/src/com/android/launcher3/display/DisplayControllerImpl.kt b/src/com/android/launcher3/display/DisplayControllerImpl.kt
+index 0baf22964b0..67729c8ba68 100644
+--- a/src/com/android/launcher3/display/DisplayControllerImpl.kt
++++ b/src/com/android/launcher3/display/DisplayControllerImpl.kt
+@@ -55,7 +55,9 @@ constructor(
+ 
+     init {
+         lifecycle.addCloseable(
+-            overlayChangeHandler.addCallback { notifyConfigChange(Display.DEFAULT_DISPLAY) }
++            overlayChangeHandler.addCallback {
++                notifyConfigChange(Display.DEFAULT_DISPLAY, LauncherDisplayInfo.CHANGE_OVERLAYS)
++            }
+         )
+ 
+         // Initialize display listeners
+diff --git a/src/com/android/launcher3/display/DisplayInfoContainer.kt b/src/com/android/launcher3/display/DisplayInfoContainer.kt
+index 12e1f0e5bb5..33662b6a7f8 100644
+--- a/src/com/android/launcher3/display/DisplayInfoContainer.kt
++++ b/src/com/android/launcher3/display/DisplayInfoContainer.kt
+@@ -21,6 +21,7 @@ import android.content.pm.PackageManager
+ import android.content.res.Configuration
+ import android.util.DisplayMetrics
+ import com.android.launcher3.Flags
++import com.android.launcher3.display.LauncherDisplayInfo.Companion.CHANGE_UI_MODE
+ import com.android.launcher3.display.PortraitSize.Companion.from
+ import com.android.launcher3.util.MutableDiffAwareRef
+ import com.android.launcher3.util.WindowBounds
+@@ -42,11 +43,15 @@ class DisplayInfoContainer(
+         MutableDiffAwareRef(getNewInfo())
+     val info = _info.asListenable()
+ 
++    private var lastUiMode: Int = windowContext.resources.configuration.uiMode
++
+     init {
+         windowContext.registerComponentCallbacks(this)
+     }
+ 
+     override fun onConfigurationChanged(config: Configuration) {
++        val uiModeChanged = lastUiMode != config.uiMode
++        lastUiMode = config.uiMode
+         val info: LauncherDisplayInfo = _info.value
+         if (
+             config.densityDpi != info.densityDpi ||
+@@ -55,13 +60,14 @@ class DisplayInfoContainer(
+                 windowContext.display.rotation != info.rotation ||
+                 (wmProxy.showDesktopTaskbarForFreeformDisplay(windowContext) !=
+                     info.showDesktopTaskbarForFreeformDisplay) ||
+-                config.isNightModeActive != info.isNightModeActive
++                config.isNightModeActive != info.isNightModeActive ||
++                uiModeChanged
+         ) {
+-            notifyConfigChange()
++            notifyConfigChange(if (uiModeChanged) CHANGE_UI_MODE else 0)
+         }
+     }
+ 
+-    fun notifyConfigChange() {
++    fun notifyConfigChange(extraFlags: Int = 0) {
+         val oldInfo = _info.value
+         var newInfo = getNewInfo(oldInfo.perDisplayBounds)
+ 
+@@ -73,7 +79,7 @@ class DisplayInfoContainer(
+             // Bounds cache may not be valid anymore, recreate without cache
+             newInfo = getNewInfo()
+         }
+-        val flags = oldInfo.diff(newInfo)
++        val flags = oldInfo.diff(newInfo) or extraFlags
+         if (flags != 0) _info.dispatchValue(newInfo, flags)
+     }
+ 
+diff --git a/src/com/android/launcher3/display/LauncherDisplayInfo.kt b/src/com/android/launcher3/display/LauncherDisplayInfo.kt
+index 0472a6533f9..9b58826a67f 100644
+--- a/src/com/android/launcher3/display/LauncherDisplayInfo.kt
++++ b/src/com/android/launcher3/display/LauncherDisplayInfo.kt
+@@ -234,6 +234,8 @@ constructor(
+         const val CHANGE_NAVIGATION_MODE: Int = 1 shl 4
+         const val CHANGE_SHOW_DESKTOP_FIRST_TASKBAR: Int = 1 shl 5
+         const val CHANGE_NIGHT_MODE: Int = 1 shl 6
++        const val CHANGE_OVERLAYS: Int = 1 shl 7
++        const val CHANGE_UI_MODE: Int = 1 shl 8
+ 
+         const val CHANGE_ALL: Int =
+             (CHANGE_ACTIVE_SCREEN or
+@@ -242,7 +244,9 @@ constructor(
+                 CHANGE_SUPPORTED_BOUNDS or
+                 CHANGE_NAVIGATION_MODE or
+                 CHANGE_SHOW_DESKTOP_FIRST_TASKBAR or
+-                CHANGE_NIGHT_MODE)
++                CHANGE_NIGHT_MODE or
++                CHANGE_OVERLAYS or
++                CHANGE_UI_MODE)
+ 
+         /**
+          * Returns the given binary flags as a human-readable string.
+@@ -264,6 +268,8 @@ constructor(
+                         "CHANGE_SHOW_DESKTOP_FIRST_TASKBAR",
+                     )
+                     appendFlag(change, CHANGE_NIGHT_MODE, "CHANGE_NIGHT_MODE")
++                    appendFlag(change, CHANGE_OVERLAYS, "CHANGE_OVERLAYS")
++                    appendFlag(change, CHANGE_UI_MODE, "CHANGE_UI_MODE")
+                 }
+                 .toString()
+     }
+diff --git a/src/com/android/launcher3/icons/IconCache.kt b/src/com/android/launcher3/icons/IconCache.kt
+index d867171847a..5596ab951fe 100644
+--- a/src/com/android/launcher3/icons/IconCache.kt
++++ b/src/com/android/launcher3/icons/IconCache.kt
+@@ -603,6 +603,12 @@ constructor(
+         info.bitmap = packageEntry.bitmap
+     }
+ 
++    @Synchronized
++    fun clearDb() {
++        clearMemoryCache()
++        iconDb.clear()
++    }
++
+     fun updateSessionCache(key: PackageUserKey, info: SessionInfo) =
+         cachePackageInstallInfo(key.mPackageName, key.mUser, info.getAppIcon(), info.getAppLabel())
+ 
+-- 
+2.50.1.windows.1
+

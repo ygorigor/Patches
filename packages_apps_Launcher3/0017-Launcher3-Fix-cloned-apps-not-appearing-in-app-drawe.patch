@@ -1,0 +1,110 @@
+From 3353b70e1e7771772fdad19ad7f5103404333a68 Mon Sep 17 00:00:00 2001
+From: rmp22 <195054967+rmp22@users.noreply.github.com>
+Date: Thu, 15 May 2025 09:45:40 +0800
+Subject: [PATCH] Launcher3: Fix cloned apps not appearing in app drawer
+
+Change-Id: I21e54ed73dc2ce35131af64fbc039b0a0da22bd0
+Signed-off-by: rmp22 <195054967+rmp22@users.noreply.github.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ AndroidManifest-common.xml                    |  1 +
+ com.android.launcher3-extra.xml               |  1 +
+ .../allapps/ActivityAllAppsContainerView.java |  6 ++++--
+ .../launcher3/util/ItemInfoMatcher.java       | 20 +++++++++++++++++++
+ 4 files changed, 26 insertions(+), 2 deletions(-)
+
+diff --git a/AndroidManifest-common.xml b/AndroidManifest-common.xml
+index 384a217f5ad..ebc967bc510 100644
+--- a/AndroidManifest-common.xml
++++ b/AndroidManifest-common.xml
+@@ -50,6 +50,7 @@
+     <uses-permission android:name="com.android.systemui.permission.LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG" />
+     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+     <uses-permission android:name="android.permission.ACCESS_CONTEXTUAL_SEARCH" />
++    <uses-permission android:name="android.permission.QUERY_USERS" />
+ 
+     <permission
+         android:name="${applicationId}.permission.GRID_CONTROL"
+diff --git a/com.android.launcher3-extra.xml b/com.android.launcher3-extra.xml
+index 55468deb3b7..558dda12171 100644
+--- a/com.android.launcher3-extra.xml
++++ b/com.android.launcher3-extra.xml
+@@ -17,5 +17,6 @@
+ <permissions>
+     <privapp-permissions package="com.android.launcher3">
+         <permission name="android.permission.ACCESS_CONTEXTUAL_SEARCH" />
++        <permission name="android.permission.QUERY_USERS"/>
+     </privapp-permissions>
+ </permissions>
+diff --git a/src/com/android/launcher3/allapps/ActivityAllAppsContainerView.java b/src/com/android/launcher3/allapps/ActivityAllAppsContainerView.java
+index b5d4b5de847..b2947680f14 100644
+--- a/src/com/android/launcher3/allapps/ActivityAllAppsContainerView.java
++++ b/src/com/android/launcher3/allapps/ActivityAllAppsContainerView.java
+@@ -45,6 +45,7 @@ import android.graphics.RectF;
+ import android.os.Bundle;
+ import android.os.Parcelable;
+ import android.os.Process;
++import android.os.UserManager;
+ import android.util.AttributeSet;
+ import android.util.Log;
+ import android.util.SparseArray;
+@@ -131,8 +132,7 @@ public class ActivityAllAppsContainerView<T extends Context & ActivityContext>
+ 
+     protected final T mActivityContext;
+     protected final List<AdapterHolder> mAH;
+-    protected final Predicate<ItemInfo> mPersonalMatcher = ItemInfoMatcher.ofUser(
+-            Process.myUserHandle());
++    protected final Predicate<ItemInfo> mPersonalMatcher;
+     protected WorkProfileManager mWorkManager;
+     protected final PrivateProfileManager mPrivateProfileManager;
+     protected final Point mFastScrollerOffset = new Point();
+@@ -199,6 +199,8 @@ public class ActivityAllAppsContainerView<T extends Context & ActivityContext>
+     public ActivityAllAppsContainerView(Context context, AttributeSet attrs, int defStyleAttr) {
+         super(context, attrs, defStyleAttr);
+         mActivityContext = ActivityContext.lookupContext(context);
++        UserManager userManager = mActivityContext.getSystemService(UserManager.class);
++        mPersonalMatcher = ItemInfoMatcher.ofCurrentOrDualUser(userManager, Process.myUserHandle());
+         mAllAppsStore = mActivityContext.getActivityComponent().getAppsStore();
+ 
+         mHeaderThreshold = getResources().getDimensionPixelSize(
+diff --git a/src/com/android/launcher3/util/ItemInfoMatcher.java b/src/com/android/launcher3/util/ItemInfoMatcher.java
+index 063313a8c68..3ecc4d79baf 100644
+--- a/src/com/android/launcher3/util/ItemInfoMatcher.java
++++ b/src/com/android/launcher3/util/ItemInfoMatcher.java
+@@ -18,6 +18,7 @@ package com.android.launcher3.util;
+ 
+ import android.content.ComponentName;
+ import android.os.UserHandle;
++import android.os.UserManager;
+ 
+ import androidx.annotation.NonNull;
+ 
+@@ -45,6 +46,25 @@ public abstract class ItemInfoMatcher {
+         return info -> info != null && info.user.equals(user);
+     }
+ 
++    public static Predicate<ItemInfo> ofCurrentOrDualUser(UserManager userManager, UserHandle user) {
++        return itemInfo -> itemInfo != null && (
++                isDualAppUser(userManager, itemInfo.user) || itemInfo.user.equals(user)
++        );
++    }
++
++    private static boolean isDualAppUser(UserManager userManager, UserHandle user) {
++        return user.getIdentifier() == getCloneUserId(userManager);
++    }
++
++    public static int getCloneUserId(UserManager userManager) {
++        for (UserHandle userHandle : userManager.getUserProfiles()) {
++            if (userManager.getUserInfo(userHandle.getIdentifier()).isCloneProfile()) {
++                return userHandle.getIdentifier();
++            }
++        }
++        return -1;
++    }
++
+     public static Predicate<ItemInfo> ofComponents(
+             HashSet<ComponentName> components, UserHandle user) {
+         return info -> info != null && info.user.equals(user)
+-- 
+2.50.1.windows.1
+
