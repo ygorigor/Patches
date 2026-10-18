@@ -1,0 +1,28 @@
+From 6756f3d529fa5bc492cbb2d20dc0be4dc073398c Mon Sep 17 00:00:00 2001
+From: WenHao2130 <wenhao2130@outlook.com>
+Date: Wed, 14 Oct 2026 20:13:53 +0800
+Subject: [PATCH] vermeer: Override build description and device name
+
+Change-Id: I17f56559a45045a543af2b2d3b395da295615b7c
+Signed-off-by: WenHao2130 <wenhao2130@outlook.com>
+---
+ lineage_vermeer.mk | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/lineage_vermeer.mk b/lineage_vermeer.mk
+index c17e066..06ebccd 100644
+--- a/lineage_vermeer.mk
++++ b/lineage_vermeer.mk
+@@ -23,4 +23,7 @@ PRODUCT_MANUFACTURER := Xiaomi
+ PRODUCT_GMS_CLIENTID_BASE := android-xiaomi
+ 
+ PRODUCT_BUILD_PROP_OVERRIDES += \
+-    BuildFingerprint=POCO/vermeer_global/vermeer:16/BP2A.250605.031.A3/OS3.0.304.0.WNKMIXM:user/release-keys
++    BuildDesc="vermeer-user 16 BP2A.250605.031.A3/OS3.0.304.0.WNKMIXM:user/release-keys" \
++    BuildFingerprint=POCO/vermeer_global/vermeer:16/BP2A.250605.031.A3/OS3.0.304.0.WNKMIXM:user/release-keys \
++    DeviceProduct=vermeer \
++    SystemName=vermeer
+\ No newline at end of file
+-- 
+2.56.0.windows.2
+
