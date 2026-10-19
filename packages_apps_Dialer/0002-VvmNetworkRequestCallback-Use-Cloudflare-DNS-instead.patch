@@ -1,0 +1,27 @@
+From d9ccd7e6a22713c156c8e767538a73bc12f88a57 Mon Sep 17 00:00:00 2001
+From: Michael Bestas <mkbestas@gmail.com>
+Date: Sat, 18 Apr 2026 03:26:32 +0300
+Subject: [PATCH] VvmNetworkRequestCallback: Use Cloudflare DNS instead of
+ Google DNS
+
+Change-Id: I8fa7a7de98a99e8c175f00302da280a81051a92a
+---
+ .../android/voicemail/impl/sync/VvmNetworkRequestCallback.java  | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/java/com/android/voicemail/impl/sync/VvmNetworkRequestCallback.java b/java/com/android/voicemail/impl/sync/VvmNetworkRequestCallback.java
+index d19dae75b..08bb40b3e 100644
+--- a/java/com/android/voicemail/impl/sync/VvmNetworkRequestCallback.java
++++ b/java/com/android/voicemail/impl/sync/VvmNetworkRequestCallback.java
+@@ -134,7 +134,7 @@ public abstract class VvmNetworkRequestCallback extends ConnectivityManager.Netw
+   @CallSuper
+   public void onLinkPropertiesChanged(Network network, LinkProperties lp) {
+     boolean hasIPv4 = (lp != null) &&
+-            (lp.isReachable(InetAddresses.parseNumericAddress("8.8.8.8")));
++            (lp.isReachable(InetAddresses.parseNumericAddress("1.1.1.1")));
+     if(hasIPv4) {
+         mWaitV4Cv.open();
+     }
+-- 
+2.50.1.windows.1
+
