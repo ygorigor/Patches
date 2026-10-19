@@ -1,0 +1,80 @@
+From 72da991ae6195932161a6ecaf04f4a276b3b7eca Mon Sep 17 00:00:00 2001
+From: rmp22 <195054967+rmp22@users.noreply.github.com>
+Date: Fri, 14 Nov 2025 08:45:16 +0800
+Subject: [PATCH] removing lineage stats
+
+Change-Id: I26a20004d7b7b9f76b4b60863c67e01afa49c947
+---
+ AndroidManifest.xml           | 8 +++++---
+ res/xml/parts_catalog.xml     | 3 ++-
+ res/xml/trust_preferences.xml | 3 ---
+ 3 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index 67dd1f9a..398d24cb 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -325,10 +325,10 @@
+                 android:resource="@string/summary_empty" />
+         </activity-alias>
+ 
+-        <!-- Anonymous Statistics -->
++        <!-- Anonymous Statistics
+         <receiver
+             android:name=".lineagestats.ReportingServiceManager"
+-            android:enabled="true"
++            android:enabled="false"
+             android:exported="false"
+             android:label="ReportingServiceManager">
+             <intent-filter>
+@@ -339,13 +339,15 @@
+ 
+         <service
+             android:name=".lineagestats.ReportingService"
+-            android:enabled="true"
++            android:enabled="false"
+             android:exported="false"
+             android:label="ReportingService" />
+ 
+         <service
+             android:name=".lineagestats.StatsUploadJobService"
++            android:enabled="false"
+             android:permission="android.permission.BIND_JOB_SERVICE" />
++             -->
+ 
+         <activity
+             android:name=".profiles.NFCProfile"
+diff --git a/res/xml/parts_catalog.xml b/res/xml/parts_catalog.xml
+index 8906d2f0..f6dab665 100644
+--- a/res/xml/parts_catalog.xml
++++ b/res/xml/parts_catalog.xml
+@@ -64,10 +64,11 @@
+           android:fragment="org.lineageos.lineageparts.statusbar.StatusBarSettings"
+           lineage:xmlRes="@xml/status_bar_settings" />
+ 
++    <!--
+     <part android:key="lineagestats"
+           android:title="@string/anonymous_statistics_title"
+           android:fragment="org.lineageos.lineageparts.lineagestats.AnonymousStats"
+-          lineage:xmlRes="@xml/anonymous_stats" />
++          lineage:xmlRes="@xml/anonymous_stats" />-->
+ 
+     <part android:key="power_menu"
+           android:title="@string/power_menu_title"
+diff --git a/res/xml/trust_preferences.xml b/res/xml/trust_preferences.xml
+index 767cd2b8..281df730 100644
+--- a/res/xml/trust_preferences.xml
++++ b/res/xml/trust_preferences.xml
+@@ -37,9 +37,6 @@
+             android:entryValues="@array/trust_restrict_usb_values"
+             android:defaultValue="0" />
+ 
+-        <lineageos.preference.LineagePartsPreference
+-            android:key="lineagestats" />
+-
+         <ListPreference
+             android:key="sms_security_check_limit"
+             android:icon="@drawable/ic_message_alert"
+-- 
+2.50.1.windows.1
+
