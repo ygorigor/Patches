@@ -1,4 +1,4 @@
-From c0f9de379e5fd0520aa6aaa1dc586483b9ed0981 Mon Sep 17 00:00:00 2001
+From 9b3ad7f3c54b3493f41dda2fbcb432ac583bfb97 Mon Sep 17 00:00:00 2001
 From: DenlNister <dcnnn950711@gmail.com>
 Date: Tue, 4 Aug 2026 20:32:40 +0800
 Subject: [PATCH] sm8550-common: LEAudio
@@ -12,7 +12,7 @@ Signed-off-by: DenlNister <dcnnn950711@gmail.com>
  4 files changed, 92 insertions(+), 26 deletions(-)
 
 diff --git a/configs/audio/sku_kalama/audio_policy_configuration.xml b/configs/audio/sku_kalama/audio_policy_configuration.xml
-index 030845c..877126e 100644
+index 7561ffc..a495d40 100644
 --- a/configs/audio/sku_kalama/audio_policy_configuration.xml
 +++ b/configs/audio/sku_kalama/audio_policy_configuration.xml
 @@ -67,6 +67,10 @@
@@ -30,20 +30,20 @@ index 030845c..877126e 100644
                               samplingRates="48000" channelMasks="AUDIO_CHANNEL_OUT_MONO AUDIO_CHANNEL_OUT_STEREO"/>
                  </devicePort>
                  <devicePort tagName="BT A2DP Out" type="AUDIO_DEVICE_OUT_BLUETOOTH_A2DP" role="sink"
--                            encodedFormats="AUDIO_FORMAT_SBC AUDIO_FORMAT_AAC AUDIO_FORMAT_APTX AUDIO_FORMAT_APTX_HD AUDIO_FORMAT_LDAC AUDIO_FORMAT_CELT AUDIO_FORMAT_APTX_ADAPTIVE AUDIO_FORMAT_APTX_TWSP AUDIO_FORMAT_LHDC">
-+                            encodedFormats="AUDIO_FORMAT_SBC AUDIO_FORMAT_AAC AUDIO_FORMAT_APTX AUDIO_FORMAT_APTX_HD AUDIO_FORMAT_LDAC AUDIO_FORMAT_CELT AUDIO_FORMAT_APTX_ADAPTIVE AUDIO_FORMAT_APTX_TWSP AUDIO_FORMAT_LHDC AUDIO_FORMAT_LC3">
+-                            encodedFormats="AUDIO_FORMAT_SBC AUDIO_FORMAT_AAC AUDIO_FORMAT_APTX AUDIO_FORMAT_APTX_HD AUDIO_FORMAT_LDAC AUDIO_FORMAT_CELT AUDIO_FORMAT_APTX_ADAPTIVE AUDIO_FORMAT_APTX_TWSP">
++                            encodedFormats="AUDIO_FORMAT_SBC AUDIO_FORMAT_AAC AUDIO_FORMAT_APTX AUDIO_FORMAT_APTX_HD AUDIO_FORMAT_LDAC AUDIO_FORMAT_CELT AUDIO_FORMAT_APTX_ADAPTIVE AUDIO_FORMAT_APTX_TWSP AUDIO_FORMAT_LC3">
                      <profile name="" format="AUDIO_FORMAT_PCM_16_BIT"
                               samplingRates="48000" channelMasks="AUDIO_CHANNEL_OUT_STEREO"/>
                  </devicePort>
                  <devicePort tagName="BT A2DP Headphones" type="AUDIO_DEVICE_OUT_BLUETOOTH_A2DP_HEADPHONES" role="sink"
--                            encodedFormats="AUDIO_FORMAT_SBC AUDIO_FORMAT_AAC AUDIO_FORMAT_APTX AUDIO_FORMAT_APTX_HD AUDIO_FORMAT_LDAC AUDIO_FORMAT_CELT AUDIO_FORMAT_APTX_ADAPTIVE AUDIO_FORMAT_APTX_TWSP AUDIO_FORMAT_LHDC">
-+                            encodedFormats="AUDIO_FORMAT_SBC AUDIO_FORMAT_AAC AUDIO_FORMAT_APTX AUDIO_FORMAT_APTX_HD AUDIO_FORMAT_LDAC AUDIO_FORMAT_CELT AUDIO_FORMAT_APTX_ADAPTIVE AUDIO_FORMAT_APTX_TWSP AUDIO_FORMAT_LHDC AUDIO_FORMAT_LC3">
+-                            encodedFormats="AUDIO_FORMAT_SBC AUDIO_FORMAT_AAC AUDIO_FORMAT_APTX AUDIO_FORMAT_APTX_HD AUDIO_FORMAT_LDAC AUDIO_FORMAT_CELT AUDIO_FORMAT_APTX_ADAPTIVE AUDIO_FORMAT_APTX_TWSP">
++                            encodedFormats="AUDIO_FORMAT_SBC AUDIO_FORMAT_AAC AUDIO_FORMAT_APTX AUDIO_FORMAT_APTX_HD AUDIO_FORMAT_LDAC AUDIO_FORMAT_CELT AUDIO_FORMAT_APTX_ADAPTIVE AUDIO_FORMAT_APTX_TWSP AUDIO_FORMAT_LC3">
                      <profile name="" format="AUDIO_FORMAT_PCM_16_BIT"
                               samplingRates="48000" channelMasks="AUDIO_CHANNEL_OUT_STEREO"/>
                  </devicePort>
                  <devicePort tagName="BT A2DP Speaker" type="AUDIO_DEVICE_OUT_BLUETOOTH_A2DP_SPEAKER" role="sink"
--                            encodedFormats="AUDIO_FORMAT_SBC AUDIO_FORMAT_AAC AUDIO_FORMAT_APTX AUDIO_FORMAT_APTX_HD AUDIO_FORMAT_LDAC AUDIO_FORMAT_CELT AUDIO_FORMAT_APTX_ADAPTIVE AUDIO_FORMAT_APTX_TWSP AUDIO_FORMAT_LHDC">
-+                            encodedFormats="AUDIO_FORMAT_SBC AUDIO_FORMAT_AAC AUDIO_FORMAT_APTX AUDIO_FORMAT_APTX_HD AUDIO_FORMAT_LDAC AUDIO_FORMAT_CELT AUDIO_FORMAT_APTX_ADAPTIVE AUDIO_FORMAT_APTX_TWSP AUDIO_FORMAT_LHDC AUDIO_FORMAT_LC3">
+-                            encodedFormats="AUDIO_FORMAT_SBC AUDIO_FORMAT_AAC AUDIO_FORMAT_APTX AUDIO_FORMAT_APTX_HD AUDIO_FORMAT_LDAC AUDIO_FORMAT_CELT AUDIO_FORMAT_APTX_ADAPTIVE AUDIO_FORMAT_APTX_TWSP">
++                            encodedFormats="AUDIO_FORMAT_SBC AUDIO_FORMAT_AAC AUDIO_FORMAT_APTX AUDIO_FORMAT_APTX_HD AUDIO_FORMAT_LDAC AUDIO_FORMAT_CELT AUDIO_FORMAT_APTX_ADAPTIVE AUDIO_FORMAT_APTX_TWSP AUDIO_FORMAT_LC3">
                      <profile name="" format="AUDIO_FORMAT_PCM_16_BIT"
                               samplingRates="48000" channelMasks="AUDIO_CHANNEL_OUT_STEREO"/>
                  </devicePort>
@@ -136,7 +136,7 @@ index 030845c..877126e 100644
              </routes>
  
 diff --git a/configs/properties/odm.prop b/configs/properties/odm.prop
-index f339c21..0d22288 100644
+index 585792f..cabfef5 100644
 --- a/configs/properties/odm.prop
 +++ b/configs/properties/odm.prop
 @@ -31,7 +31,7 @@ persist.vendor.dc_backlight.enable=false
@@ -175,7 +175,7 @@ index 50c4ddb..c062dfc 100644
  persist.bluetooth.leaudio.notify.idle.during.call=true
  persist.bluetooth.leaudio_offload.disabled=false
 diff --git a/configs/properties/vendor.prop b/configs/properties/vendor.prop
-index 86cac08..73c1ba8 100644
+index 6d3844d..ebf1573 100644
 --- a/configs/properties/vendor.prop
 +++ b/configs/properties/vendor.prop
 @@ -15,6 +15,7 @@ ro.audio.monitorRotation=true
@@ -263,5 +263,5 @@ index 86cac08..73c1ba8 100644
  ro.gfx.driver.1=com.qualcomm.qti.gpudrivers.kalama.api33
  ro.hardware.egl=adreno
 -- 
-2.55.0
+2.56.0
 
