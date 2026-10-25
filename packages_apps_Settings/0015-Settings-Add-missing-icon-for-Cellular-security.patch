@@ -1,0 +1,49 @@
+From 8543299465c53f793f135aea7b9af8bc581d54c8 Mon Sep 17 00:00:00 2001
+From: grep <grepfox@tutamail.com>
+Date: Fri, 23 Oct 2026 22:29:09 +0200
+Subject: [PATCH 2/2] Settings: Add missing icon for Cellular security
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Change-Id: Id6cdb657e9c381842a3949a8990398c7038d40df
+---
+ res/drawable/ic_cellular_security.xml | 15 +++++++++++++++
+ res/xml/network_provider_internet.xml |  1 +
+ 2 files changed, 16 insertions(+)
+ create mode 100644 res/drawable/ic_cellular_security.xml
+
+diff --git a/res/drawable/ic_cellular_security.xml b/res/drawable/ic_cellular_security.xml
+new file mode 100644
+index 00000000000..13bacddc3eb
+--- /dev/null
++++ b/res/drawable/ic_cellular_security.xml
+@@ -0,0 +1,15 @@
++<!--
++    SPDX-FileCopyrightText: The Android Open Source Project
++    SPDX-License-Identifier: Apache-2.0
++-->
++
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++        android:width="24dp"
++        android:height="24dp"
++        android:viewportWidth="24.0"
++        android:viewportHeight="24.0"
++        android:tint="?android:attr/colorControlNormal">
++    <path
++        android:fillColor="#FF000000"
++        android:pathData="M12,1L3,5v6c0,5.55 3.84,10.74 9,12c5.16,-1.26 9,-6.45 9,-12V5L12,1zM19,11c0,4.52 -2.98,8.69 -7,9.93c-4.02,-1.24 -7,-5.41 -7,-9.93V6.3l7,-3.11l7,3.11V11zM7.41,11.59L6,13l4,4l8,-8l-1.41,-1.42L10,14.17L7.41,11.59z"/>
++</vector>
+diff --git a/res/xml/network_provider_internet.xml b/res/xml/network_provider_internet.xml
+index e7f002eb5c1..192d3cfab94 100644
+--- a/res/xml/network_provider_internet.xml
++++ b/res/xml/network_provider_internet.xml
+@@ -118,6 +118,7 @@
+         android:key="cellular_security_network_internet"
+         android:title="@string/cellular_security_title"
+         android:summary="@string/cellular_security_summary"
++        android:icon="@drawable/ic_cellular_security"
+         android:order="30"
+         settings:controller="com.android.settings.network.CellularSecurityPreferenceController"/>
+ </PreferenceScreen>
+-- 
+2.56.0
+
