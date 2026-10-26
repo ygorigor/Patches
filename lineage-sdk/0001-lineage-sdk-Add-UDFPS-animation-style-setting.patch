@@ -1,0 +1,40 @@
+From ead470d22a7882bb5ac378d2b4892dd492891f75 Mon Sep 17 00:00:00 2001
+From: grepfox <grepfox@tutamail.com>
+Date: Tue, 29 Sep 2026 17:20:53 +0000
+Subject: [PATCH] lineage-sdk: Add UDFPS animation style setting
+
+Change-Id: I89bcfef272cf58348035b6d412cf38a9036386cc
+---
+ sdk/src/java/lineageos/providers/LineageSettings.java | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/sdk/src/java/lineageos/providers/LineageSettings.java b/sdk/src/java/lineageos/providers/LineageSettings.java
+index 5517d69b..81cd5178 100644
+--- a/sdk/src/java/lineageos/providers/LineageSettings.java
++++ b/sdk/src/java/lineageos/providers/LineageSettings.java
+@@ -3099,6 +3099,14 @@ public final class LineageSettings {
+ 
+         /** @hide */
+         public static final Validator BERRY_BLACK_THEME_VALIDATOR = sBooleanValidator;
++
++        /**
++         * Selected UDFPS fingerprint animation overlay package name, or null for the default.
++         */
++        public static final String UDFPS_ANIMATION_STYLE = "udfps_animation_style";
++
++        /** @hide */
++        public static final Validator UDFPS_ANIMATION_STYLE_VALIDATOR = sNonNullStringValidator;
+         // endregion
+ 
+         /**
+@@ -3121,6 +3129,7 @@ public final class LineageSettings {
+                 new ArrayMap<String, Validator>();
+         static {
+             VALIDATORS.put(BERRY_BLACK_THEME, BERRY_BLACK_THEME_VALIDATOR);
++            VALIDATORS.put(UDFPS_ANIMATION_STYLE, UDFPS_ANIMATION_STYLE_VALIDATOR);
+             VALIDATORS.put(GESTURE_BACK_EXCLUDE_TOP, GESTURE_BACK_EXCLUDE_TOP_VALIDATOR);
+             VALIDATORS.put(NETWORK_TRAFFIC_MODE, NETWORK_TRAFFIC_MODE_VALIDATOR);
+             VALIDATORS.put(NETWORK_TRAFFIC_POSITION, NETWORK_TRAFFIC_POSITION_VALIDATOR);
+-- 
+2.50.1.windows.1
+

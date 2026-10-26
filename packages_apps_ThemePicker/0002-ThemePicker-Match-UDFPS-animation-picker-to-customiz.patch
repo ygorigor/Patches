@@ -1,0 +1,210 @@
+From b4d00fbc1a1c81e90a23f1b8468f1e3a3a6f53cb Mon Sep 17 00:00:00 2001
+From: grep <grepfox@tutamail.com>
+Date: Sat, 24 Oct 2026 11:19:19 +0200
+Subject: [PATCH] ThemePicker: Match UDFPS animation picker to customization
+ picker style
+
+Change-Id: I5323b9a8ea23706b66a84349fb99aa52332a0e32
+---
+ .../udfps_animation_item_bg_selected.xml      |  3 ++
+ ...ted.xml => udfps_animation_preview_bg.xml} |  4 +--
+ .../activity_udfps_animation_picker.xml       | 26 +++++++++++------
+ .../lineage_dimens.xml}                       |  8 ++---
+ .../udfpsanim/UdfpsAnimationPickerActivity.kt | 29 +++++++++++++++++--
+ 5 files changed, 51 insertions(+), 19 deletions(-)
+ copy res/drawable/{udfps_animation_item_bg_selected.xml => udfps_animation_preview_bg.xml} (86%)
+ copy res/{drawable/udfps_animation_item_bg_selected.xml => values/lineage_dimens.xml} (76%)
+
+diff --git a/res/drawable/udfps_animation_item_bg_selected.xml b/res/drawable/udfps_animation_item_bg_selected.xml
+index 26445825..01b65707 100644
+--- a/res/drawable/udfps_animation_item_bg_selected.xml
++++ b/res/drawable/udfps_animation_item_bg_selected.xml
+@@ -17,4 +17,7 @@
+     android:shape="rectangle">
+     <corners android:radius="20dp"/>
+     <solid android:color="@color/system_primary_container"/>
++    <stroke
++        android:width="2dp"
++        android:color="@color/system_primary"/>
+ </shape>
+diff --git a/res/drawable/udfps_animation_item_bg_selected.xml b/res/drawable/udfps_animation_preview_bg.xml
+similarity index 86%
+copy from res/drawable/udfps_animation_item_bg_selected.xml
+copy to res/drawable/udfps_animation_preview_bg.xml
+index 26445825..47f9c323 100644
+--- a/res/drawable/udfps_animation_item_bg_selected.xml
++++ b/res/drawable/udfps_animation_preview_bg.xml
+@@ -15,6 +15,6 @@
+   -->
+ <shape xmlns:android="http://schemas.android.com/apk/res/android"
+     android:shape="rectangle">
+-    <corners android:radius="20dp"/>
+-    <solid android:color="@color/system_primary_container"/>
++    <corners android:radius="@dimen/udfps_animation_preview_radius"/>
++    <solid android:color="@android:color/black"/>
+ </shape>
+diff --git a/res/layout/activity_udfps_animation_picker.xml b/res/layout/activity_udfps_animation_picker.xml
+index bdb37524..3b331a70 100644
+--- a/res/layout/activity_udfps_animation_picker.xml
++++ b/res/layout/activity_udfps_animation_picker.xml
+@@ -14,8 +14,10 @@
+   ~ limitations under the License.
+   -->
+ <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:id="@+id/udfps_animation_root"
+     android:layout_width="match_parent"
+     android:layout_height="match_parent"
++    android:background="@color/system_surface_container"
+     android:orientation="vertical">
+ 
+     <LinearLayout
+@@ -38,8 +40,10 @@
+                 android:layout_height="@dimen/nav_button_background_size"
+                 android:layout_gravity="center"
+                 android:background="@drawable/nav_button_background"
+-                android:foreground="@drawable/ic_arrow_back_24dp"
+-                android:foregroundGravity="center"/>
++                android:backgroundTint="@color/system_surface_container_highest"
++                android:foreground="@drawable/ic_close_24dp"
++                android:foregroundGravity="center"
++                android:foregroundTint="@color/system_on_surface_variant"/>
+         </FrameLayout>
+ 
+         <Toolbar
+@@ -49,13 +53,15 @@
+             android:layout_height="?android:attr/actionBarSize"
+             android:layout_gravity="top"
+             android:layout_weight="1"
+-            android:importantForAccessibility="yes"/>
++            android:importantForAccessibility="yes"
++            android:titleTextColor="@color/system_on_surface"/>
+ 
+         <com.android.wallpaper.picker.customization.ui.view.ApplyButton
+             android:id="@+id/udfps_animation_apply"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+-            android:layout_marginEnd="@dimen/apply_button_end_margin"/>
++            android:layout_marginEnd="@dimen/apply_button_end_margin"
++            android:minHeight="@dimen/touch_target_min_height"/>
+     </LinearLayout>
+ 
+     <FrameLayout
+@@ -64,20 +70,22 @@
+         android:layout_marginHorizontal="@dimen/floating_sheet_horizontal_padding"
+         android:layout_marginTop="@dimen/floating_sheet_content_vertical_padding"
+         android:layout_weight="1"
+-        android:background="@drawable/floating_sheet_content_background"
+-        android:clipChildren="false">
++        android:background="@drawable/udfps_animation_preview_bg"
++        android:clipToOutline="true">
+ 
+         <ImageView
+             android:id="@+id/udfps_animation_preview_icon"
+             android:layout_width="96dp"
+             android:layout_height="96dp"
+             android:layout_gravity="center"
+-            android:importantForAccessibility="no"/>
++            android:importantForAccessibility="no"
++            android:tint="@android:color/white"/>
+ 
+         <VideoView
+             android:id="@+id/udfps_animation_preview"
+-            android:layout_width="240dp"
+-            android:layout_height="240dp"
++            android:layout_width="match_parent"
++            android:layout_height="match_parent"
++            android:layout_margin="@dimen/udfps_animation_preview_radius"
+             android:layout_gravity="center"
+             android:visibility="gone"/>
+     </FrameLayout>
+diff --git a/res/drawable/udfps_animation_item_bg_selected.xml b/res/values/lineage_dimens.xml
+similarity index 76%
+copy from res/drawable/udfps_animation_item_bg_selected.xml
+copy to res/values/lineage_dimens.xml
+index 26445825..b1740d05 100644
+--- a/res/drawable/udfps_animation_item_bg_selected.xml
++++ b/res/values/lineage_dimens.xml
+@@ -13,8 +13,6 @@
+   ~ See the License for the specific language governing permissions and
+   ~ limitations under the License.
+   -->
+-<shape xmlns:android="http://schemas.android.com/apk/res/android"
+-    android:shape="rectangle">
+-    <corners android:radius="20dp"/>
+-    <solid android:color="@color/system_primary_container"/>
+-</shape>
++<resources>
++    <dimen name="udfps_animation_preview_radius">28dp</dimen>
++</resources>
+diff --git a/src/com/android/customization/picker/udfpsanim/UdfpsAnimationPickerActivity.kt b/src/com/android/customization/picker/udfpsanim/UdfpsAnimationPickerActivity.kt
+index ced209d0..4b5b3660 100644
+--- a/src/com/android/customization/picker/udfpsanim/UdfpsAnimationPickerActivity.kt
++++ b/src/com/android/customization/picker/udfpsanim/UdfpsAnimationPickerActivity.kt
+@@ -21,11 +21,13 @@ import android.os.Bundle
+ import android.util.Log
+ import android.view.View
+ import android.view.ViewGroup
++import android.view.WindowInsets
+ import android.widget.ImageView
+ import android.widget.TextView
+ import android.widget.Toast
+ import android.widget.Toolbar
+ import android.widget.VideoView
++import androidx.core.graphics.ColorUtils
+ import androidx.recyclerview.widget.LinearLayoutManager
+ import androidx.recyclerview.widget.RecyclerView
+ import com.android.themepicker.R
+@@ -50,11 +52,17 @@ class UdfpsAnimationPickerActivity : Activity() {
+         super.onCreate(savedInstanceState)
+         setContentView(R.layout.activity_udfps_animation_picker)
+ 
++        findViewById<View>(R.id.udfps_animation_root).setOnApplyWindowInsetsListener { view, insets ->
++            val bars =
++                insets.getInsets(WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout())
++            view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
++            WindowInsets.CONSUMED
++        }
++
+         findViewById<View>(R.id.udfps_animation_back).setOnClickListener { finish() }
+         applyButton = findViewById<ApplyButton>(R.id.udfps_animation_apply).apply {
+             setApplyButtonBackgroundColor(getColor(WallpaperR.color.system_primary))
+-            setApplyButtonTextColor(getColor(WallpaperR.color.system_on_primary))
+-            setApplyButtonState(ApplyButton.ApplyButtonState.APPLY_BUTTON_ENABLED)
++            setIndicatorColor(getColor(WallpaperR.color.system_on_primary))
+             setOnClickListener { applySelection() }
+         }
+         findViewById<Toolbar>(R.id.udfps_animation_toolbar).title =
+@@ -79,6 +87,8 @@ class UdfpsAnimationPickerActivity : Activity() {
+             layoutManager =
+                 LinearLayoutManager(this@UdfpsAnimationPickerActivity, LinearLayoutManager.HORIZONTAL, false)
+             adapter = this@UdfpsAnimationPickerActivity.adapter
++            val selectedIndex = options.indexOfFirst { it.packageName == selectedPackage }
++            if (selectedIndex > 0) scrollToPosition(selectedIndex)
+         }
+     }
+ 
+@@ -126,7 +136,20 @@ class UdfpsAnimationPickerActivity : Activity() {
+     private fun updateSelectionUi() {
+         val isActive = selectedPackage == appliedPackage
+         statusView.text = if (isActive) getString(R.string.udfps_animation_active) else ""
+-        applyButton.visibility = if (isActive) View.GONE else View.VISIBLE
++        applyButton.setApplyButtonState(
++            if (isActive) {
++                ApplyButton.ApplyButtonState.APPLY_BUTTON_DISABLED
++            } else {
++                ApplyButton.ApplyButtonState.APPLY_BUTTON_ENABLED
++            }
++        )
++        applyButton.setApplyButtonTextColor(
++            if (isActive) {
++                ColorUtils.setAlphaComponent(getColor(WallpaperR.color.system_on_surface), 97)
++            } else {
++                getColor(WallpaperR.color.system_on_primary)
++            }
++        )
+     }
+ 
+     private fun showPreview(packageName: String) {
+-- 
+2.50.1.windows.1
+
