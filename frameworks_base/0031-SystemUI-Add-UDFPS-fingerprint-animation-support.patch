@@ -1,0 +1,673 @@
+From 8f9af875ac19a21a739182f2d79cd9b568ae3df7 Mon Sep 17 00:00:00 2001
+From: grepfox <grepfox@tutamail.com>
+Date: Tue, 29 Sep 2026 17:20:56 +0000
+Subject: [PATCH 1/2] SystemUI: Add UDFPS fingerprint animation support
+
+Change-Id: I62cab94f0f5c88f541483f87565770c373cf6734
+---
+ .../res/layout/udfps_touch_overlay.xml        |   5 +
+ .../SystemUI/res/values/lineage_dimens.xml    |   3 +
+ .../systemui/biometrics/UdfpsController.java  |   9 +-
+ .../biometrics/UdfpsControllerOverlay.kt      |  10 +-
+ .../biometrics/udfpsanim/UdfpsAnimView.kt     |  94 ++++++++
+ .../udfpsanim/UdfpsAnimationDrawable.kt       | 121 ++++++++++
+ .../udfpsanim/UdfpsAnimationRepository.kt     | 209 ++++++++++++++++++
+ .../biometrics/ui/view/UdfpsTouchOverlay.kt   |  53 +++++
+ 8 files changed, 501 insertions(+), 3 deletions(-)
+ create mode 100644 packages/SystemUI/src/com/android/systemui/biometrics/udfpsanim/UdfpsAnimView.kt
+ create mode 100644 packages/SystemUI/src/com/android/systemui/biometrics/udfpsanim/UdfpsAnimationDrawable.kt
+ create mode 100644 packages/SystemUI/src/com/android/systemui/biometrics/udfpsanim/UdfpsAnimationRepository.kt
+
+diff --git a/packages/SystemUI/res/layout/udfps_touch_overlay.xml b/packages/SystemUI/res/layout/udfps_touch_overlay.xml
+index 687f4042d1fa..d56b41509d65 100644
+--- a/packages/SystemUI/res/layout/udfps_touch_overlay.xml
++++ b/packages/SystemUI/res/layout/udfps_touch_overlay.xml
+@@ -23,4 +23,9 @@
+         android:layout_width="match_parent"
+         android:layout_height="match_parent"
+         android:visibility="invisible"/>
++    <com.android.systemui.biometrics.udfpsanim.UdfpsAnimView
++        android:id="@+id/udfps_anim_view"
++        android:layout_width="match_parent"
++        android:layout_height="match_parent"
++        android:visibility="gone"/>
+ </com.android.systemui.biometrics.ui.view.UdfpsTouchOverlay>
+diff --git a/packages/SystemUI/res/values/lineage_dimens.xml b/packages/SystemUI/res/values/lineage_dimens.xml
+index 4a24b9d35714..a98085fa1f6f 100644
+--- a/packages/SystemUI/res/values/lineage_dimens.xml
++++ b/packages/SystemUI/res/values/lineage_dimens.xml
+@@ -18,4 +18,7 @@
+ <resources>
+     <!-- Largest size an avatar might need to be drawn in the power menu user picker -->
+     <dimen name="global_actions_avatar_size">24dp</dimen>
++
++    <!-- Vertical offset of the UDFPS unlock animation from the sensor center -->
++    <dimen name="udfps_animation_offset">0dp</dimen>
+ </resources>
+diff --git a/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsController.java b/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsController.java
+index f189327a0e3e..f893b2b38edf 100644
+--- a/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsController.java
++++ b/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsController.java
+@@ -82,6 +82,7 @@ import com.android.systemui.biometrics.udfps.NormalizedTouchData;
+ import com.android.systemui.biometrics.udfps.SinglePointerTouchProcessor;
+ import com.android.systemui.biometrics.udfps.TouchProcessor;
+ import com.android.systemui.biometrics.udfps.TouchProcessorResult;
++import com.android.systemui.biometrics.udfpsanim.UdfpsAnimationRepository;
+ import com.android.systemui.biometrics.ui.view.UdfpsTouchOverlay;
+ import com.android.systemui.biometrics.ui.viewmodel.DefaultUdfpsTouchOverlayViewModel;
+ import com.android.systemui.biometrics.ui.viewmodel.DeviceEntryUdfpsTouchOverlayViewModel;
+@@ -194,6 +195,7 @@ public class UdfpsController implements DozeReceiver, Dumpable {
+     @NonNull private final SelectedUserInteractor mSelectedUserInteractor;
+     @NonNull private final MSDLPlayer mMsdlPlayer;
+     private final Lazy<SceneInteractor> mSceneInteractorLazy;
++    @NonNull private final UdfpsAnimationRepository mUdfpsAnimationRepository;
+     private final boolean mIgnoreRefreshRate;
+     private final KeyguardTransitionInteractor mKeyguardTransitionInteractor;
+ 
+@@ -328,7 +330,8 @@ public class UdfpsController implements DozeReceiver, Dumpable {
+                         mPowerInteractor,
+                         mBrightnessMirrorShowingInteractor,
+                         mScope,
+-                        mSceneInteractorLazy
++                        mSceneInteractorLazy,
++                        mUdfpsAnimationRepository
+                     )));
+         }
+ 
+@@ -730,7 +733,8 @@ public class UdfpsController implements DozeReceiver, Dumpable {
+             UserActivityNotifier userActivityNotifier,
+             Lazy<WakefulnessLifecycle> wakefulnessLifecycle,
+             MSDLPlayer msdlPlayer,
+-            Lazy<SceneInteractor> sceneInteractorLazy) {
++            Lazy<SceneInteractor> sceneInteractorLazy,
++            @NonNull UdfpsAnimationRepository udfpsAnimationRepository) {
+         mContext = context;
+         mExecution = execution;
+         mVibrator = vibrator;
+@@ -785,6 +789,7 @@ public class UdfpsController implements DozeReceiver, Dumpable {
+         mPromptUdfpsTouchOverlayViewModel = promptUdfpsTouchOverlayViewModel;
+         mMsdlPlayer = msdlPlayer;
+         mSceneInteractorLazy = sceneInteractorLazy;
++        mUdfpsAnimationRepository = udfpsAnimationRepository;
+ 
+         mDumpManager.registerDumpable(TAG, this);
+ 
+diff --git a/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsControllerOverlay.kt b/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsControllerOverlay.kt
+index 5def052bb1ca..e9f394324aa7 100644
+--- a/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsControllerOverlay.kt
++++ b/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsControllerOverlay.kt
+@@ -45,6 +45,7 @@ import com.android.app.tracing.coroutines.launchTraced as launch
+ import com.android.keyguard.KeyguardUpdateMonitor
+ import com.android.systemui.biometrics.domain.interactor.UdfpsOverlayInteractor
+ import com.android.systemui.biometrics.shared.model.UdfpsOverlayParams
++import com.android.systemui.biometrics.udfpsanim.UdfpsAnimationRepository
+ import com.android.systemui.biometrics.ui.binder.UdfpsTouchOverlayBinder
+ import com.android.systemui.biometrics.ui.view.UdfpsTouchOverlay
+ import com.android.systemui.biometrics.ui.viewmodel.DefaultUdfpsTouchOverlayViewModel
+@@ -100,6 +101,7 @@ constructor(
+     private val brightnessMirrorShowingInteractor: BrightnessMirrorShowingInteractor,
+     @Application private val scope: CoroutineScope,
+     sceneInteractor: Lazy<SceneInteractor>,
++    private val udfpsAnimationRepository: UdfpsAnimationRepository,
+ ) {
+     private val currentStateUpdatedToOffAodDozingOrDreaming: Flow<Unit> =
+         merge(
+@@ -231,6 +233,13 @@ constructor(
+                             }
+ 
+                             overlayAttachStateListener?.let { addOnAttachStateChangeListener(it) }
++                            sensorRect = sensorBounds
++                            if (requestReason == REASON_AUTH_KEYGUARD) {
++                                setUdfpsAnimation(
++                                    udfpsAnimationRepository.buildSelectedAnimation(),
++                                    udfpsAnimationRepository.getAnimationOffsetPx(),
++                                )
++                            }
+                             addViewNowOrLater(this, null)
+                             when (requestReason) {
+                                 REASON_AUTH_KEYGUARD ->
+@@ -252,7 +261,6 @@ constructor(
+                                         udfpsOverlayInteractor = udfpsTouchForwarder,
+                                     )
+                             }
+-                            sensorRect = sensorBounds
+                         }
+ 
+                 getTouchOverlay()?.apply {
+diff --git a/packages/SystemUI/src/com/android/systemui/biometrics/udfpsanim/UdfpsAnimView.kt b/packages/SystemUI/src/com/android/systemui/biometrics/udfpsanim/UdfpsAnimView.kt
+new file mode 100644
+index 000000000000..96be0f47a3c5
+--- /dev/null
++++ b/packages/SystemUI/src/com/android/systemui/biometrics/udfpsanim/UdfpsAnimView.kt
+@@ -0,0 +1,94 @@
++/*
++ * Copyright (C) 2026 The LineageOS Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.systemui.biometrics.udfpsanim
++
++import android.content.Context
++import android.graphics.Canvas
++import android.graphics.Rect
++import android.graphics.drawable.Drawable
++import android.util.AttributeSet
++import android.util.Log
++import android.view.View
++
++/** Draws the selected UDFPS animation centred on the sensor. */
++class UdfpsAnimView @JvmOverloads constructor(
++    context: Context,
++    attrs: AttributeSet? = null,
++) : View(context, attrs) {
++
++    private var animation: UdfpsAnimationDrawable? = null
++    private var centerX: Float = 0f
++    private var centerY: Float = 0f
++    private var offsetY: Int = 0
++
++    init {
++        setWillNotDraw(false)
++    }
++
++    fun setAnimation(drawable: UdfpsAnimationDrawable?) {
++        animation?.stop()
++        animation = drawable
++        drawable?.callback = this
++        invalidate()
++    }
++
++    fun setAnimationOffsetY(offsetY: Int) {
++        this.offsetY = offsetY
++        invalidate()
++    }
++
++    fun setSensorCenter(x: Float, y: Float) {
++        centerX = x
++        centerY = y + offsetY
++        invalidate()
++    }
++
++    fun show() = animation?.show()
++
++    fun expand() = animation?.expand()
++
++    fun hide() = animation?.hide()
++
++    fun stop() = animation?.stop()
++
++    override fun verifyDrawable(who: Drawable): Boolean =
++        who === animation || super.verifyDrawable(who)
++
++    override fun onDraw(canvas: Canvas) {
++        val drawable = animation ?: return
++        val width = drawable.intrinsicWidth
++        val height = drawable.intrinsicHeight
++        if (width <= 0 || height <= 0) return
++        if (!loggedFirstDraw) {
++            loggedFirstDraw = true
++            Log.d(TAG, "drawing animation ${width}x$height at ($centerX, $centerY)")
++        }
++        drawable.bounds = Rect(
++            (centerX - width / 2f).toInt(),
++            (centerY - height / 2f).toInt(),
++            (centerX + width / 2f).toInt(),
++            (centerY + height / 2f).toInt(),
++        )
++        drawable.draw(canvas)
++    }
++
++    private var loggedFirstDraw = false
++
++    companion object {
++        private const val TAG = "UdfpsAnimView"
++    }
++}
+diff --git a/packages/SystemUI/src/com/android/systemui/biometrics/udfpsanim/UdfpsAnimationDrawable.kt b/packages/SystemUI/src/com/android/systemui/biometrics/udfpsanim/UdfpsAnimationDrawable.kt
+new file mode 100644
+index 000000000000..1ce31989fcdc
+--- /dev/null
++++ b/packages/SystemUI/src/com/android/systemui/biometrics/udfpsanim/UdfpsAnimationDrawable.kt
+@@ -0,0 +1,121 @@
++/*
++ * Copyright (C) 2026 The LineageOS Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.systemui.biometrics.udfpsanim
++
++import android.graphics.Canvas
++import android.graphics.ColorFilter
++import android.graphics.PixelFormat
++import android.graphics.Rect
++import android.graphics.drawable.Drawable
++import android.os.Handler
++import android.os.Looper
++
++/**
++ * Plays a UDFPS unlock animation: a one-shot fade-in, a looping element animation while the
++ * finger is down and a one-shot fade-out. All callbacks are marshalled onto the main thread.
++ */
++class UdfpsAnimationDrawable(
++    private val fadeInFrames: List<Drawable>,
++    private val fadeInDuration: Int,
++    private val elementFrames: List<Drawable>,
++    private val elementDuration: Int,
++    private val fadeOutFrames: List<Drawable>,
++    private val fadeOutDuration: Int,
++) : Drawable() {
++
++    private val handler = Handler(Looper.getMainLooper())
++    private var frames: List<Drawable> = emptyList()
++    private var frameDuration: Int = 16
++    private var looping: Boolean = false
++    private var index: Int = 0
++    private var running: Boolean = false
++    private var current: Drawable? = null
++    private var alphaValue: Int = 255
++
++    private val advance = object : Runnable {
++        override fun run() {
++            val list = frames
++            if (!running || list.isEmpty()) return
++            if (index >= list.size) {
++                if (looping) index = 0 else return
++            }
++            current = list[index]
++            invalidateSelf()
++            index++
++            handler.postDelayed(this, frameDuration.toLong())
++        }
++    }
++
++    fun show() = handler.post { play(fadeInFrames, fadeInDuration, loop = false) }
++
++    fun expand() = handler.post { play(elementFrames, elementDuration, loop = true) }
++
++    fun hide() = handler.post { play(fadeOutFrames, fadeOutDuration, loop = false) }
++
++    fun stop() = handler.post {
++        handler.removeCallbacks(advance)
++        running = false
++        current = null
++        index = 0
++        invalidateSelf()
++    }
++
++    private fun play(list: List<Drawable>, duration: Int, loop: Boolean) {
++        handler.removeCallbacks(advance)
++        if (list.isEmpty()) {
++            stop()
++            return
++        }
++        frames = list
++        frameDuration = duration
++        looping = loop
++        index = 0
++        running = true
++        advance.run()
++    }
++
++    override fun draw(canvas: Canvas) {
++        val frame = current ?: return
++        frame.setBounds(bounds)
++        frame.alpha = alphaValue
++        frame.draw(canvas)
++    }
++
++    override fun onBoundsChange(bounds: Rect) {
++        current?.bounds = bounds
++    }
++
++    override fun setAlpha(alpha: Int) {
++        alphaValue = alpha
++        invalidateSelf()
++    }
++
++    override fun getAlpha(): Int = alphaValue
++
++    override fun setColorFilter(colorFilter: ColorFilter?) {
++        current?.colorFilter = colorFilter
++    }
++
++    @Deprecated("Deprecated in Java")
++    override fun getOpacity(): Int = PixelFormat.TRANSLUCENT
++
++    override fun getIntrinsicWidth(): Int =
++        current?.intrinsicWidth ?: frames.firstOrNull()?.intrinsicWidth ?: -1
++
++    override fun getIntrinsicHeight(): Int =
++        current?.intrinsicHeight ?: frames.firstOrNull()?.intrinsicHeight ?: -1
++}
+diff --git a/packages/SystemUI/src/com/android/systemui/biometrics/udfpsanim/UdfpsAnimationRepository.kt b/packages/SystemUI/src/com/android/systemui/biometrics/udfpsanim/UdfpsAnimationRepository.kt
+new file mode 100644
+index 000000000000..785f8c35fb05
+--- /dev/null
++++ b/packages/SystemUI/src/com/android/systemui/biometrics/udfpsanim/UdfpsAnimationRepository.kt
+@@ -0,0 +1,209 @@
++/*
++ * Copyright (C) 2026 The LineageOS Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.systemui.biometrics.udfpsanim
++
++import android.content.Context
++import android.content.om.OverlayManager
++import android.content.pm.ApplicationInfo
++import android.content.pm.PackageManager
++import android.content.res.Resources
++import android.graphics.drawable.Drawable
++import android.os.SystemProperties
++import android.os.UserHandle
++import android.text.TextUtils
++import android.util.Log
++import com.android.systemui.dagger.SysUISingleton
++import com.android.systemui.dagger.qualifiers.Application
++import com.android.systemui.res.R
++import lineageos.providers.LineageSettings
++import javax.inject.Inject
++
++/** A single installed OxygenOS UDFPS animation overlay. */
++data class UdfpsAnimationInfo(
++    val packageName: String,
++    val name: CharSequence,
++    val order: Int,
++)
++
++/**
++ * Discovers the OxygenOS UDFPS animation overlays and turns the selected one into a frame
++ * animation. Frame drawables are read straight from the overlay package so we don't depend on
++ * OMS merging them into SystemUI's resource table.
++ */
++@SysUISingleton
++class UdfpsAnimationRepository @Inject constructor(
++    @Application private val context: Context,
++) {
++    private val overlayManager: OverlayManager? =
++        context.getSystemService(OverlayManager::class.java)
++
++    /** Only devices that ship the animation overlays advertise support. */
++    val isSupported: Boolean
++        get() = SystemProperties.getBoolean(PROP_ANIMATIONS, false)
++
++    fun getInstalledAnimations(): List<UdfpsAnimationInfo> {
++        if (!isSupported) return emptyList()
++        val manager = overlayManager ?: return emptyList()
++        val result = ArrayList<UdfpsAnimationInfo>()
++        try {
++            val overlays = manager.getOverlayInfosForTarget(SYSTEMUI_PACKAGE, UserHandle.CURRENT)
++            overlays?.forEach { info ->
++                if (info.category != CATEGORY) return@forEach
++                val appInfo = applicationInfo(info.packageName) ?: return@forEach
++                result.add(
++                    UdfpsAnimationInfo(
++                        packageName = info.packageName,
++                        name = appInfo.loadLabel(context.packageManager),
++                        order = appInfo.metaData?.getInt(METADATA_ORDER, 0) ?: 0,
++                    )
++                )
++            }
++        } catch (t: Throwable) {
++            Log.w(TAG, "Unable to list UDFPS animations", t)
++        }
++        return result.sortedBy { it.order }
++    }
++
++    fun getSelectedPackage(): String? =
++        LineageSettings.Secure.getString(
++            context.contentResolver,
++            LineageSettings.Secure.UDFPS_ANIMATION_STYLE,
++        )
++
++    fun setSelectedPackage(packageName: String?) {
++        LineageSettings.Secure.putString(
++            context.contentResolver,
++            LineageSettings.Secure.UDFPS_ANIMATION_STYLE,
++            packageName,
++        )
++    }
++
++    /** The unlock animation for the selected style, or null to keep the AOSP default. */
++    fun buildSelectedAnimation(): UdfpsAnimationDrawable? {
++        if (!isSupported) return null
++        val packageName = getSelectedPackage()
++        if (TextUtils.isEmpty(packageName)) {
++            Log.d(TAG, "No UDFPS animation selected, using default")
++            return null
++        }
++        Log.d(TAG, "Building UDFPS animation for '$packageName'")
++        return try {
++            buildAnimation(packageName!!)?.also {
++                Log.d(TAG, "Loaded UDFPS animation for '$packageName'")
++            } ?: run {
++                Log.w(TAG, "No frames found for '$packageName'")
++                null
++            }
++        } catch (t: Throwable) {
++            Log.w(TAG, "Unable to load UDFPS animation $packageName", t)
++            null
++        }
++    }
++
++    /** Vertical offset (px) for the animation, overridable by a SystemUI overlay dimen. */
++    fun getAnimationOffsetPx(): Int =
++        context.resources.getDimensionPixelSize(R.dimen.udfps_animation_offset)
++
++    private fun buildAnimation(packageName: String): UdfpsAnimationDrawable? {
++        val res = context.packageManager.getResourcesForApplication(packageName)
++
++        var elementBase = stringRes(res, packageName, "kgd_osfingerprint_element_60fps_anim_name")
++            ?: DEFAULT_ELEMENT_BASE
++        var elementCount =
++            intRes(res, packageName, "kgd_osfingerprint_element_60fps_anim_frames", 0)
++        if (elementCount == 0) {
++            elementBase = DEFAULT_ELEMENT_BASE
++            elementCount = intRes(res, packageName, "kgd_osfingerprint_element_anim_frames", 0)
++        }
++
++        val element = loadFrames(res, packageName, elementBase, elementCount)
++        if (element.isEmpty()) return null
++
++        return UdfpsAnimationDrawable(
++            fadeInFrames = loadFrames(
++                res, packageName, "kgd_osfingerprint_fadein",
++                intRes(res, packageName, "kgd_osfingerprint_fadein_anim_frames", 0),
++            ),
++            fadeInDuration = rateToDuration(
++                intRes(res, packageName, "kgd_osfingerprint_fadein_anim_rate", DEFAULT_RATE)
++            ),
++            elementFrames = element,
++            elementDuration = rateToDuration(
++                intRes(res, packageName, "kgd_osfingerprint_element_anim_rate", DEFAULT_RATE)
++            ),
++            fadeOutFrames = loadFrames(
++                res, packageName, "kgd_osfingerprint_fadeout",
++                intRes(res, packageName, "kgd_osfingerprint_fadeout_anim_frames", 0),
++            ),
++            fadeOutDuration = rateToDuration(
++                intRes(res, packageName, "kgd_osfingerprint_fadeout_anim_rate", DEFAULT_RATE)
++            ),
++        )
++    }
++
++    private fun loadFrames(
++        res: Resources,
++        packageName: String,
++        base: String,
++        count: Int,
++    ): List<Drawable> {
++        if (count <= 0) return emptyList()
++        val frames = ArrayList<Drawable>(count)
++        for (i in 0 until count) {
++            val id = res.getIdentifier("${base}_$i", "drawable", packageName)
++            if (id == 0) break
++            frames.add(res.getDrawable(id, null))
++        }
++        return frames
++    }
++
++    private fun intRes(res: Resources, packageName: String, name: String, def: Int): Int {
++        val id = res.getIdentifier(name, "integer", packageName)
++        return if (id == 0) def else res.getInteger(id)
++    }
++
++    private fun stringRes(res: Resources, packageName: String, name: String): String? {
++        val id = res.getIdentifier(name, "string", packageName)
++        return if (id == 0) null else res.getString(id)
++    }
++
++    private fun applicationInfo(packageName: String): ApplicationInfo? =
++        try {
++            context.packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
++        } catch (e: PackageManager.NameNotFoundException) {
++            null
++        }
++
++    private fun rateToDuration(rate: Int): Int = when (rate) {
++        0 -> 64
++        1 -> 48
++        2 -> 33
++        3 -> 20
++        4 -> 42
++        else -> 33
++    }
++
++    companion object {
++        private const val TAG = "UdfpsAnimation"
++        private const val SYSTEMUI_PACKAGE = "com.android.systemui"
++        private const val CATEGORY = "category.systemui.fingerprint.anim"
++        private const val METADATA_ORDER = "order"
++        private const val DEFAULT_ELEMENT_BASE = "kgd_fingerprint_element"
++        private const val DEFAULT_RATE = 2
++        const val PROP_ANIMATIONS = "ro.udfps.animations"
++    }
++}
+diff --git a/packages/SystemUI/src/com/android/systemui/biometrics/ui/view/UdfpsTouchOverlay.kt b/packages/SystemUI/src/com/android/systemui/biometrics/ui/view/UdfpsTouchOverlay.kt
+index a7c9ffdec058..2ab063fcf438 100644
+--- a/packages/SystemUI/src/com/android/systemui/biometrics/ui/view/UdfpsTouchOverlay.kt
++++ b/packages/SystemUI/src/com/android/systemui/biometrics/ui/view/UdfpsTouchOverlay.kt
+@@ -19,10 +19,14 @@ import android.content.Context
+ import android.graphics.Rect
+ import android.graphics.RectF
+ import android.util.AttributeSet
++import android.util.Log
++import android.view.MotionEvent
+ import android.view.Surface
+ import android.widget.FrameLayout
+ import com.android.systemui.biometrics.UdfpsDisplayModeProvider
+ import com.android.systemui.biometrics.UdfpsSurfaceView
++import com.android.systemui.biometrics.udfpsanim.UdfpsAnimView
++import com.android.systemui.biometrics.udfpsanim.UdfpsAnimationDrawable
+ import com.android.systemui.res.R
+ 
+ /**
+@@ -31,11 +35,16 @@ import com.android.systemui.res.R
+  */
+ class UdfpsTouchOverlay(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
+     private var ghbmView: UdfpsSurfaceView? = null
++    private var animView: UdfpsAnimView? = null
+     private var udfpsDisplayMode: UdfpsDisplayModeProvider? = null
+ 
+     // sensorRect may be bigger than the sensor. True sensor dimensions are defined in
+     // overlayParams.sensorBounds
+     var sensorRect = Rect()
++        set(value) {
++            field = value
++            animView?.setSensorCenter(value.exactCenterX(), value.exactCenterY())
++        }
+ 
+     /** True after the call to [configureDisplay] and before the call to [unconfigureDisplay]. */
+     var isDisplayConfigured: Boolean = false
+@@ -43,6 +52,46 @@ class UdfpsTouchOverlay(context: Context, attrs: AttributeSet?) : FrameLayout(co
+ 
+     override fun onFinishInflate() {
+         ghbmView = findViewById(R.id.hbm_view)
++        animView = findViewById(R.id.udfps_anim_view)
++    }
++
++    /** Attaches the unlock animation; a null drawable keeps the AOSP default. */
++    fun setUdfpsAnimation(drawable: UdfpsAnimationDrawable?, offsetY: Int) {
++        Log.d(
++            TAG,
++            "setUdfpsAnimation drawable=${drawable != null} animView=${animView != null}" +
++                " attached=$isAttachedToWindow offsetY=$offsetY",
++        )
++        animView?.setAnimation(drawable)
++        animView?.setAnimationOffsetY(offsetY)
++        animView?.visibility = if (drawable == null) GONE else VISIBLE
++        if (drawable != null) {
++            // The optical HBM surface is kept above the window by default, which would hide the
++            // animation behind the illumination dot. Drop it below the UI only while animating.
++            ghbmView?.setZOrderOnTop(false)
++        }
++        if (drawable != null && isAttachedToWindow) {
++            animView?.show()
++        }
++    }
++
++    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
++        when (event.actionMasked) {
++            MotionEvent.ACTION_DOWN -> animView?.expand()
++            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> animView?.hide()
++        }
++        return super.dispatchTouchEvent(event)
++    }
++
++    override fun onAttachedToWindow() {
++        super.onAttachedToWindow()
++        Log.d(TAG, "onAttachedToWindow animView=${animView != null}")
++        animView?.show()
++    }
++
++    override fun onDetachedFromWindow() {
++        animView?.stop()
++        super.onDetachedFromWindow()
+     }
+ 
+     fun setUdfpsDisplayModeProvider(udfpsDisplayModeProvider: UdfpsDisplayModeProvider?) {
+@@ -76,4 +125,8 @@ class UdfpsTouchOverlay(context: Context, attrs: AttributeSet?) : FrameLayout(co
+         }
+         udfpsDisplayMode?.disable(null /* onDisabled */)
+     }
++
++    companion object {
++        private const val TAG = "UdfpsAnimView"
++    }
+ }
+-- 
+2.56.0
+
