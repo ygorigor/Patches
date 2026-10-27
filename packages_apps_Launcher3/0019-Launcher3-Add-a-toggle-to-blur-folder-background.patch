@@ -1,0 +1,304 @@
+From 31f8d3686f07f7e65c20601eb918780a2d38a39f Mon Sep 17 00:00:00 2001
+From: grep <grepfox@tutamail.com>
+Date: Tue, 20 Oct 2026 19:31:02 +0200
+Subject: [PATCH] Launcher3: Add a toggle to blur folder background
+
+Change-Id: I2f0af5b2325debde5f73412d3943c8a38e7cd9e8
+---
+ .../uioverrides/QuickstepLauncher.java        | 13 ++++-
+ .../util/QuickstepBackgroundBlurHelper.kt     | 56 ++++++++++++++++++-
+ res/values-ro/lineage_strings.xml             |  2 +
+ res/values/lineage_strings.xml                |  2 +
+ res/values/styles.xml                         |  1 +
+ res/xml/launcher_preferences.xml              |  7 +++
+ src/com/android/launcher3/LauncherPrefs.kt    |  1 +
+ src/com/android/launcher3/folder/Folder.java  |  3 +-
+ .../launcher3/folder/PreviewBackground.java   |  8 +++
+ .../launcher3/util/BlurBackgroundHelper.kt    |  2 +
+ 10 files changed, 89 insertions(+), 6 deletions(-)
+
+diff --git a/quickstep/src/com/android/launcher3/uioverrides/QuickstepLauncher.java b/quickstep/src/com/android/launcher3/uioverrides/QuickstepLauncher.java
+index ea1949b625f..2ee8114b7e5 100644
+--- a/quickstep/src/com/android/launcher3/uioverrides/QuickstepLauncher.java
++++ b/quickstep/src/com/android/launcher3/uioverrides/QuickstepLauncher.java
+@@ -23,7 +23,6 @@ import static android.view.accessibility.AccessibilityEvent.TYPE_VIEW_FOCUSED;
+ 
+ import static com.android.app.animation.Interpolators.EMPHASIZED;
+ import static com.android.internal.jank.Cuj.CUJ_LAUNCHER_LAUNCH_APP_PAIR_FROM_WORKSPACE;
+-import static com.android.launcher3.Flags.blurOnMoreSurfaces;
+ import static com.android.launcher3.Flags.enableUnfoldStateAnimation;
+ import static com.android.launcher3.LauncherConstants.SavedInstanceKeys.PENDING_SPLIT_SELECT_INFO;
+ import static com.android.launcher3.LauncherConstants.SavedInstanceKeys.RUNTIME_STATE;
+@@ -126,6 +125,8 @@ import com.android.launcher3.Flags;
+ import com.android.launcher3.GestureNavContract;
+ import com.android.launcher3.InvariantDeviceProfile;
+ import com.android.launcher3.Launcher;
++import com.android.launcher3.LauncherPrefChangeListener;
++import com.android.launcher3.LauncherPrefs;
+ import com.android.launcher3.LauncherSettings.Favorites;
+ import com.android.launcher3.LauncherState;
+ import com.android.launcher3.QuickstepAccessibilityDelegate;
+@@ -321,7 +322,15 @@ public class QuickstepLauncher extends Launcher implements RecentsViewContainer,
+         mDepthController = new LauncherDepthController(this, blurState);
+         getTheme().applyStyle(blurEnabled ? R.style.OverviewBlurStyle
+                 : R.style.OverviewBlurFallbackStyle, true);
+-        if (blurOnMoreSurfaces()) {
++        LauncherPrefChangeListener folderBlurListener = k -> {
++            if (LauncherPrefs.FOLDER_BLUR.getSharedPrefKey().equals(k)) {
++                mWallpaperThemeManager.recreateToUpdateTheme();
++            }
++        };
++        LauncherPrefs.get(this).addListener(folderBlurListener, LauncherPrefs.FOLDER_BLUR);
++        closeOnDestroy(() -> LauncherPrefs.get(this).removeListener(
++                folderBlurListener, LauncherPrefs.FOLDER_BLUR));
++        if (LauncherPrefs.get(this).get(LauncherPrefs.FOLDER_BLUR)) {
+             getTheme().applyStyle(blurEnabled ? R.style.FolderBlurStyle
+                     : R.style.FolderBlurFallbackStyle, true);
+         }
+diff --git a/quickstep/src/com/android/launcher3/util/QuickstepBackgroundBlurHelper.kt b/quickstep/src/com/android/launcher3/util/QuickstepBackgroundBlurHelper.kt
+index cbe566af385..da5e2906d0e 100644
+--- a/quickstep/src/com/android/launcher3/util/QuickstepBackgroundBlurHelper.kt
++++ b/quickstep/src/com/android/launcher3/util/QuickstepBackgroundBlurHelper.kt
+@@ -24,14 +24,17 @@ import android.graphics.RenderEffect
+ import android.graphics.RenderNode
+ import android.graphics.Shader
+ import android.view.View
++import android.view.ViewTreeObserver
+ import com.android.internal.graphics.drawable.BackgroundBlurDrawable
+-import com.android.launcher3.Flags.blurOnMoreSurfaces
++import com.android.launcher3.Launcher
++import com.android.launcher3.LauncherPrefs
+ import com.android.launcher3.R
+ import com.android.launcher3.dagger.ActivityContextSingleton
+ import com.android.launcher3.folder.Folder
+ import com.android.launcher3.graphics.PathWrapper
+ import com.android.launcher3.util.WindowBlurState.WINDOW_BLUR_STATE
+ import com.android.launcher3.views.ActivityContext
++import java.util.WeakHashMap
+ import javax.inject.Inject
+ import javax.inject.Named
+ 
+@@ -55,6 +58,11 @@ constructor(
+     private val workspaceBlurRenderNode = RenderNode("workspaceBlur")
+     private val workspaceBlurRenderNodeOutline = Outline()
+     private val bounds = Rect()
++    private val iconBlurs = WeakHashMap<Any, BackgroundBlurDrawable>()
++    private var folderOpen = false
++    private var alphaListener: ViewTreeObserver.OnPreDrawListener? = null
++    private val blurPref =
++        LauncherPrefs.get(activityContext.asContext()).get(LauncherPrefs.FOLDER_BLUR)
+     private val folderBlurDrawable: BackgroundBlurDrawable? by lazy {
+         if (!isBlurEnabled()) null
+         else
+@@ -76,6 +84,7 @@ constructor(
+ 
+         folderIcon.setTextVisible(false)
+         folderIcon.setIconVisible(false)
++        setFolderOpen(true)
+ 
+         val dragLayer = activityContext.dragLayer
+         val canvas =
+@@ -97,6 +106,25 @@ constructor(
+         drawWorkspaceBlur(canvas, pathWrapper?.path, view)
+     }
+ 
++    override fun drawIconBlur(canvas: Canvas, key: Any, left: Int, top: Int, radius: Int) {
++        if (!isBlurEnabled() || !canvas.isHardwareAccelerated || folderOpen) return
++        if (alphaListener == null) {
++            alphaListener = ViewTreeObserver.OnPreDrawListener { updateIconAlphas(); true }
++                .also { activityContext.dragLayer.viewTreeObserver.addOnPreDrawListener(it) }
++        }
++        val d = iconBlurs.getOrPut(key) {
++            activityContext.dragLayer.getViewRootImpl()?.createBackgroundBlurDrawable() ?: return
++        }
++        if (d.setVisible(true, false) || d.bounds.isEmpty) {
++            (key as? View)?.postInvalidateOnAnimation()
++        }
++        d.setBlurRadius(folderBlurRadius.toInt())
++        d.setCornerRadius(radius.toFloat())
++        d.setBounds(left, top, left + 2 * radius, top + 2 * radius)
++        d.alpha = blurAlpha(key)
++        d.draw(canvas)
++    }
++
+     private fun drawWorkspaceBlur(canvas: Canvas, path: Path?, view: View) {
+         if (!workspaceBlurRenderNode.hasDisplayList()) {
+             return
+@@ -149,9 +177,33 @@ constructor(
+             workspaceBlurRenderNode.discardDisplayList()
+         }
+         folderBlurDrawable?.setVisible(false, false)
++        setFolderOpen(false)
++    }
++
++    private fun setFolderOpen(open: Boolean) {
++        if (folderOpen == open) return
++        folderOpen = open
++        iconBlurs.keys.forEach { (it as? View)?.invalidate() }
++    }
++
++    private fun updateIconAlphas() {
++        if (folderOpen) return
++        iconBlurs.forEach { (k, d) ->
++            val a = blurAlpha(k)
++            if (d.alpha == 0 && a > 0) (k as? View)?.invalidate()
++            d.alpha = a
++        }
++    }
++
++    private fun blurAlpha(key: Any): Int {
++        val v = key as? View ?: return 255
++        if (!v.isShown) return 0
++        val p = (activityContext as? Launcher)?.allAppsController?.progress?.coerceIn(0f, 1f) ?: 1f
++        return (generateSequence(v) { it.parent as? View }.fold(p) { a, x -> a * x.alpha } * 255)
++            .toInt()
+     }
+ 
+     override fun isBlurEnabled(): Boolean {
+-        return blurOnMoreSurfaces() && blurState.value
++        return blurPref && blurState.value
+     }
+ }
+diff --git a/res/values-ro/lineage_strings.xml b/res/values-ro/lineage_strings.xml
+index 6fa0c23fa2a..ce89741a49c 100644
+--- a/res/values-ro/lineage_strings.xml
++++ b/res/values-ro/lineage_strings.xml
+@@ -50,4 +50,6 @@
+     <string name="trust_apps_info_protected">Aplicațiile protejate necesită autentificare pentru a fi deschise din launcher</string>
+     <string name="pref_transition_animation_scale_title">Viteza animației de tranziție a aplicațiilor</string>
+     <string name="pref_transition_animation_scale_summary">Ajustează viteza de tranziție la deschiderea și închiderea aplicațiilor</string>
++    <string name="folder_blur_title">Estompare fundal dosare</string>
++    <string name="folder_blur_summary">Estompează fundalul din spatele dosarelor deschise</string>
+ </resources>
+diff --git a/res/values/lineage_strings.xml b/res/values/lineage_strings.xml
+index bfca5a49fd3..5106ce9b373 100644
+--- a/res/values/lineage_strings.xml
++++ b/res/values/lineage_strings.xml
+@@ -77,6 +77,8 @@
+     <string name="trust_apps_help">Help</string>
+     <string name="trust_apps_info_hidden">Hidden apps and their widgets are hidden from the drawer</string>
+     <string name="trust_apps_info_protected">Protected apps require authentication to be opened from the launcher</string>
++    <string name="folder_blur_title">Folder blur</string>
++    <string name="folder_blur_summary">Blur the background behind open folders</string>
+ 
+     <!-- Transition animation -->
+     <string name="pref_transition_animation_scale_title">App transition animation speed</string>
+diff --git a/res/values/styles.xml b/res/values/styles.xml
+index aaea321e1f7..762d8b5c2f8 100644
+--- a/res/values/styles.xml
++++ b/res/values/styles.xml
+@@ -187,6 +187,7 @@
+ 
+     <style name="FolderBlurStyle">
+         <item name="folderBackgroundColor">@color/customColorSurfaceEffect0</item>
++        <item name="folderPreviewColor">@color/customColorSurfaceEffect0</item>
+     </style>
+     <style name="FolderBlurFallbackStyle">
+         <item name="folderBackgroundColor">@color/customColorSurfaceEffect0Fallback</item>
+diff --git a/res/xml/launcher_preferences.xml b/res/xml/launcher_preferences.xml
+index bac6b9bd24d..deee55a109c 100644
+--- a/res/xml/launcher_preferences.xml
++++ b/res/xml/launcher_preferences.xml
+@@ -71,6 +71,13 @@
+         app:showSeekBarValue="false"
+         app:updatesContinuously="true" />
+ 
++    <SwitchPreferenceCompat
++        android:key="pref_folder_blur"
++        android:title="@string/folder_blur_title"
++        android:summary="@string/folder_blur_summary"
++        android:defaultValue="false"
++        android:persistent="true" />
++
+     <SwitchPreferenceCompat
+         android:key="pref_drawer_open_keyboard"
+         android:title="@string/drawer_open_keyboard_title"
+diff --git a/src/com/android/launcher3/LauncherPrefs.kt b/src/com/android/launcher3/LauncherPrefs.kt
+index c624c3530d3..6471fd2242c 100644
+--- a/src/com/android/launcher3/LauncherPrefs.kt
++++ b/src/com/android/launcher3/LauncherPrefs.kt
+@@ -263,6 +263,7 @@ constructor(@ApplicationContext private val encryptedContext: Context) {
+ 
+         @JvmField val ALLAPPS_THEMED_ICONS = backedUpItem("pref_allapps_themed_icons", false)
+         @JvmField val DRAWER_OPEN_KEYBOARD = backedUpItem("pref_drawer_open_keyboard", false)
++        @JvmField val FOLDER_BLUR = backedUpItem("pref_folder_blur", false)
+         @JvmField val SHOW_DESKTOP_LABELS = backedUpItem("pref_desktop_show_labels", true)
+         @JvmField val SHOW_DRAWER_LABELS = backedUpItem("pref_drawer_show_labels", true)
+         @JvmField val SLEEP_GESTURE = backedUpItem("pref_sleep_gesture", false)
+diff --git a/src/com/android/launcher3/folder/Folder.java b/src/com/android/launcher3/folder/Folder.java
+index 9d6c625fc45..4183fc54ffd 100644
+--- a/src/com/android/launcher3/folder/Folder.java
++++ b/src/com/android/launcher3/folder/Folder.java
+@@ -18,7 +18,6 @@ package com.android.launcher3.folder;
+ 
+ import static android.text.TextUtils.isEmpty;
+ 
+-import static com.android.launcher3.Flags.blurOnMoreSurfaces;
+ import static com.android.launcher3.Flags.enableWorkspaceSelection;
+ import static com.android.launcher3.LauncherAnimUtils.SPRING_LOADED_EXIT_DELAY;
+ import static com.android.launcher3.LauncherState.EDIT_MODE;
+@@ -755,7 +754,7 @@ public class Folder extends AbstractFloatingView implements ClipPathView, DragSo
+         Folder openFolder = getOpen(mActivityContext);
+         closeOpenFolder(openFolder);
+ 
+-        if (blurOnMoreSurfaces()) {
++        if (mBlurBackgroundHelper.isBlurEnabled()) {
+             mBlurBackgroundHelper.prepareToOpenFolder(this);
+         }
+ 
+diff --git a/src/com/android/launcher3/folder/PreviewBackground.java b/src/com/android/launcher3/folder/PreviewBackground.java
+index 1493b0aa65f..6a74e9a133a 100644
+--- a/src/com/android/launcher3/folder/PreviewBackground.java
++++ b/src/com/android/launcher3/folder/PreviewBackground.java
+@@ -50,6 +50,7 @@ import com.android.launcher3.R;
+ import com.android.launcher3.celllayout.DelegatedCellDrawing;
+ import com.android.launcher3.graphics.PathWrapper;
+ import com.android.launcher3.graphics.ShapeDelegate;
++import com.android.launcher3.util.BlurBackgroundHelper;
+ import com.android.launcher3.graphics.ThemeManager;
+ import com.android.launcher3.views.ActivityContext;
+ 
+@@ -95,6 +96,8 @@ public class PreviewBackground extends DelegatedCellDrawing {
+     // should not occlude the icon
+     public boolean isClipping = true;
+ 
++    private BlurBackgroundHelper mBlurHelper;
++
+     // Drawing / animation configurations
+     @VisibleForTesting protected static final float ACCEPT_SCALE_FACTOR = 1.20f;
+ 
+@@ -173,6 +176,7 @@ public class PreviewBackground extends DelegatedCellDrawing {
+         mBgColor = ta.getColor(R.styleable.FolderIconPreview_folderPreviewColor, 0);
+         ta.recycle();
+ 
++        mBlurHelper = activity.getActivityComponent().getBlurBackgroundHelper();
+         DeviceProfile grid = activity.getDeviceProfile();
+         previewSize = grid.getFolderProfile().getFolderIconSizePx();
+ 
+@@ -250,6 +254,10 @@ public class PreviewBackground extends DelegatedCellDrawing {
+         mPaint.setStyle(Paint.Style.FILL);
+         mPaint.setColor(getBgColor());
+ 
++        if (mBlurHelper != null) {
++            mBlurHelper.drawIconBlur(canvas, mInvalidateDelegate != null ? mInvalidateDelegate : this,
++                    getOffsetX(), getOffsetY(), getScaledRadius());
++        }
+         getShape().drawShape(canvas, getOffsetX(), getOffsetY(), getScaledRadius(), mPaint);
+         drawShadow(canvas);
+     }
+diff --git a/src/com/android/launcher3/util/BlurBackgroundHelper.kt b/src/com/android/launcher3/util/BlurBackgroundHelper.kt
+index ca9ba98990b..eb881a590da 100644
+--- a/src/com/android/launcher3/util/BlurBackgroundHelper.kt
++++ b/src/com/android/launcher3/util/BlurBackgroundHelper.kt
+@@ -36,6 +36,8 @@ constructor() {
+ 
+     open fun drawFolderBlur(canvas: Canvas, pathWrapper: PathWrapper?, view: View) {}
+ 
++    open fun drawIconBlur(canvas: Canvas, key: Any, left: Int, top: Int, radius: Int) {}
++
+     open fun folderCloseComplete() {}
+ 
+     open fun isBlurEnabled() = false
+-- 
+2.50.1.windows.1
+

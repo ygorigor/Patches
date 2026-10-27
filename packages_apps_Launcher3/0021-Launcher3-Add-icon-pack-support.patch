@@ -1,0 +1,304 @@
+From 8b3e4b896e4304ddfc89b59de627114bb1ba66b4 Mon Sep 17 00:00:00 2001
+From: grep <grepfox@tutamail.com>
+Date: Fri, 23 Oct 2026 18:54:01 +0200
+Subject: [PATCH] Launcher3: Add icon pack support
+
+Change-Id: Ifd2cf408439b408cdbc20de3773495c0e537eba9
+---
+ .../icons/LauncherIconProviderImpl.kt         | 22 ++++++
+ res/values-ro/lineage_strings.xml             |  2 +
+ res/values/lineage_strings.xml                |  2 +
+ res/xml/launcher_preferences.xml              |  5 ++
+ src/com/android/launcher3/LauncherPrefs.kt    |  1 +
+ .../launcher3/graphics/ThemeManager.kt        | 10 ++-
+ src/com/android/launcher3/icons/IconPack.kt   | 62 +++++++++++++++
+ .../launcher3/settings/IconPackPreference.kt  | 79 +++++++++++++++++++
+ 8 files changed, 179 insertions(+), 4 deletions(-)
+ create mode 100644 src/com/android/launcher3/icons/IconPack.kt
+ create mode 100644 src/com/android/launcher3/settings/IconPackPreference.kt
+
+diff --git a/quickstep/src/com/android/launcher3/icons/LauncherIconProviderImpl.kt b/quickstep/src/com/android/launcher3/icons/LauncherIconProviderImpl.kt
+index fcd2c52ffc8..6b873a99a5c 100644
+--- a/quickstep/src/com/android/launcher3/icons/LauncherIconProviderImpl.kt
++++ b/quickstep/src/com/android/launcher3/icons/LauncherIconProviderImpl.kt
+@@ -18,12 +18,17 @@ package com.android.launcher3.icons
+ 
+ import android.content.Context
+ import android.content.pm.ApplicationInfo
++import android.content.pm.ComponentInfo
+ import android.content.pm.PackageItemInfo
+ import android.content.res.Resources.NotFoundException
++import android.graphics.Color
+ import android.graphics.drawable.AdaptiveIconDrawable
++import android.graphics.drawable.ColorDrawable
+ import android.graphics.drawable.Drawable
++import android.graphics.drawable.InsetDrawable
+ import android.util.Log
+ import com.android.launcher3.LauncherModel
++import com.android.launcher3.LauncherPrefs
+ import com.android.launcher3.dagger.ApplicationContext
+ import com.android.launcher3.dagger.LauncherAppSingleton
+ import com.android.launcher3.graphics.ShapeDelegate.Circle
+@@ -73,6 +78,23 @@ constructor(
+         info: PackageItemInfo,
+         appInfo: ApplicationInfo,
+         density: Int,
++    ): Drawable? {
++        val icon = loadAppIcon(info, appInfo, density)
++        val p = IconPack.get(mContext, LauncherPrefs.get(mContext).get(LauncherPrefs.ICON_PACK))
++            ?.getIcon(info.packageName, (info as? ComponentInfo)?.name, density) ?: return icon
++        val a = p as? AdaptiveIconDrawable
++        val f = AdaptiveIconDrawable.getExtraInsetFraction()
++        return AdaptiveIconDrawable(
++            a?.background ?: ColorDrawable(Color.TRANSPARENT),
++            a?.foreground ?: InsetDrawable(p, f / (1 + 2 * f)),
++            a?.monochrome ?: (icon as? AdaptiveIconDrawable)?.monochrome,
++        )
++    }
++
++    private fun loadAppIcon(
++        info: PackageItemInfo,
++        appInfo: ApplicationInfo,
++        density: Int,
+     ): Drawable? {
+         fun Drawable.preprocess(resId: Int) =
+             processor?.preprocessDrawable(this, resId, appInfo) ?: this
+diff --git a/res/values-ro/lineage_strings.xml b/res/values-ro/lineage_strings.xml
+index 1feb53efd78..9241b04277e 100644
+--- a/res/values-ro/lineage_strings.xml
++++ b/res/values-ro/lineage_strings.xml
+@@ -60,4 +60,6 @@
+     <string name="folder_style_grid">Grilă</string>
+     <string name="folder_style_circle">Cerc</string>
+     <string name="folder_style_cover">Copertă</string>
++    <string name="icon_pack_title">Pachet pictograme</string>
++    <string name="icon_pack_default">Sistem</string>
+ </resources>
+diff --git a/res/values/lineage_strings.xml b/res/values/lineage_strings.xml
+index f2248b6ed59..5e24c58db64 100644
+--- a/res/values/lineage_strings.xml
++++ b/res/values/lineage_strings.xml
+@@ -77,6 +77,8 @@
+     <string name="trust_apps_help">Help</string>
+     <string name="trust_apps_info_hidden">Hidden apps and their widgets are hidden from the drawer</string>
+     <string name="trust_apps_info_protected">Protected apps require authentication to be opened from the launcher</string>
++    <string name="icon_pack_title">Icon pack</string>
++    <string name="icon_pack_default">System default</string>
+     <string name="folder_blur_title">Folder blur</string>
+     <string name="folder_blur_summary">Blur the background behind open folders</string>
+     <string name="action_enlarge">Enlarge</string>
+diff --git a/res/xml/launcher_preferences.xml b/res/xml/launcher_preferences.xml
+index deee55a109c..15737a23c36 100644
+--- a/res/xml/launcher_preferences.xml
++++ b/res/xml/launcher_preferences.xml
+@@ -71,6 +71,11 @@
+         app:showSeekBarValue="false"
+         app:updatesContinuously="true" />
+ 
++    <com.android.launcher3.settings.IconPackPreference
++        android:key="pref_icon_pack"
++        android:title="@string/icon_pack_title"
++        android:persistent="true" />
++
+     <SwitchPreferenceCompat
+         android:key="pref_folder_blur"
+         android:title="@string/folder_blur_title"
+diff --git a/src/com/android/launcher3/LauncherPrefs.kt b/src/com/android/launcher3/LauncherPrefs.kt
+index 6471fd2242c..defb64085b5 100644
+--- a/src/com/android/launcher3/LauncherPrefs.kt
++++ b/src/com/android/launcher3/LauncherPrefs.kt
+@@ -264,6 +264,7 @@ constructor(@ApplicationContext private val encryptedContext: Context) {
+         @JvmField val ALLAPPS_THEMED_ICONS = backedUpItem("pref_allapps_themed_icons", false)
+         @JvmField val DRAWER_OPEN_KEYBOARD = backedUpItem("pref_drawer_open_keyboard", false)
+         @JvmField val FOLDER_BLUR = backedUpItem("pref_folder_blur", false)
++        @JvmField val ICON_PACK = backedUpItem("pref_icon_pack", "")
+         @JvmField val SHOW_DESKTOP_LABELS = backedUpItem("pref_desktop_show_labels", true)
+         @JvmField val SHOW_DRAWER_LABELS = backedUpItem("pref_drawer_show_labels", true)
+         @JvmField val SLEEP_GESTURE = backedUpItem("pref_sleep_gesture", false)
+diff --git a/src/com/android/launcher3/graphics/ThemeManager.kt b/src/com/android/launcher3/graphics/ThemeManager.kt
+index 5ed1a6315c5..3da9ece204c 100644
+--- a/src/com/android/launcher3/graphics/ThemeManager.kt
++++ b/src/com/android/launcher3/graphics/ThemeManager.kt
+@@ -101,12 +101,14 @@ constructor(
+         lifecycle.addCloseable(overlayChangeHandler.addCallback { verifyIconState() })
+ 
+         val prefListener = LauncherPrefChangeListener {
+-            if (it == PREF_ICON_SHAPE.sharedPrefKey) verifyIconState()
++            if (it == PREF_ICON_SHAPE.sharedPrefKey || it == LauncherPrefs.ICON_PACK.sharedPrefKey) {
++                verifyIconState()
++            }
+         }
+-        prefs.addListener(prefListener, PREF_ICON_SHAPE)
++        prefs.addListener(prefListener, PREF_ICON_SHAPE, LauncherPrefs.ICON_PACK)
+         lifecycle.addCloseable(themePreference.forEach(mainExecutor) { verifyIconState() })
+         lifecycle.addCloseable {
+-            prefs.removeListener(prefListener, PREF_ICON_SHAPE)
++            prefs.removeListener(prefListener, PREF_ICON_SHAPE, LauncherPrefs.ICON_PACK)
+             iconState.closeController()
+         }
+     }
+@@ -182,7 +184,7 @@ constructor(
+                 }
+ 
+         val themeKey = themePreference.value
+-        val themeCode = themeKey?.toString() ?: "no-theme"
++        val themeCode = (themeKey?.toString() ?: "no-theme") + prefs.get(LauncherPrefs.ICON_PACK)
+ 
+         val iconControllerFactory =
+             if (oldState?.themeCode == themeCode) {
+diff --git a/src/com/android/launcher3/icons/IconPack.kt b/src/com/android/launcher3/icons/IconPack.kt
+new file mode 100644
+index 00000000000..4789446ddf9
+--- /dev/null
++++ b/src/com/android/launcher3/icons/IconPack.kt
+@@ -0,0 +1,62 @@
++package com.android.launcher3.icons
++
++import android.content.ComponentName
++import android.content.Context
++import android.content.Intent
++import android.content.pm.ResolveInfo
++import android.content.res.Resources
++import android.graphics.drawable.Drawable
++import org.xmlpull.v1.XmlPullParser
++import org.xmlpull.v1.XmlPullParserFactory
++
++class IconPack(private val pkg: String, private val res: Resources, private val map: Map<String, String>) {
++
++    fun getIcon(packageName: String, className: String?, density: Int): Drawable? {
++        val name = className?.let { map["$packageName/$it"] } ?: map[packageName] ?: return null
++        val id = res.getIdentifier(name, "drawable", pkg)
++        return if (id == 0) null else try {
++            res.getDrawableForDensity(id, density, null)
++        } catch (e: Exception) {
++            null
++        }
++    }
++
++    companion object {
++        private val ACTIONS = arrayOf("org.adw.launcher.THEMES", "com.novalauncher.THEME")
++        private var cached: IconPack? = null
++
++        @JvmStatic
++        fun getPacks(context: Context): List<ResolveInfo> =
++            ACTIONS.flatMap { context.packageManager.queryIntentActivities(Intent(it), 0) }
++                .distinctBy { it.activityInfo.packageName }
++
++        @JvmStatic
++        @Synchronized
++        fun get(context: Context, pkg: String): IconPack? {
++            if (pkg.isEmpty()) return null
++            cached?.takeIf { it.pkg == pkg }?.let { return it }
++            return load(context, pkg)?.also { cached = it }
++        }
++
++        @JvmStatic
++        fun load(context: Context, pkg: String): IconPack? = try {
++            val res = context.packageManager.getResourcesForApplication(pkg)
++            val id = res.getIdentifier("appfilter", "xml", pkg)
++            val parser = if (id != 0) res.getXml(id) else XmlPullParserFactory.newInstance()
++                .newPullParser().apply { setInput(res.assets.open("appfilter.xml"), null) }
++            val map = HashMap<String, String>()
++            while (parser.next() != XmlPullParser.END_DOCUMENT) {
++                if (parser.eventType != XmlPullParser.START_TAG || parser.name != "item") continue
++                val drawable = parser.getAttributeValue(null, "drawable") ?: continue
++                val cn = parser.getAttributeValue(null, "component")
++                    ?.removePrefix("ComponentInfo{")?.removeSuffix("}")
++                    ?.let(ComponentName::unflattenFromString) ?: continue
++                map.putIfAbsent("${cn.packageName}/${cn.className}", drawable)
++                map.putIfAbsent(cn.packageName, drawable)
++            }
++            IconPack(pkg, res, map)
++        } catch (e: Exception) {
++            null
++        }
++    }
++}
+diff --git a/src/com/android/launcher3/settings/IconPackPreference.kt b/src/com/android/launcher3/settings/IconPackPreference.kt
+new file mode 100644
+index 00000000000..a91fa37cbce
+--- /dev/null
++++ b/src/com/android/launcher3/settings/IconPackPreference.kt
+@@ -0,0 +1,79 @@
++package com.android.launcher3.settings
++
++import android.app.AlertDialog
++import android.content.Context
++import android.content.Intent
++import android.content.pm.ResolveInfo
++import android.util.AttributeSet
++import android.widget.ImageView
++import android.widget.LinearLayout
++import android.widget.RadioButton
++import android.widget.ScrollView
++import androidx.preference.Preference
++import com.android.launcher3.R
++import com.android.launcher3.icons.IconPack
++import com.android.launcher3.util.Executors.MAIN_EXECUTOR
++import com.android.launcher3.util.Executors.UI_HELPER_EXECUTOR
++
++class IconPackPreference(context: Context, attrs: AttributeSet?) : Preference(context, attrs) {
++
++    override fun onAttached() {
++        super.onAttached()
++        updateSummary()
++    }
++
++    private fun updateSummary() {
++        val current = getPersistedString("")
++        summary = IconPack.getPacks(context).firstOrNull { it.activityInfo.packageName == current }
++            ?.loadLabel(context.packageManager) ?: context.getString(R.string.icon_pack_default)
++    }
++
++    override fun onClick() {
++        val pm = context.packageManager
++        val d = context.resources.displayMetrics.density
++        val apps = pm.queryIntentActivities(
++            Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), 0)
++        val current = getPersistedString("")
++        val list = LinearLayout(context).apply {
++            orientation = LinearLayout.VERTICAL
++            setPadding((20 * d).toInt(), (8 * d).toInt(), (20 * d).toInt(), 0)
++        }
++        val dialog = AlertDialog.Builder(context).setTitle(title)
++            .setView(ScrollView(context).apply { addView(list) }).create()
++        (listOf<ResolveInfo?>(null) + IconPack.getPacks(context)).forEach { ri ->
++            val pkg = ri?.activityInfo?.packageName ?: ""
++            val previews = LinearLayout(context)
++            list.addView(LinearLayout(context).apply {
++                orientation = LinearLayout.VERTICAL
++                setPadding(0, (8 * d).toInt(), 0, (8 * d).toInt())
++                addView(RadioButton(context).apply {
++                    text = ri?.loadLabel(pm) ?: context.getString(R.string.icon_pack_default)
++                    isChecked = pkg == current
++                    isClickable = false
++                })
++                addView(previews)
++                setOnClickListener {
++                    persistString(pkg)
++                    updateSummary()
++                    dialog.dismiss()
++                }
++            })
++            UI_HELPER_EXECUTOR.execute {
++                val pack = IconPack.load(context, pkg)
++                val icons = apps.asSequence().mapNotNull {
++                    if (pkg.isEmpty()) it.loadIcon(pm)
++                    else pack?.getIcon(it.activityInfo.packageName, it.activityInfo.name, 0)
++                }.take(6).toList()
++                MAIN_EXECUTOR.execute {
++                    icons.forEach {
++                        previews.addView(ImageView(context).apply {
++                            setImageDrawable(it)
++                            layoutParams = LinearLayout.LayoutParams(0, (40 * d).toInt(), 1f)
++                        })
++                    }
++                }
++            }
++        }
++        dialog.show()
++    }
++}
+-- 
+2.50.1.windows.1
+
