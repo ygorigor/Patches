@@ -1,9 +1,10 @@
-From 8b3e4b896e4304ddfc89b59de627114bb1ba66b4 Mon Sep 17 00:00:00 2001
+From 991692d99c6a590ee8a39ef1daa4f48d17ad17e7 Mon Sep 17 00:00:00 2001
 From: grep <grepfox@tutamail.com>
 Date: Fri, 23 Oct 2026 18:54:01 +0200
 Subject: [PATCH] Launcher3: Add icon pack support
 
 Change-Id: Ifd2cf408439b408cdbc20de3773495c0e537eba9
+Signed-off-by: ygorigor <sorocean.igor@gmail.com>
 ---
  .../icons/LauncherIconProviderImpl.kt         | 22 ++++++
  res/values-ro/lineage_strings.xml             |  2 +
@@ -64,36 +65,34 @@ index fcd2c52ffc8..6b873a99a5c 100644
          fun Drawable.preprocess(resId: Int) =
              processor?.preprocessDrawable(this, resId, appInfo) ?: this
 diff --git a/res/values-ro/lineage_strings.xml b/res/values-ro/lineage_strings.xml
-index 1feb53efd78..9241b04277e 100644
+index 56ba652c5d8..368b857af2c 100644
 --- a/res/values-ro/lineage_strings.xml
 +++ b/res/values-ro/lineage_strings.xml
-@@ -60,4 +60,6 @@
-     <string name="folder_style_grid">Grilă</string>
-     <string name="folder_style_circle">Cerc</string>
-     <string name="folder_style_cover">Copertă</string>
+@@ -48,4 +48,6 @@
+     <string name="trust_apps_help">Ajutor</string>
+     <string name="trust_apps_info_hidden">Aplicațiile ascunse și widget-urile lor sunt ascunse în sertar</string>
+     <string name="trust_apps_info_protected">Aplicațiile protejate necesită autentificare pentru a fi deschise din launcher</string>
 +    <string name="icon_pack_title">Pachet pictograme</string>
 +    <string name="icon_pack_default">Sistem</string>
  </resources>
 diff --git a/res/values/lineage_strings.xml b/res/values/lineage_strings.xml
-index f2248b6ed59..5e24c58db64 100644
+index f223b4c3845..baf33b28ef9 100644
 --- a/res/values/lineage_strings.xml
 +++ b/res/values/lineage_strings.xml
-@@ -77,6 +77,8 @@
+@@ -77,4 +77,6 @@
      <string name="trust_apps_help">Help</string>
      <string name="trust_apps_info_hidden">Hidden apps and their widgets are hidden from the drawer</string>
      <string name="trust_apps_info_protected">Protected apps require authentication to be opened from the launcher</string>
 +    <string name="icon_pack_title">Icon pack</string>
 +    <string name="icon_pack_default">System default</string>
-     <string name="folder_blur_title">Folder blur</string>
-     <string name="folder_blur_summary">Blur the background behind open folders</string>
-     <string name="action_enlarge">Enlarge</string>
+ </resources>
 diff --git a/res/xml/launcher_preferences.xml b/res/xml/launcher_preferences.xml
-index deee55a109c..15737a23c36 100644
+index 3ef77952145..28ff4874fb2 100644
 --- a/res/xml/launcher_preferences.xml
 +++ b/res/xml/launcher_preferences.xml
-@@ -71,6 +71,11 @@
-         app:showSeekBarValue="false"
-         app:updatesContinuously="true" />
+@@ -59,6 +59,11 @@
+         android:defaultValue="false"
+         android:persistent="true" />
  
 +    <com.android.launcher3.settings.IconPackPreference
 +        android:key="pref_icon_pack"
@@ -101,16 +100,16 @@ index deee55a109c..15737a23c36 100644
 +        android:persistent="true" />
 +
      <SwitchPreferenceCompat
-         android:key="pref_folder_blur"
-         android:title="@string/folder_blur_title"
+         android:key="pref_drawer_open_keyboard"
+         android:title="@string/drawer_open_keyboard_title"
 diff --git a/src/com/android/launcher3/LauncherPrefs.kt b/src/com/android/launcher3/LauncherPrefs.kt
-index 6471fd2242c..defb64085b5 100644
+index c624c3530d3..3ad28a2d27d 100644
 --- a/src/com/android/launcher3/LauncherPrefs.kt
 +++ b/src/com/android/launcher3/LauncherPrefs.kt
-@@ -264,6 +264,7 @@ constructor(@ApplicationContext private val encryptedContext: Context) {
+@@ -263,6 +263,7 @@ constructor(@ApplicationContext private val encryptedContext: Context) {
+ 
          @JvmField val ALLAPPS_THEMED_ICONS = backedUpItem("pref_allapps_themed_icons", false)
          @JvmField val DRAWER_OPEN_KEYBOARD = backedUpItem("pref_drawer_open_keyboard", false)
-         @JvmField val FOLDER_BLUR = backedUpItem("pref_folder_blur", false)
 +        @JvmField val ICON_PACK = backedUpItem("pref_icon_pack", "")
          @JvmField val SHOW_DESKTOP_LABELS = backedUpItem("pref_desktop_show_labels", true)
          @JvmField val SHOW_DRAWER_LABELS = backedUpItem("pref_drawer_show_labels", true)
