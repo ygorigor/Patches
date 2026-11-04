@@ -1,0 +1,97 @@
+From d4e3c7aa8b49e544d3edc5c3e44f78b71f5d2574 Mon Sep 17 00:00:00 2001
+From: grep <grepfox@tutamail.com>
+Date: Fri, 30 Oct 2026 19:30:50 +0100
+Subject: [PATCH] Launcher3: Draw icon pack icons without wrapping
+
+Change-Id: I92cc6c17eb8fcfeb553f14d3475932a016a04f5d
+---
+ .../launcher3/icons/LauncherIconProviderImpl.kt   | 11 ++++-------
+ src/com/android/launcher3/graphics/IconLoader.kt  |  3 +++
+ src/com/android/launcher3/icons/IconPack.kt       | 15 +++++++++++++++
+ 3 files changed, 22 insertions(+), 7 deletions(-)
+
+diff --git a/quickstep/src/com/android/launcher3/icons/LauncherIconProviderImpl.kt b/quickstep/src/com/android/launcher3/icons/LauncherIconProviderImpl.kt
+index 6b873a99a5c..40a39f44242 100644
+--- a/quickstep/src/com/android/launcher3/icons/LauncherIconProviderImpl.kt
++++ b/quickstep/src/com/android/launcher3/icons/LauncherIconProviderImpl.kt
+@@ -21,11 +21,8 @@ import android.content.pm.ApplicationInfo
+ import android.content.pm.ComponentInfo
+ import android.content.pm.PackageItemInfo
+ import android.content.res.Resources.NotFoundException
+-import android.graphics.Color
+ import android.graphics.drawable.AdaptiveIconDrawable
+-import android.graphics.drawable.ColorDrawable
+ import android.graphics.drawable.Drawable
+-import android.graphics.drawable.InsetDrawable
+ import android.util.Log
+ import com.android.launcher3.LauncherModel
+ import com.android.launcher3.LauncherPrefs
+@@ -83,11 +80,11 @@ constructor(
+         val p = IconPack.get(mContext, LauncherPrefs.get(mContext).get(LauncherPrefs.ICON_PACK))
+             ?.getIcon(info.packageName, (info as? ComponentInfo)?.name, density) ?: return icon
+         val a = p as? AdaptiveIconDrawable
+-        val f = AdaptiveIconDrawable.getExtraInsetFraction()
++            ?: return IconPackDrawable(p)
+         return AdaptiveIconDrawable(
+-            a?.background ?: ColorDrawable(Color.TRANSPARENT),
+-            a?.foreground ?: InsetDrawable(p, f / (1 + 2 * f)),
+-            a?.monochrome ?: (icon as? AdaptiveIconDrawable)?.monochrome,
++            a.background,
++            a.foreground,
++            a.monochrome ?: (icon as? AdaptiveIconDrawable)?.monochrome,
+         )
+     }
+ 
+diff --git a/src/com/android/launcher3/graphics/IconLoader.kt b/src/com/android/launcher3/graphics/IconLoader.kt
+index b6e42d353d4..f8bbc3e849c 100644
+--- a/src/com/android/launcher3/graphics/IconLoader.kt
++++ b/src/com/android/launcher3/graphics/IconLoader.kt
+@@ -33,6 +33,7 @@ import com.android.launcher3.dragndrop.FolderAdaptiveIcon
+ import com.android.launcher3.icons.BitmapInfo
+ import com.android.launcher3.icons.CacheableShortcutInfo.Companion.getIcon
+ import com.android.launcher3.icons.IconCache
++import com.android.launcher3.icons.IconPackDrawable
+ import com.android.launcher3.icons.LauncherIconProvider
+ import com.android.launcher3.icons.LauncherIcons
+ import com.android.launcher3.icons.cache.CacheLookupFlag
+@@ -127,6 +128,8 @@ constructor(
+         var result: AdaptiveIconDrawable =
+             if (mainIcon is AdaptiveIconDrawable) {
+                 mainIcon
++            } else if (mainIcon is IconPackDrawable) {
++                return null
+             } else {
+                 // Wrap the main icon in AID
+                 LauncherIcons.obtain(context).use { li -> li.wrapToAdaptiveIcon(mainIcon) }
+diff --git a/src/com/android/launcher3/icons/IconPack.kt b/src/com/android/launcher3/icons/IconPack.kt
+index 4789446ddf9..a7a93b29624 100644
+--- a/src/com/android/launcher3/icons/IconPack.kt
++++ b/src/com/android/launcher3/icons/IconPack.kt
+@@ -6,9 +6,24 @@ import android.content.Intent
+ import android.content.pm.ResolveInfo
+ import android.content.res.Resources
+ import android.graphics.drawable.Drawable
++import android.graphics.drawable.DrawableWrapper
++import com.android.launcher3.icons.BaseIconFactory.IconOptions
+ import org.xmlpull.v1.XmlPullParser
+ import org.xmlpull.v1.XmlPullParserFactory
+ 
++class IconPackDrawable(private val icon: Drawable) : DrawableWrapper(icon), BitmapInfo.Extender {
++
++    override fun getUpdatedBitmapInfo(info: BitmapInfo, factory: BaseIconFactory) =
++        factory
++            .createBadgedIconBitmap(
++                icon,
++                IconOptions().setWrapNonAdaptiveIcon(false).setDrawFullBleed(false),
++            )
++            .copy(flags = info.flags and BitmapInfo.FLAG_FULL_BLEED.inv())
++
++    override fun drawForPersistence() {}
++}
++
+ class IconPack(private val pkg: String, private val res: Resources, private val map: Map<String, String>) {
+ 
+     fun getIcon(packageName: String, className: String?, density: Int): Drawable? {
+-- 
+2.50.1.windows.1
+
