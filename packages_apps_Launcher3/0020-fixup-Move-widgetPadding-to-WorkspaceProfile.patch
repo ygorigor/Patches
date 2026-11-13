@@ -1,0 +1,87 @@
+From 83f36230fd13e3a2f38e0cee880e1d9b1ff915f7 Mon Sep 17 00:00:00 2001
+From: Nicholas Lim <niclimcy@lineageos.org>
+Date: Sun, 1 Nov 2026 14:10:37 +0800
+Subject: [PATCH] fixup! Move widgetPadding to WorkspaceProfile
+
+The refactor only kept the widget padding calculation
+in the responsive grid path, so non-responsive grids
+end up with no padding between widgets.
+
+Create a method calculateWidgetPadding that can be used
+by both paths.
+
+Fixes: https://github.com/LineageOS/issues/issues/768
+Change-Id: I9b6eb6819644765895215d608f9b4dffaf1b499c
+---
+ .../deviceprofile/WorkspaceProfile.kt         | 26 ++++++++++---------
+ .../WorkspaceProfileNonResponsiveFactory.kt   |  3 +++
+ 2 files changed, 17 insertions(+), 12 deletions(-)
+
+diff --git a/src/com/android/launcher3/deviceprofile/WorkspaceProfile.kt b/src/com/android/launcher3/deviceprofile/WorkspaceProfile.kt
+index 9652efa0140..f7349a4a2fd 100644
+--- a/src/com/android/launcher3/deviceprofile/WorkspaceProfile.kt
++++ b/src/com/android/launcher3/deviceprofile/WorkspaceProfile.kt
+@@ -211,6 +211,19 @@ data class WorkspaceProfile(
+ 
+         const val MIN_WIDGET_PADDING_DP: Float = 6f
+ 
++        /** Calculate minimum padding between widgets */
++        fun calculateWidgetPadding(cellLayoutBorderSpacePx: Point, metrics: DisplayMetrics): Rect {
++            val minSpacing: Float = ResourceUtils.pxFromDp(MIN_WIDGET_PADDING_DP, metrics).toFloat()
++            val widgetPadding = Rect()
++            if (cellLayoutBorderSpacePx.x < minSpacing || cellLayoutBorderSpacePx.y < minSpacing) {
++                widgetPadding.right = max(0f, minSpacing - cellLayoutBorderSpacePx.x).roundToInt()
++                widgetPadding.left = widgetPadding.right
++                widgetPadding.bottom = max(0f, minSpacing - cellLayoutBorderSpacePx.y).roundToInt()
++                widgetPadding.top = widgetPadding.bottom
++            }
++            return widgetPadding
++        }
++
+         // TODO: the first time we use this, cellLayoutPadding and totalWorkspacePadding are zero
+         // but it doesn't make sense to do that, and other variables depend on those values, we need
+         // to
+@@ -497,18 +510,7 @@ data class WorkspaceProfile(
+                         ),
+                 )
+ 
+-            // Update widget padding:
+-            val minSpacing: Float = ResourceUtils.pxFromDp(MIN_WIDGET_PADDING_DP, metrics).toFloat()
+-            val widgetPadding = Rect()
+-            if (cellLayoutBorderSpacePx.x < minSpacing || cellLayoutBorderSpacePx.y < minSpacing) {
+-                widgetPadding.right = max(0f, minSpacing - cellLayoutBorderSpacePx.x).roundToInt()
+-
+-                widgetPadding.left = widgetPadding.right
+-                widgetPadding.bottom = max(0f, minSpacing - cellLayoutBorderSpacePx.y).roundToInt()
+-                widgetPadding.top = widgetPadding.bottom
+-            } else {
+-                widgetPadding.setEmpty()
+-            }
++            val widgetPadding = calculateWidgetPadding(cellLayoutBorderSpacePx, metrics)
+ 
+             return WorkspaceProfile(
+                 // Workspace icons
+diff --git a/src/com/android/launcher3/deviceprofile/WorkspaceProfileNonResponsiveFactory.kt b/src/com/android/launcher3/deviceprofile/WorkspaceProfileNonResponsiveFactory.kt
+index fcd789e30b6..e047fd9bf8a 100644
+--- a/src/com/android/launcher3/deviceprofile/WorkspaceProfileNonResponsiveFactory.kt
++++ b/src/com/android/launcher3/deviceprofile/WorkspaceProfileNonResponsiveFactory.kt
+@@ -30,6 +30,7 @@ import com.android.launcher3.Utilities.getNormalizedIconDrawablePadding
+ import com.android.launcher3.Utilities.pxFromSp
+ import com.android.launcher3.deviceprofile.WorkspaceProfile.Factory.calculateCellSize
+ import com.android.launcher3.deviceprofile.WorkspaceProfile.Factory.calculateHotseatBarSizePx
++import com.android.launcher3.deviceprofile.WorkspaceProfile.Factory.calculateWidgetPadding
+ import com.android.launcher3.deviceprofile.WorkspaceProfile.Factory.insetPadding
+ import com.android.launcher3.testing.shared.ResourceUtils.INVALID_RESOURCE_HANDLE
+ import com.android.launcher3.testing.shared.ResourceUtils.pxFromDp
+@@ -577,6 +578,8 @@ object WorkspaceProfileNonResponsiveFactory {
+                         scale = scale,
+                     )
+                     .let { hideWorkspaceLabelsIfNotEnoughSpace(isVerticalLayout, it, inv) }
++        }.let {
++            it.copy(widgetPadding = calculateWidgetPadding(it.cellLayoutBorderSpacePx, metrics))
+         }
+     }
+ 
+-- 
+2.50.1.windows.1
+
