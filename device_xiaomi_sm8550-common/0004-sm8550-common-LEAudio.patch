@@ -1,4 +1,4 @@
-From 9b3ad7f3c54b3493f41dda2fbcb432ac583bfb97 Mon Sep 17 00:00:00 2001
+From dc487e57d7821a687ecfd3363c8e171eec2d9367 Mon Sep 17 00:00:00 2001
 From: DenlNister <dcnnn950711@gmail.com>
 Date: Tue, 4 Aug 2026 20:32:40 +0800
 Subject: [PATCH] sm8550-common: LEAudio
@@ -8,8 +8,8 @@ Signed-off-by: DenlNister <dcnnn950711@gmail.com>
  .../sku_kalama/audio_policy_configuration.xml | 58 +++++++++++++++----
  configs/properties/odm.prop                   |  2 +-
  configs/properties/system_ext.prop            | 15 ++++-
- configs/properties/vendor.prop                | 43 +++++++++-----
- 4 files changed, 92 insertions(+), 26 deletions(-)
+ configs/properties/vendor.prop                | 41 +++++++++----
+ 4 files changed, 92 insertions(+), 24 deletions(-)
 
 diff --git a/configs/audio/sku_kalama/audio_policy_configuration.xml b/configs/audio/sku_kalama/audio_policy_configuration.xml
 index 7561ffc..a495d40 100644
@@ -136,10 +136,10 @@ index 7561ffc..a495d40 100644
              </routes>
  
 diff --git a/configs/properties/odm.prop b/configs/properties/odm.prop
-index 585792f..cabfef5 100644
+index 4996bd0..26c7444 100644
 --- a/configs/properties/odm.prop
 +++ b/configs/properties/odm.prop
-@@ -31,7 +31,7 @@ persist.vendor.dc_backlight.enable=false
+@@ -30,7 +30,7 @@ persist.vendor.dc_backlight.enable=false
  persist.vendor.dc_backlight.threshold=0
  ro.vendor.all_modes.colorpick_adjust=true
  ro.vendor.bcbc.enable=true
@@ -175,18 +175,18 @@ index 50c4ddb..c062dfc 100644
  persist.bluetooth.leaudio.notify.idle.during.call=true
  persist.bluetooth.leaudio_offload.disabled=false
 diff --git a/configs/properties/vendor.prop b/configs/properties/vendor.prop
-index 6d3844d..ebf1573 100644
+index 81cd67f..fed3226 100644
 --- a/configs/properties/vendor.prop
 +++ b/configs/properties/vendor.prop
-@@ -15,6 +15,7 @@ ro.audio.monitorRotation=true
- ro.vendor.audio.feature.spatial=7
- ro.vendor.audio.gain.support=true
- ro.vendor.audio.support.sound.id=true
+@@ -11,6 +11,7 @@ persist.vendor.audio.ha_proxy.enabled=true
+ ro.af.client_heap_size_kbyte=7168
+ ro.audio.flinger_standbytime_ms=2000
+ ro.audio.monitorRotation=true
 +ro.vendor.audio.feature.fade=true
  vendor.audio.adm.buffering.ms=2
  vendor.audio.c2.preferred=true
  vendor.audio.compress_capture.aac=true
-@@ -37,6 +38,32 @@ vendor.audio.feature.usb_offload_burst_mode.enable=true
+@@ -33,6 +34,32 @@ vendor.audio.feature.usb_offload_burst_mode.enable=true
  vendor.audio.feature.usb_offload_sidetone_volume.enable=false
  vendor.audio.feature.vbat.enable=true
  vendor.audio.feature.wsa.enable=false
@@ -219,13 +219,13 @@ index 6d3844d..ebf1573 100644
  vendor.audio.hal.boot.timeout.ms=20000
  vendor.audio.hdr.record.enable=false
  vendor.audio.hw.aac.encoder=false
-@@ -56,31 +83,21 @@ vendor.qc2audio.suspend.enabled=true
+@@ -52,29 +79,21 @@ vendor.qc2audio.suspend.enabled=true
  bluetooth.auto_connect_profiles.enabled=true
  bluetooth.profile.a2dp.source.enabled=true
  bluetooth.profile.avrcp.target.enabled=true
--bluetooth.profile.bap.broadcast.assist.enabled=true
+-bluetooth.profile.bap.broadcast.assist.enabled=false
 -bluetooth.profile.bap.broadcast.source.enabled=false
--bluetooth.profile.bap.unicast.server.enabled=true
+-bluetooth.profile.bap.unicast.client.enabled=true
  bluetooth.profile.bas.client.enabled=true
 -bluetooth.profile.ccp.server.enabled=true
 -bluetooth.profile.csip.set_coordinator.enabled=true
@@ -238,9 +238,7 @@ index 6d3844d..ebf1573 100644
 -bluetooth.profile.mcp.server.enabled=true
  bluetooth.profile.opp.enabled=true
  bluetooth.profile.pbap.server.enabled=true
--bluetooth.profile.tbs.server.enabled=true
--bluetooth.profile.vc.server.enabled=true
--bluetooth.profile.vcp.controller.enabled=false
+-bluetooth.profile.vcp.controller.enabled=true
  persist.bluetooth.a2dp_offload.disabled=false
  persist.sys.fflag.override.settings_bluetooth_hearing_aid=true
 -persist.vendor.bt.a2dp_offload_cap=sbc-aptx-aptxtws-aptxhd-aac-ldac-lhdc
@@ -251,9 +249,9 @@ index 6d3844d..ebf1573 100644
 -persist.vendor.qcom.bluetooth.a2dp_offload_cap=sbc-aptx-aptxtws-aptxhd-aac-ldac-aptxadaptiver2
 +persist.vendor.qcom.bluetooth.a2dp_offload_cap=sbc-aptx-aptxtws-aptxhd-aac-ldac-lhdc-aptxadaptiver2
  persist.vendor.qcom.bluetooth.aac_frm_ctl.enabled=true
- persist.vendor.qcom.bluetooth.aac_vbr_ctl.enabled=true
  persist.vendor.qcom.bluetooth.aptxadaptiver2_1_support=true
-@@ -159,7 +176,7 @@ debug.sf.predict_hwc_composition_strategy=0
+ persist.vendor.qcom.bluetooth.scram.enabled=false
+@@ -147,7 +166,7 @@ debug.sf.predict_hwc_composition_strategy=0
  debug.sf.treat_170m_as_sRGB=1
  debug.sf.use_phase_offsets_as_durations=0
  graphics.gpu.profiler.support=true
@@ -263,5 +261,5 @@ index 6d3844d..ebf1573 100644
  ro.gfx.driver.1=com.qualcomm.qti.gpudrivers.kalama.api33
  ro.hardware.egl=adreno
 -- 
-2.56.0
+2.50.1.windows.1
 
